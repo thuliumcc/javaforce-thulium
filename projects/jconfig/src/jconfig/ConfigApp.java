@@ -27,6 +27,7 @@ public class ConfigApp extends javax.swing.JFrame {
       jbusClient = new JBusClient("org.jflinux.jconfig." + new Random().nextInt(0x7fffff), new JBusMethods());
       jbusClient.start();
     }
+    JF.initHttps();
     for(int a=0;a<args.length;a++) {
       if (args[a].equals("users")) panel = new UsersPanel();
       else if (args[a].equals("groups")) panel = new GroupsPanel();

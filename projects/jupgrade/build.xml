@@ -1,6 +1,7 @@
 <project name="jupgrade" default="jar" basedir=".">
   <description>jupgrade</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jupgrade"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="../../classes"/>
@@ -26,9 +27,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jupgrade.jar" todir="/usr/share/java"/>
-    <copy file="jupgrade" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jupgrade" perm="+x"/>
     <copy file="jupgrade-cron.sh" todir="/etc/cron.weekly"/>
     <chmod file="/etc/cron.weekly/jupgrade-cron.sh" perm="+x"/>
     <copy file="jupgrade.desktop" todir="/usr/share/applications"/>

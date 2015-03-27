@@ -57,7 +57,7 @@ public class monitordir {
   /** Start watching a folder. */
   public static int add(String path) {
     if (c == null) return -1;
-    int wd = c.inotify_add_watch(fd, path, IN_CREATE | IN_DELETE);
+    int wd = c.inotify_add_watch(fd, path, IN_ALL);
 //    JFLog.log("wd=" + wd);
     return wd;
   }
@@ -99,11 +99,13 @@ public class monitordir {
           String _name = _len > 0 ? buf.getString(16) : null;
           read -= 16 + _len;
           String _event = null;
-          switch (_mask & IN_MASK) {
+          switch (_mask & IN_ALL) {
             case IN_CREATE: _event = "CREATED"; break;
             case IN_DELETE: _event = "DELETED"; break;
             case IN_MOVED_FROM: _event = "MOVED_FROM"; break;
             case IN_MOVED_TO: _event = "MOVED_TO"; break;
+            case IN_DELETE_SELF: _event = "DELETE_SELF"; break;
+            case IN_MOVED_SELF: _event = "MOVED_SELF"; break;
           }
           if (_event == null) continue;
           Listener listener = map.get(_wd);
@@ -118,11 +120,13 @@ public class monitordir {
       c.free(buf);
     }
   }
-  private static final int IN_CREATE = 0x100;
-  private static final int IN_DELETE = 0x200;
-  private static final int IN_MASK = 0x300;  //mask off other event bits (ie: IN_ISDIR)
   private static final int IN_MOVED_FROM = 0x040;
   private static final int IN_MOVED_TO = 0x080;
+  private static final int IN_CREATE = 0x100;
+  private static final int IN_DELETE = 0x200;
+  private static final int IN_DELETE_SELF = 0x0400;
+  private static final int IN_MOVED_SELF = 0x0800;
+  private static final int IN_ALL = 0xfc0;
 /*
   public class inotify_event extends Structure {
      public int wd;       // Watch descriptor

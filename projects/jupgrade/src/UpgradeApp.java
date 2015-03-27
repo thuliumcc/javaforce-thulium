@@ -84,7 +84,7 @@ public class UpgradeApp extends javax.swing.JFrame {
     String output;
     switch (Linux.distro) {
       case Ubuntu:
-        output = sp.run(new String[] {"apt-get", "--yes", "--allow-unauthenticated" ,"update"}, true);
+        output = sp.run(new String[] {"apt-get", "--yes", "update"}, true);
         if (output == null) {
           System.out.println("Error : Failed to exec apt-get");
         } else {
@@ -105,7 +105,7 @@ public class UpgradeApp extends javax.swing.JFrame {
   private static void ubuntuGetCounts() {
     ShellProcess sp = new ShellProcess();
     sp.removeEnvironmentVariable("TERM");
-    String output = sp.run(new String[] {"apt-get", "--yes", "--allow-unauthenticated", "upgrade", "-s"}, false);
+    String output = sp.run(new String[] {"apt-get", "--yes", "upgrade", "-s"}, false);
     if (output == null) {
       System.out.println("Error : Failed to exec apt-get");
       return;

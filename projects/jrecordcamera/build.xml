@@ -1,6 +1,7 @@
 <project name="jrecordcamera" default="jar" basedir=".">
   <description>jrecordcamera</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jrecordcamera"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
@@ -72,9 +73,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jrecordcamera.jar" todir="/usr/share/java"/>
-    <copy file="jrecordcamera" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jrecordcamera" perm="+x"/>
     <copy file="jrecordcamera.desktop" todir="/usr/share/applications"/>
     <copy file="jrecordcamera.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jrecordcamera.html" todir="/usr/share/jhelp"/>

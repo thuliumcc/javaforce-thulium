@@ -105,7 +105,7 @@ public class jfusecdfs extends Fuse {
   }
 
   public int getattr(String path, Stat stat) {
-    JFLog.log("getattr:" + path);
+//    JFLog.log("getattr:" + path);
     if (path.equals("/")) {
       stat.folder = true;
       return 0;
@@ -121,7 +121,7 @@ public class jfusecdfs extends Fuse {
   }
 
   public int mkdir(String path, int mode) {
-    JFLog.log("mkdir:" + path);
+//    JFLog.log("mkdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       //TODO
@@ -133,7 +133,7 @@ public class jfusecdfs extends Fuse {
   }
 
   public int unlink(String path) {
-    JFLog.log("unlink:" + path);
+//    JFLog.log("unlink:" + path);
     try {
       //TODO
       return -1;
@@ -144,7 +144,7 @@ public class jfusecdfs extends Fuse {
   }
 
   public int rmdir(String path) {
-    JFLog.log("rmdir:" + path);
+//    JFLog.log("rmdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       //TODO
@@ -156,27 +156,27 @@ public class jfusecdfs extends Fuse {
   }
 
   public int symlink(String target, String link) {
-    JFLog.log("symlink:" + link + "->" + target);
+//    JFLog.log("symlink:" + link + "->" + target);
     return -1;
   }
 
   public int link(String target, String link) {
-    JFLog.log("link:" + link + "->" + target);
+//    JFLog.log("link:" + link + "->" + target);
     return -1;
   }
 
   public int chmod(String path, int mode) {
-    JFLog.log("chmod:" + path);
+//    JFLog.log("chmod:" + path);
     return -1;
   }
 
   public int chown(String path, int mode) {
-    JFLog.log("chown:" + path);
+//    JFLog.log("chown:" + path);
     return -1;
   }
 
   public int truncate(String path, long size) {
-    JFLog.log("truncate:" + path);
+//    JFLog.log("truncate:" + path);
     try {
       //TODO
       return -1;
@@ -226,7 +226,7 @@ public class jfusecdfs extends Fuse {
   }
 
   public int open(String path, Pointer ffi) {
-    JFLog.log("open:" + path);
+//    JFLog.log("open:" + path);
     if (!path.endsWith(".wav")) return -1;
     int idx1 = path.indexOf("track");
     int idx2 = path.indexOf(".wav");
@@ -254,8 +254,14 @@ public class jfusecdfs extends Fuse {
   public int read(String path, Pointer buf, int size, long offset, Pointer ffi) {
 //    JFLog.log("read:" + path + ",size=" + size + ",offset=" + offset);
     FileState fs = (FileState)getObject(ffi);
-    if (fs == null) {JFLog.log("no fs");return -1;}
-    if (!fs.canRead) {JFLog.log("!read");return -1;}
+    if (fs == null) {
+//      JFLog.log("no fs");
+      return -1;
+    }
+    if (!fs.canRead) {
+//      JFLog.log("!read");
+      return -1;
+    }
     Pointer cdiobuf = new Pointer(fs.buffer);
     int read = 0;
     try {
@@ -307,12 +313,12 @@ public class jfusecdfs extends Fuse {
   }
 
   public int statfs(String path, Pointer statvfs) {
-    JFLog.log("statfs:" + path);
+//    JFLog.log("statfs:" + path);
     return -1;
   }
 
   public int release(String path, Pointer ffi) {
-    JFLog.log("release:" + path);
+//    JFLog.log("release:" + path);
     FileState fs = (FileState)getObject(ffi);
     if (fs == null) return 0;
     synchronized(fs.lock) {
@@ -323,13 +329,13 @@ public class jfusecdfs extends Fuse {
   }
 
   public int readdir(String path, Pointer buf, Pointer filler, Pointer ffi) {
-    JFLog.log("readdir:" + path);
+//    JFLog.log("readdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       for(int a=0;a<nTracks;a++) {
         if (invokeFiller(filler, buf, "track" + (a+1) + ".wav", null) == 1) break;
       }
-      JFLog.log("readdir done");
+//      JFLog.log("readdir done");
       return 0;
     } catch (Exception e) {
       JFLog.log(e);
@@ -338,7 +344,7 @@ public class jfusecdfs extends Fuse {
   }
 
   public int create(String path, int mode, Pointer ffi) {
-    JFLog.log("create:" + path);
+//    JFLog.log("create:" + path);
     try {
       //TODO
       return -1;

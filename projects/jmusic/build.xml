@@ -1,6 +1,7 @@
 <project name="jmusic" default="jar" basedir=".">
   <description>jmusic</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jmusic"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
@@ -76,11 +77,11 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
+    <exec command="gcc loader2.c -I../../include -o jmidi -ldl -lpthread"/>
+    <move file="jmidi" todir="/usr/bin"/>
     <copy file="jmusic.jar" todir="/usr/share/java"/>
-    <copy file="jmusic" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jmusic" perm="+x"/>
-    <copy file="jmidi" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jmidi" perm="+x"/>
     <copy file="jmusic.desktop" todir="/usr/share/applications"/>
     <copy file="jmusic.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jmusic.html" todir="/usr/share/jhelp"/>

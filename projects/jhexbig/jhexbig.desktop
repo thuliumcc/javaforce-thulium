@@ -7,7 +7,7 @@ Icon=jhexbig
 Type=Application
 Categories=Utility
 
-Exec=japps
+Exec=jhexbig
 StartupNotify=false
 Terminal=false
 MimeType=

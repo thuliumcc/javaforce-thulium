@@ -20,10 +20,16 @@ import javaforce.*;
 
 public class Linux {
 
+  /** Returns jfLinux ISO version. */
+  public static String getVersion() {
+    return "7u2";
+  }
+
   public static enum DistroTypes {
     Unknown, Ubuntu, Fedora
   };
   public static DistroTypes distro = DistroTypes.Unknown;
+  public static String ubuntuRelease, ubuntuCodename;
 
   /**
    * Detects Linux distribution type. (Support Ubuntu, Fedora currently)
@@ -37,11 +43,14 @@ public class Linux {
       File lsb = new File("/etc/lsb-release");
       if (lsb.exists()) {
         FileInputStream fis = new FileInputStream(lsb);
-        byte data[] = JF.readAll(fis);
+        Properties props = new Properties();
+        props.load(fis);
         fis.close();
-        String str = new String(data);
-        if (str.indexOf("Ubuntu") != -1) {
+        String id = props.getProperty("DISTRIB_ID");
+        if (id.equals("Ubuntu")) {
           distro = DistroTypes.Ubuntu;
+          ubuntuRelease = props.getProperty("DISTRIB_RELEASE");
+          ubuntuCodename = props.getProperty("DISTRIB_CODENAME");
           return true;
         }
       }
@@ -61,6 +70,18 @@ public class Linux {
       JFLog.log(e);
     }
     return false;
+  }
+
+  public static boolean ubuntuAddRepo(String ppa) {
+    ShellProcess sp = new ShellProcess();
+    sp.removeEnvironmentVariable("TERM");
+    sp.addEnvironmentVariable("DEBIAN_FRONTEND", "noninteractive");
+    String output = sp.run(new String[] {"sudo", "-E", "add-apt-repository", ppa}, true);
+    if (output == null) {
+      return false;
+    } else {
+      return true;
+    }
   }
 
   /**
@@ -196,6 +217,18 @@ public class Linux {
     return true;
   }
 
+  public static boolean ubuntuUpdate() {
+    ShellProcess sp = new ShellProcess();
+    sp.removeEnvironmentVariable("TERM");
+    sp.addEnvironmentVariable("DEBIAN_FRONTEND", "noninteractive");
+    String output = sp.run(new String[] {"sudo", "-E", "apt-get", "--yes", "update"}, true);
+    if (output == null) {
+      return false;
+    } else {
+      return true;
+    }
+  }
+
   /**
    * Work with Ubuntu packages.
    */
@@ -210,7 +243,7 @@ public class Linux {
         ShellProcess sp = new ShellProcess();
         sp.removeEnvironmentVariable("TERM");
         sp.addEnvironmentVariable("DEBIAN_FRONTEND", "noninteractive");
-        String output = sp.run(new String[]{"sudo", "-E", "apt-get", "--yes", "--allow-unauthenticated", action, pkg}, true);
+        String output = sp.run(new String[]{"sudo", "-E", "apt-get", "--yes", action, pkg}, true);
         if (output == null) {
           setLabel("Failed to exec apt-get");
           JFLog.log("Failed to exec apt-get");
@@ -583,6 +616,32 @@ public class Linux {
     return expandBackslash(exec);
   }
 
+  public static boolean executeDesktop(String desktop, String file[]) {
+    try {
+      Properties props = new Properties();
+      FileInputStream fis = new FileInputStream(desktop);
+      props.load(fis);
+      fis.close();
+      String exec = props.getProperty("Exec");
+      String path = props.getProperty("Path");
+      if (path == null || path.length() == 0) {
+        path = System.getenv("HOME");
+        if (path == null || path.length() == 0) {
+          path = "/";
+        }
+      }
+      ProcessBuilder pb = new ProcessBuilder();
+      pb.directory(new File(path));
+      String expand[] = expandDesktopExec(exec, file);
+      pb.command(expand);
+      pb.start();
+      return true;
+    } catch (Exception e) {
+      JFLog.log(e);
+      return false;
+    }
+  }
+
   public static int detectBits() {
     if (new File("/usr/lib64").exists()) {
       return 64;
@@ -638,6 +697,7 @@ public class Linux {
     void XMapWindow(Pointer display, NativeLong window);
     void XUnmapWindow(Pointer display, NativeLong window);
     void XRaiseWindow(Pointer display, NativeLong window);
+    void XIconifyWindow(Pointer display, NativeLong window, int screen);
     void XNextEvent(Pointer display, XEvent ev);
     NativeLong XSelectInput(Pointer display, NativeLong window, NativeLong event_mask);
     void XMoveWindow(Pointer display, NativeLong window, int x, int y);
@@ -660,6 +720,7 @@ public class Linux {
     Pointer calloc(int cnt, int size);
     void free(Pointer ptr);
     Pointer strdup(String str);
+    void setenv(String name, String value, int overwrite);
   }
 
   private static X11 x11;
@@ -923,28 +984,46 @@ public class Linux {
   private static boolean tray_active;
   private static int tray_count = 0;
   private static X11Listener x11_listener;
+  private static final int tray_icon_size = 24;  //fixed
+  private static int tray_height = 24+4;
+  private static int tray_rows = 2;
+  private static int borderSize = 4;
+  private static int tray_pos = 0;
+  private static int tray_pad = 2;
+  private static int tray_width = 24+4;
 
   private static void tray_move_icons() {
-    int a, x = 2, y = 2;
+    int a, x = tray_pad, y;
+    int y1 = 0;
+    int y2 = 0;
+    if (tray_rows == 1) {
+      y1 = (tray_height - tray_icon_size) / 2;
+    } else {
+      int d = (tray_height - (tray_icon_size*2))/3;
+      y1 = d;
+      y2 = d + tray_icon_size + d;
+    }
+    y = y1;
     for(a=0;a<MAX_TRAY_ICONS;a++) {
       if (tray_icons[a] == null) continue;
-      x11.XMoveWindow(tray_display, tray_icons[a], x, y);
-      if (y == 2) {
-        y += 23 + 2;
+      x11.XMoveResizeWindow(tray_display, tray_icons[a], x, y, tray_icon_size, tray_icon_size);
+      if (y == y1 && tray_rows > 1) {
+        y = y2;
       } else {
-        y = 2;
-        x += 23 + 2;
+        y = y1;
+        x += tray_icon_size + tray_pad;
       }
     }
     //reposition/resize tray window
-    int cols = (tray_count + 1) / 2;
+    int cols = (tray_count + (tray_rows > 1 ? 1 : 0)) / tray_rows;
     if (cols == 0) cols = 1;
-    int px = screen_width - (cols * (23+2)) - 2 - 5;
-    int py = 5;
-    int sx = (cols * (23+2)) + 2;
-    int sy = 52;
-    JFLog.log("Tray Position:" + px + "," + py + ",size=" + sx + "," + sy);
-    x11.XMoveResizeWindow(tray_display, tray_window, px, 5, sx, sy);
+    int px = tray_pos - (cols * (tray_icon_size+tray_pad)) - tray_pad - borderSize;
+    int py = borderSize;
+    int sx = (cols * (tray_icon_size+tray_pad)) + tray_pad;
+    tray_width = sx;
+    int sy = tray_height;  //tray_rows * (tray_icon_size + tray_pad) + tray_pad;
+//    JFLog.log("Tray Position:" + px + "," + py + ",size=" + sx + "," + sy);
+    x11.XMoveResizeWindow(tray_display, tray_window, px, py, sx, sy);
   }
 
   private static void tray_add_icon(NativeLong w) {
@@ -964,7 +1043,8 @@ public class Linux {
   }
 
   /* Tray opcode messages from System Tray Protocol Specification
-   * http://freedesktop.org/Standards/systemtray-spec/systemtray-spec-0.2.html */
+     http://standards.freedesktop.org/systemtray-spec/systemtray-spec-0.3.html
+  */
   private static final int SYSTEM_TRAY_REQUEST_DOCK   = 0;
   private static final int SYSTEM_TRAY_BEGIN_MESSAGE  = 1;
   private static final int SYSTEM_TRAY_CANCEL_MESSAGE = 2;
@@ -983,7 +1063,7 @@ public class Linux {
         case SYSTEM_TRAY_CANCEL_MESSAGE:
           break;
         case SYSTEM_TRAY_REPOSITION:
-          JFLog.log("Tray:ClientMessage = SYSTEM_TRAY_REPOSITION");
+//          JFLog.log("Tray:ClientMessage = SYSTEM_TRAY_REPOSITION");
           tray_move_icons();
           break;
         case SYSTEM_TRAY_STOP:
@@ -1012,10 +1092,17 @@ public class Linux {
   }
 
   /** Polls and dispatches tray events.  Does not return. */
-  public static void x11_tray_main(Object pid, int width) {
+  public static void x11_tray_main(Object pid, int screenWidth, int trayPos, int trayHeight) {
     XEvent ev = new XEvent();
 
-    screen_width = width;
+    screen_width = screenWidth;
+    tray_pos = trayPos;
+    tray_height = trayHeight;
+    if (tray_height >= tray_icon_size * 2 + tray_pad * 3) {
+      tray_rows = 2;
+    } else {
+      tray_rows = 1;
+    }
     tray_display = x11.XOpenDisplay(null);
     NativeLong tray_atom = x11.XInternAtom(tray_display, "_NET_SYSTEM_TRAY_S0", False);
     tray_opcode = x11.XInternAtom(tray_display, "_NET_SYSTEM_TRAY_OPCODE", False);
@@ -1024,8 +1111,8 @@ public class Linux {
     tray_window = x11.XCreateSimpleWindow(
       tray_display,
       (NativeLong)pid,  //parent id
-      width - 23 - 4 - 5, 5,  //pos
-      23 + 4, 52,  //size
+      trayPos - tray_icon_size - 4 - borderSize, borderSize,  //pos
+      tray_icon_size + 4, 52,  //size
       1,  //border_width
       new NativeLong(0xcccccc),  //border clr
       new NativeLong(0xdddddd));  //backgnd clr
@@ -1063,10 +1150,17 @@ public class Linux {
 
   /** Repositions tray icons and the tray window itself.
    *
-   * @param _screen_width = new screen width (-1 = has not changed)
+   * @param screenWidth = new screen width (-1 = has not changed)
    */
-  public static void x11_tray_reposition(int _screen_width) {
-    if (_screen_width != -1) screen_width = _screen_width;
+  public static void x11_tray_reposition(int screenWidth, int trayPos, int trayHeight) {
+    if (screenWidth != -1) screen_width = screenWidth;
+    if (trayPos != -1) tray_pos = trayPos;
+    if (trayHeight != -1) tray_height = trayHeight;
+    if (tray_height >= tray_icon_size * 2 + tray_pad * 3) {
+      tray_rows = 2;
+    } else {
+      tray_rows = 1;
+    }
     //X11 is not thread safe so can't call tray_move_icons() from here, send a msg instead
     Pointer display = x11.XOpenDisplay(null);
 
@@ -1103,6 +1197,10 @@ public class Linux {
     x11.XSendEvent(display, event.window, True, 0, event.getPointer());
 
     x11.XCloseDisplay(display);
+  }
+
+  public static int x11_tray_width() {
+    return tray_width;
   }
 
 //top-level x11 windows monitor
@@ -1188,6 +1286,15 @@ public class Linux {
     synchronized(currentListLock) {
       return currentList.toArray(new Window[0]);
     }
+  }
+
+  public static void x11_minimize_all() {
+    Pointer display = x11.XOpenDisplay(null);
+    Window wins[] = x11_get_window_list();
+    for(int a=0;a<wins.length;a++) {
+      x11.XIconifyWindow(display, (NativeLong)wins[a].xid, 0);
+    }
+    x11.XCloseDisplay(display);
   }
 
   private static void x11_update_window_list(Pointer display) {
@@ -1885,5 +1992,9 @@ public class Linux {
     } catch (Exception e) {
       JFLog.log(e);
     }
+  }
+
+  public static void setenv(String name, String value) {
+    c.setenv(name, value, 1);
   }
 }

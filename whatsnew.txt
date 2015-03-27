@@ -1,5 +1,24 @@
 What's new...
 
+Nov 7/2014 : JF 7.39.0 released!
+  - all linux apps now use a native c loader just like the msi packages for windows
+    - before bash scripts were used which made the process list look confusing
+  - finally fixed signed repository (do not gzip the files)
+  - added support to read xpm images (old linux format still rarely used)
+  - jfusesmb
+    - improved performance
+  - jFile/0.12
+    - can use CTRL to multi select files
+    - fix resource leak
+  - jDesktop/0.27
+    - many improvements (new layout, many bug fixes)
+  - jConfig/0.12
+    - integrated japps, jrepo and jparted
+  - jfPaint/0.16
+    - added xpm support and some bug fixes
+  - grub2 has a bug that is causing the generated iso to have difficulties booting after installed
+    - see https://bugs.launchpad.net/ubuntu/+source/grub2/+bug/1311247
+
 Nov 1/2014 : JF 7.38.0 released!
   - javaforce.utils.monitordir (Linux:inotify service)
     - added MOVED_TO & MOVED_FROM events

@@ -17,6 +17,7 @@ import javaforce.jna.*;
 
 public class jfusesmb extends Fuse {
   private NtlmPasswordAuthentication auth;
+  private SmbFile baseFile;
   private String user, server, share;  //user@server/share
   private String base;
 
@@ -41,8 +42,8 @@ public class jfusesmb extends Fuse {
       share = args[0].substring(idx2+1);
       base = "smb://" + server + "/" + share;
       auth = new NtlmPasswordAuthentication("domain", user, passwd);
-      SmbFile file = new SmbFile(base + "/", auth);
-      file.listFiles();
+      baseFile = new SmbFile(base + "/", auth);
+      baseFile.listFiles();
       return true;
     } catch (Exception e) {
       JFLog.log("Error:" + e);
@@ -67,9 +68,10 @@ public class jfusesmb extends Fuse {
   }
 
   public int getattr(String path, Stat stat) {
-    JFLog.log("getattr:" + path);
+//    JFLog.log("getattr:" + path);
     try {
-      SmbFile file = new SmbFile(base + path, auth);
+//      SmbFile file = new SmbFile(base + path, auth);
+      SmbFile file = new SmbFile(baseFile, path);
       if (!file.exists()) {
         return -ENOENT;  //not found
       }
@@ -86,10 +88,11 @@ public class jfusesmb extends Fuse {
   }
 
   public int mkdir(String path, int mode) {
-    JFLog.log("mkdir:" + path);
+//    JFLog.log("mkdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
-      SmbFile file = new SmbFile(base + path, auth);
+//      SmbFile file = new SmbFile(base + path, auth);
+      SmbFile file = new SmbFile(baseFile, path);
       file.mkdir();
       return 0;
     } catch (Exception e) {
@@ -99,9 +102,10 @@ public class jfusesmb extends Fuse {
   }
 
   public int unlink(String path) {
-    JFLog.log("unlink:" + path);
+//    JFLog.log("unlink:" + path);
     try {
-      SmbFile file = new SmbFile(base+ path, auth);
+//      SmbFile file = new SmbFile(base + path, auth);
+      SmbFile file = new SmbFile(baseFile, path);
       file.delete();
       return 0;
     } catch (Exception e) {
@@ -111,10 +115,11 @@ public class jfusesmb extends Fuse {
   }
 
   public int rmdir(String path) {
-    JFLog.log("rmdir:" + path);
+//    JFLog.log("rmdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
-      SmbFile file = new SmbFile(base + path, auth);
+//      SmbFile file = new SmbFile(base + path, auth);
+      SmbFile file = new SmbFile(baseFile, path);
       file.delete();
       return 0;
     } catch (Exception e) {
@@ -124,29 +129,30 @@ public class jfusesmb extends Fuse {
   }
 
   public int symlink(String target, String link) {
-    JFLog.log("symlink:" + link + "->" + target);
+//    JFLog.log("symlink:" + link + "->" + target);
     return -1;
   }
 
   public int link(String target, String link) {
-    JFLog.log("link:" + link + "->" + target);
+//    JFLog.log("link:" + link + "->" + target);
     return -1;
   }
 
   public int chmod(String path, int mode) {
-    JFLog.log("chmod:" + path);
+//    JFLog.log("chmod:" + path);
     return -1;
   }
 
   public int chown(String path, int mode) {
-    JFLog.log("chown:" + path);
+//    JFLog.log("chown:" + path);
     return -1;
   }
 
   public int truncate(String path, long size) {
-    JFLog.log("truncate:" + path);
+//    JFLog.log("truncate:" + path);
     try {
-      SmbFile file = new SmbFile(base + path, auth);
+//      SmbFile file = new SmbFile(base + path, auth);
+      SmbFile file = new SmbFile(baseFile, path);
       if (!file.exists()) return -1;
       if (file.isDirectory()) return -1;
       new SmbRandomAccessFile(file, "w").setLength(size);
@@ -165,9 +171,10 @@ public class jfusesmb extends Fuse {
   }
 
   public int open(String path, Pointer ffi) {
-    JFLog.log("open:" + path);
+//    JFLog.log("open:" + path);
     try {
-      SmbFile file = new SmbFile(base + path, auth);
+//      SmbFile file = new SmbFile(base + path, auth);
+      SmbFile file = new SmbFile(baseFile, path);
       if (!file.exists()) return -1;
       if (file.isDirectory()) return -1;
       FileState fs = new FileState();
@@ -176,7 +183,10 @@ public class jfusesmb extends Fuse {
       if (fs.canRead) mode += "r";
       fs.canWrite = file.canWrite();
       if (fs.canWrite) mode += "w";
-      if (mode.length() == 0) {JFLog.log("open:access denied"); return -1;}
+      if (mode.length() == 0) {
+//        JFLog.log("open:access denied");
+        return -1;
+      }
       fs.file = file;
       fs.raf = new SmbRandomAccessFile(file, mode);
       attachObject(ffi, fs);
@@ -188,10 +198,16 @@ public class jfusesmb extends Fuse {
   }
 
   public int read(String path, Pointer buf, int size, long offset, Pointer ffi) {
-    JFLog.log("read:" + path);
+//    JFLog.log("read:" + path);
     FileState fs = (FileState)getObject(ffi);
-    if (fs == null) {JFLog.log("no fs");return -1;}
-    if (!fs.canRead) {JFLog.log("!read");return -1;}
+    if (fs == null) {
+//      JFLog.log("no fs");
+      return -1;
+    }
+    if (!fs.canRead) {
+//      JFLog.log("!read");
+      return -1;
+    }
     byte data[] = new byte[size];
     try {
       fs.raf.seek(offset);
@@ -205,7 +221,7 @@ public class jfusesmb extends Fuse {
         read += amt;
         pos += amt;
       }
-      JFLog.log("read=" + read);
+//      JFLog.log("read=" + read);
       return read;
     } catch (Exception e) {
       JFLog.log(e);
@@ -214,7 +230,7 @@ public class jfusesmb extends Fuse {
   }
 
   public int write(String path, Pointer buf, int size, long offset, Pointer ffi) {
-    JFLog.log("write:" + path);
+//    JFLog.log("write:" + path);
     FileState fs = (FileState)getObject(ffi);
     if (fs == null) return -1;
     if (!fs.canWrite) return -1;
@@ -231,27 +247,28 @@ public class jfusesmb extends Fuse {
   }
 
   public int statfs(String path, Pointer statvfs) {
-    JFLog.log("statfs:" + path);
+//    JFLog.log("statfs:" + path);
     return -1;
   }
 
   public int release(String path, Pointer ffi) {
-    JFLog.log("release:" + path);
+//    JFLog.log("release:" + path);
     detachObject(ffi);
     return 0;
   }
 
   public int readdir(String path, Pointer buf, Pointer filler, Pointer ffi) {
-    JFLog.log("readdir:" + path);
+//    JFLog.log("readdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
-      SmbFile folder = new SmbFile(base + path, auth);
+//      SmbFile folder = new SmbFile(base + path, auth);
+      SmbFile folder = new SmbFile(baseFile, path);
       SmbFile files[] = folder.listFiles();
       for(int a=0;a<files.length;a++) {
-        JFLog.log("invokeFiller:" + files[a].getName());
+//        JFLog.log("invokeFiller:" + files[a].getName());
         if (invokeFiller(filler, buf, files[a].getName(), null) == 1) break; //full???
       }
-      JFLog.log("readdir done");
+//      JFLog.log("readdir done");
       return 0;
     } catch (Exception e) {
       JFLog.log(e);
@@ -260,9 +277,10 @@ public class jfusesmb extends Fuse {
   }
 
   public int create(String path, int mode, Pointer ffi) {
-    JFLog.log("create:" + path);
+//    JFLog.log("create:" + path);
     try {
-      SmbFile file = new SmbFile(base + path, auth);
+//      SmbFile file = new SmbFile(base + path, auth);
+      SmbFile file = new SmbFile(baseFile, path);
       if (file.exists()) return -1;
       file.createNewFile();
       return open(path, ffi);

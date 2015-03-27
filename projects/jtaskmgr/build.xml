@@ -1,6 +1,7 @@
 <project name="jtaskmgr" default="jar" basedir=".">
   <description>jtaskmgr</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jtaskmgr"/>
   <property name="src" location="."/>
   <property name="build" location="classes"/>
   <property name="classpath" location="../../classes"/>
@@ -25,9 +26,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jtaskmgr.jar" todir="/usr/share/java"/>
-    <copy file="jtaskmgr" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jtaskmgr" perm="+x"/>
     <copy file="jtaskmgr.desktop" todir="/usr/share/applications"/>
     <copy file="jtaskmgr.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jtaskmgr.html" todir="/usr/share/jhelp"/>

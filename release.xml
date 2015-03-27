@@ -1,7 +1,7 @@
 <project name="javaforce-release" default="zip" basedir=".">
   <description>JavaForce release script</description>
 
-  <property name="VERSION" value="7.38.0"/>
+  <property name="VERSION" value="7.39.0"/>
   <property name="URL" value="http://javaforce.sourceforge.net"/>
   <property name="EMAIL" value="pquiring@gmail.com"/>
 
@@ -37,6 +37,7 @@
         <include name="jf/deb/*"/>
         <include name="jf/javaforce.spec"/>
         <include name="jf/bin/*"/>
+        <include name="jf/include/*"/>
 
         <include name="jf/repo/ubuntu/*.sh"/>
         <include name="jf/repo/ubuntu/*.txt"/>
@@ -44,6 +45,8 @@
 
         <include name="jf/repo/fedora/*.sh"/>
         <include name="jf/repo/fedora/*.repo"/>
+
+        <include name="jf/repo/visualvm/**/*"/>
 
         <include name="jf/iso/ubuntu/*"/>
         <include name="jf/iso/fedora/*"/>

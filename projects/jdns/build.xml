@@ -1,6 +1,7 @@
 <project name="jdns" default="jar" basedir=".">
-  <description>paint</description>
+  <description>dns</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jdns"/>
   <property name="JDNSVERSION" value="0.1"/>
 
   <target name="jar" description="jar">
@@ -35,8 +36,8 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
-    <copy file="jdns" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jdns" perm="+x"/>
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <mkdir dir="/etc/jinit"/>
     <copy file="jdns.conf" todir="/etc/jinit"/>
   </target>

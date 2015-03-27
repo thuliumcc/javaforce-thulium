@@ -20,7 +20,7 @@ import javaforce.*;
 
 public class MainPanel extends javax.swing.JPanel implements MouseListener, MouseMotionListener, KeyListener, KeyEventDispatcher, ActionListener {
 
-  public static String version = "0.15";
+  public static String version = "0.16";
 
   /**
    * Creates new form PaintPanel
@@ -850,6 +850,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     chooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG", "jpg", "jpeg"));
     chooser.addChoosableFileFilter(new FileNameExtensionFilter("PNG", "png"));
     chooser.addChoosableFileFilter(new FileNameExtensionFilter("BMP", "bmp"));
+    chooser.addChoosableFileFilter(new FileNameExtensionFilter("XPM", "xpm"));
     chooser.setMultiSelectionEnabled(false);
     chooser.setCurrentDirectory(new File(currentPath));
     if (chooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION) return;
@@ -925,17 +926,29 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
 
   private boolean loadImage(PaintCanvas pc, String filename) {
     pc.disableScale = true;
-    JFImage tmp = new JFImage();
-    boolean state = tmp.load(filename);
-    if (state) {
-      int w = tmp.getWidth();
-      int h = tmp.getHeight();
+    JFImage img = new JFImage();
+    String format = getFormat(filename);
+    if (format == null) return false;
+    boolean result;
+    if (format.equals("bmp"))
+      result = img.loadBMP(filename);
+    else if (format.equals("svg"))
+      result = img.loadSVG(filename);
+    else if (format.equals("jpg"))
+      result = img.loadJPG(filename);
+    else if (format.equals("xpm"))
+      result = img.loadXPM(filename);
+    else
+      result = img.load(filename);
+    if (result) {
+      int w = img.getWidth();
+      int h = img.getHeight();
       pc.setImageSize(w, h);
-      int px[] = tmp.getPixels();
+      int px[] = img.getPixels();
       pc.img.putPixels(px, 0, 0, w, h, 0);
     }
     pc.disableScale = false;
-    return state;
+    return result;
   }
 
   private void updateStatus() {
@@ -1016,7 +1029,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       state = imageTabs.get(idx).pc.img.saveBMP(filename);
     else if (format.equals("svg"))
       state = imageTabs.get(idx).pc.img.saveSVG(filename);
-    else if (format.equals("jpg") || format.equals("jpeg"))
+    else if (format.equals("jpg"))
       state = imageTabs.get(idx).pc.img.saveJPG(filename);
     else
       state = imageTabs.get(idx).pc.img.save(filename, format);
@@ -1078,7 +1091,9 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     if (format.equals("png")) return "png";
     if (format.equals("bmp")) return "bmp";
     if (format.equals("jpg")) return "jpg";
+    if (format.equals("jpeg")) return "jpg";
     if (format.equals("svg")) return "svg";
+    if (format.equals("xpm")) return "xpm";
     System.out.println("Unsupported format:" + format);
     return null;
   }

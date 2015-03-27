@@ -1,6 +1,7 @@
 <project name="jcapture" default="jar" basedir=".">
   <description>jcapture</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jcapture"/>
   <property name="src" location="."/>
   <property name="build" location="classes"/>
   <property name="classpath" location="../../classes"/>
@@ -25,6 +26,8 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jcapture.jar" todir="/usr/share/java"/>
     <copy file="jcapture-screen" todir="/usr/bin"/>
     <chmod file="/usr/bin/jcapture-screen" perm="+x"/>

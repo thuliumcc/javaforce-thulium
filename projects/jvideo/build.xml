@@ -1,6 +1,7 @@
 <project name="jvideo" default="jar" basedir=".">
   <description>jvideo</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jvideo"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
@@ -82,9 +83,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jvideo.jar" todir="/usr/share/java"/>
-    <copy file="jvideo" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jvideo" perm="+x"/>
     <copy file="jvideo.desktop" todir="/usr/share/applications"/>
     <copy file="jvideo.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jvideo.html" todir="/usr/share/jhelp"/>

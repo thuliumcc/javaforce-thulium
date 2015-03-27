@@ -1,6 +1,7 @@
 <project name="jaudio" default="jar" basedir=".">
   <description>jaudio</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jaudio"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
@@ -75,9 +76,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jaudio.jar" todir="/usr/share/java"/>
-    <copy file="jaudio" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jaudio" perm="+x"/>
     <copy file="jaudio.desktop" todir="/usr/share/applications"/>
     <copy file="jaudio.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jaudio.html" todir="/usr/share/jhelp"/>

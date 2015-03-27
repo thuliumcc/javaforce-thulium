@@ -3,3 +3,4 @@
 set -e
 
 update-desktop-database
+ln -s /usr/bin/java /usr/bin/jedit.bin

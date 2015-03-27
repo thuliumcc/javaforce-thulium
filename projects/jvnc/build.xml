@@ -1,7 +1,8 @@
 <project name="jvnc" default="jar" basedir=".">
   <description>jvnc</description>
   <!-- set global properties for this build -->
-  <property name="src" location="."/>
+  <property name="app" location="jvnc"/>
+  <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="../../classes"/>
   <property name="JVNCVERSION" value="0.1"/>
@@ -25,9 +26,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jvnc.jar" todir="/usr/share/java"/>
-    <copy file="jvnc" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jvnc" perm="+x"/>
   </target>
 
   <target name="deb" description="create deb package">

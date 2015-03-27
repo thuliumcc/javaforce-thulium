@@ -5,8 +5,6 @@ You will need to install dpkg-dev package:
 
 Run gpg to create the key to sign the packages:
   gpg --gen-key
-I put the passphase in the ~/.gnupg/gpg.conf file so I don't have to type it everytime.
-  passphrase <pass_phrase>
 Backup the ~/.gnupg/*.gpg files (pubring.gpg and secring.gpg)
 
 Then run update.sh to create the repo files and then upload everything to website that is specifed in javaforce.list

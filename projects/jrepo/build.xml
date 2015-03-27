@@ -1,6 +1,7 @@
 <project name="jrepo" default="jar" basedir=".">
   <description>jrepo</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jrepo"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
@@ -27,7 +28,7 @@
 
   <target name="jar" depends="compile" description="build jar file">
     <!-- Build jar file from class files -->
-    <jar destfile="jrepo.jar" includes="*.class" basedir="${build}">
+    <jar destfile="jrepo.jar" includes="**/*.class" basedir="${build}">
       <fileset dir="." includes="*.png"/>
       <fileset dir="." includes="sources.list"/>
       <fileset dir="." includes="*.repo"/>
@@ -39,9 +40,9 @@
 
   <!-- sudo -E ant install -->
   <target name="install" depends="jar" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jrepo.jar" todir="/usr/share/java"/>
-    <copy file="jrepo" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jrepo" perm="+x"/>
     <copy file="jrepo-ubuntu.list" todir="/etc"/>
     <copy file="jrepo-fedora.list" todir="/etc"/>
     <copy file="jrepo.desktop" todir="/usr/share/applications"/>

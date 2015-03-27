@@ -120,6 +120,8 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
     jSeparator6 = new javax.swing.JPopupMenu.Separator();
     drivesMenu = new javax.swing.JMenuItem();
     jSeparator7 = new javax.swing.JPopupMenu.Separator();
+    jMenuItem2 = new javax.swing.JMenuItem();
+    jSeparator8 = new javax.swing.JPopupMenu.Separator();
     jMenuItem1 = new javax.swing.JMenuItem();
     jMenu2 = new javax.swing.JMenu();
     help = new javax.swing.JMenuItem();
@@ -246,7 +248,9 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
 
     jMenuBar1.add(jMenu1);
 
+    jMenu5.setMnemonic('e');
     jMenu5.setText("Edit");
+    jMenu5.setToolTipText("");
 
     cut.setText("Cut");
     cut.addActionListener(new java.awt.event.ActionListener() {
@@ -345,6 +349,7 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
 
     jMenuBar1.add(jMenu3);
 
+    jMenu4.setMnemonic('t');
     jMenu4.setText("Tools");
 
     connectMapping.setText("Map Network Share");
@@ -372,6 +377,16 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
     });
     jMenu4.add(drivesMenu);
     jMenu4.add(jSeparator7);
+
+    jMenuItem2.setText("Connect to Server");
+    jMenuItem2.setToolTipText("");
+    jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jMenuItem2ActionPerformed(evt);
+      }
+    });
+    jMenu4.add(jMenuItem2);
+    jMenu4.add(jSeparator8);
 
     jMenuItem1.setText("Settings");
     jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -628,6 +643,10 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
     site.getFocusBrowser().paste();
   }//GEN-LAST:event_pasteActionPerformed
 
+  private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+    quick_connect();
+  }//GEN-LAST:event_jMenuItem2ActionPerformed
+
   /**
    * @param args the command line arguments
    */
@@ -668,6 +687,7 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
   private javax.swing.JMenu jMenu5;
   private javax.swing.JMenuBar jMenuBar1;
   private javax.swing.JMenuItem jMenuItem1;
+  private javax.swing.JMenuItem jMenuItem2;
   private javax.swing.JScrollPane jScrollPane1;
   private javax.swing.JPopupMenu.Separator jSeparator1;
   private javax.swing.JPopupMenu.Separator jSeparator2;
@@ -676,6 +696,7 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
   private javax.swing.JPopupMenu.Separator jSeparator5;
   private javax.swing.JPopupMenu.Separator jSeparator6;
   private javax.swing.JPopupMenu.Separator jSeparator7;
+  private javax.swing.JPopupMenu.Separator jSeparator8;
   private javax.swing.JMenuItem newtLocalTab;
   private javax.swing.JMenuItem paste;
   private javax.swing.JList places;
@@ -699,6 +720,11 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
   private Drives drives;
 
   public void connect(SiteDetails sd) {
+    File localDir = new File(sd.localDir);
+    if (!localDir.exists() || !localDir.isDirectory()) {
+      JF.showError("Error", "Can not find:" + sd.localDir);
+      return;
+    }
     Site site = null;
     site = new Site();
     site.putClientProperty("tabs", tabs);
@@ -925,12 +951,8 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
     if (mod == KeyEvent.CTRL_MASK) {
       switch (id) {
         case KeyEvent.KEY_TYPED:
-          switch (ch) {
-// these are now handled in JFileBrowser
-//            case 'x': cut(); break;
-//            case 'c': copy(); break;
-//            case 'v': paste(); break;
-            case 'l': getFolder(); break;
+          switch (cc) {
+            case KeyEvent.VK_L: quick_connect(); break;
           }
           break;
         case KeyEvent.KEY_PRESSED:
@@ -998,11 +1020,8 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
           return false;
         }
 
-        DropLocation dl = (DropLocation) info.getDropLocation();
-        Point pt = dl.getDropPoint();
-        JComponent c = (JComponent)places.getComponentAt(pt);
-
-        JFLog.log("drag:canImport:pt" + pt + ",c=" + c);
+//        DropLocation dl = (DropLocation) info.getDropLocation();
+//        Point pt = dl.getDropPoint();
 
         return true;
       }
@@ -1017,11 +1036,13 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
           return false;
         }
 
-        DropLocation dl = info.getDropLocation();
-        Point pt = dl.getDropPoint();
-        JComponent c = (JComponent)places.getComponentAt(pt);
-        String folder = "/";  //TODO : find path for JList item
-        if (true) return false;  //test
+//        DropLocation dl = info.getDropLocation();
+//        Point pt = dl.getDropPoint();
+//        JComponent c = (JComponent)places.getComponentAt(pt);
+
+        int idx = places.getSelectedIndex();
+        if (idx == -1) return false;
+        String folder = placesPath.get(idx);
 
         // Get the file(s) that are being dropped.
         Transferable t = info.getTransferable();
@@ -1063,8 +1084,12 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
           return false;
         }
         cmd.add(folder);
-        //TODO : if places == current path in browser then use that instead of null
-        JFileBrowser.runCmd(null, cmd.toArray(new String[0]));
+        JFileBrowser browser = null;
+        Site site = (Site)tabs.getSelectedComponent();
+        if (site != null) {
+          browser = site.localBrowser;
+        }
+        JFileBrowser.runCmd(browser, cmd.toArray(new String[0]));
         return true;
       }
 
@@ -1081,12 +1106,6 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
     });
   }
 
-  private void getFolder() {
-    Site site = (Site)tabs.getSelectedComponent();
-    if (site == null) return;
-    site.getFocusFolder().requestFocus();
-  }
-
   private void cdup() {
     Site site = (Site)tabs.getSelectedComponent();
     if (site == null) return;
@@ -1095,6 +1114,14 @@ public class FileApp extends javax.swing.JFrame implements KeyEventDispatcher, A
     } else {
       site.local_cdup();
     }
+  }
+
+  private void quick_connect() {
+    QuickConnect dialog = new QuickConnect(this, true);
+    dialog.setVisible(true);
+    if (!dialog.accepted) return;
+    SiteDetails sd = dialog.getDetails();
+    connect(sd);
   }
 
   public class JBusMethods {

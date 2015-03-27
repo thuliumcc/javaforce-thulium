@@ -1,6 +1,7 @@
 <project name="jlogon" default="jar" basedir=".">
   <description>jlogon</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jlogon"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="../../classes"/>
@@ -26,6 +27,8 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app}.bin -ldl -lpthread"/>
+    <move file="${app}.bin" todir="/usr/sbin"/>
     <copy file="jlogon.jar" todir="/usr/share/java"/>
     <copy file="jlogon-runsession" todir="/usr/sbin"/>
     <chmod file="/usr/sbin/jlogon-runsession" perm="+x"/>

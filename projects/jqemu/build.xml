@@ -1,6 +1,7 @@
 <project name="jqemu" default="jar" basedir=".">
   <description>jqemu</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jqemu"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
@@ -45,9 +46,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jqemu.jar" todir="/usr/share/java"/>
-    <copy file="jqemu" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jqemu" perm="+x"/>
     <mkdir dir="/etc/jinit"/>
     <copy file="jqemu.conf" todir="/etc/jinit"/>
     <copy file="jqemu.desktop" todir="/usr/share/applications"/>

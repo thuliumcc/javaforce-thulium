@@ -87,7 +87,7 @@ public class jfusesftp extends Fuse {
   }
 
   public int getattr(String path, Stat stat) {
-    JFLog.log("getattr:" + path);
+//    JFLog.log("getattr:" + path);
     try {
 //      Vector<ChannelSftp.LsEntry> list = channel.ls(path);
 //      ChannelSftp.LsEntry file = list.get(0);
@@ -107,7 +107,7 @@ public class jfusesftp extends Fuse {
   }
 
   public int mkdir(String path, int mode) {
-    JFLog.log("mkdir:" + path);
+//    JFLog.log("mkdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       channel.mkdir(path);
@@ -119,7 +119,7 @@ public class jfusesftp extends Fuse {
   }
 
   public int unlink(String path) {
-    JFLog.log("unlink:" + path);
+//    JFLog.log("unlink:" + path);
     try {
       channel.rm(path);
       return 0;
@@ -130,7 +130,7 @@ public class jfusesftp extends Fuse {
   }
 
   public int rmdir(String path) {
-    JFLog.log("rmdir:" + path);
+//    JFLog.log("rmdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       channel.rmdir(path);
@@ -142,7 +142,7 @@ public class jfusesftp extends Fuse {
   }
 
   public int symlink(String target, String link) {
-    JFLog.log("symlink:" + link + "->" + target);
+//    JFLog.log("symlink:" + link + "->" + target);
     try {
       channel.symlink(target, link);
       return 0;
@@ -153,12 +153,12 @@ public class jfusesftp extends Fuse {
   }
 
   public int link(String target, String link) {
-    JFLog.log("link:" + link + "->" + target);
+//    JFLog.log("link:" + link + "->" + target);
     return -1;
   }
 
   public int chmod(String path, int mode) {
-    JFLog.log("chmod:" + path);
+//    JFLog.log("chmod:" + path);
     try {
       channel.chmod(mode, path);
       return 0;
@@ -169,7 +169,7 @@ public class jfusesftp extends Fuse {
   }
 
   public int chown(String path, int mode) {
-    JFLog.log("chown:" + path);
+//    JFLog.log("chown:" + path);
     try {
       channel.chown(mode, path);
       return 0;
@@ -180,7 +180,7 @@ public class jfusesftp extends Fuse {
   }
 
   public int truncate(String path, long size) {
-    JFLog.log("truncate:" + path);
+//    JFLog.log("truncate:" + path);
     return -1;
   }
 
@@ -193,7 +193,7 @@ public class jfusesftp extends Fuse {
   }
 
   public int open(String path, Pointer ffi) {
-    JFLog.log("open:" + path);
+//    JFLog.log("open:" + path);
     try {
       SftpATTRS attrs = channel.lstat(path);
       if (attrs.isDir()) throw new Exception("not a file");
@@ -207,10 +207,16 @@ public class jfusesftp extends Fuse {
   }
 
   public int read(String path, Pointer buf, int size, long offset, Pointer ffi) {
-    JFLog.log("read:" + path);
+//    JFLog.log("read:" + path);
     FileState fs = (FileState)getObject(ffi);
-    if (fs == null) {JFLog.log("no fs");return -1;}
-    if (fs.writing) {JFLog.log("read after write");return -1;}
+    if (fs == null) {
+//      JFLog.log("no fs");
+      return -1;
+    }
+    if (fs.writing) {
+//      JFLog.log("read after write");
+      return -1;
+    }
     try {
       if (!fs.reading) {
         if (offset != 0) throw new Exception("read not from start of file");
@@ -238,10 +244,16 @@ public class jfusesftp extends Fuse {
   }
 
   public int write(String path, Pointer buf, int size, long offset, Pointer ffi) {
-    JFLog.log("write:" + path);
+//    JFLog.log("write:" + path);
     FileState fs = (FileState)getObject(ffi);
-    if (fs == null) {JFLog.log("fs null");return -1;}
-    if (fs.reading) {JFLog.log("write after read"); return -1;}
+    if (fs == null) {
+//      JFLog.log("fs null");
+      return -1;
+    }
+    if (fs.reading) {
+//      JFLog.log("write after read");
+      return -1;
+    }
     byte data[] = new byte[size];
     buf.read(0, data, 0, size);
     try {
@@ -263,19 +275,19 @@ public class jfusesftp extends Fuse {
   }
 
   public int statfs(String path, Pointer statvfs) {
-    JFLog.log("statfs:" + path);
+//    JFLog.log("statfs:" + path);
     return -1;
   }
 
   public int release(String path, Pointer ffi) {
-    JFLog.log("release:" + path);
+//    JFLog.log("release:" + path);
     detachObject(ffi);
     return 0;
   }
 
   @SuppressWarnings("unchecked")
   public int readdir(String path, Pointer buf, Pointer filler, Pointer ffi) {
-    JFLog.log("readdir:" + path);
+//    JFLog.log("readdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       Vector<ChannelSftp.LsEntry> files = channel.ls(path);  //unchecked conversion
@@ -290,7 +302,7 @@ public class jfusesftp extends Fuse {
   }
 
   public int create(String path, int mode, Pointer ffi) {
-    JFLog.log("create:" + path);
+//    JFLog.log("create:" + path);
     return 0;
   }
 

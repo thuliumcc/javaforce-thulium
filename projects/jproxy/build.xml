@@ -1,6 +1,7 @@
 <project name="jproxy" default="jar" basedir=".">
   <description>paint</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jproxy"/>
   <property name="JPROXYVERSION" value="0.2"/>
 
   <target name="jar" description="jar">
@@ -35,8 +36,8 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
-    <copy file="jproxy" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jproxy" perm="+x"/>
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <mkdir dir="/etc/jinit"/>
     <copy file="jproxy.conf" todir="/etc/jinit"/>
   </target>

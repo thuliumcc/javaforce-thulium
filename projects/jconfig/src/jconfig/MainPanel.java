@@ -40,9 +40,12 @@ public class MainPanel extends javax.swing.JPanel {
     backup = new javax.swing.JButton();
     printers = new javax.swing.JButton();
     certs = new javax.swing.JButton();
+    apps = new javax.swing.JButton();
+    repo = new javax.swing.JButton();
+    parted = new javax.swing.JButton();
 
     users.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    users.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-users.png"))); // NOI18N
+    users.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-users.png"))); // NOI18N
     users.setText("Users");
     users.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     users.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -53,7 +56,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     servers.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    servers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-servers.png"))); // NOI18N
+    servers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-servers.png"))); // NOI18N
     servers.setText("Servers");
     servers.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     servers.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -64,7 +67,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     groups.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    groups.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-users.png"))); // NOI18N
+    groups.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-users.png"))); // NOI18N
     groups.setText("Groups");
     groups.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     groups.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -75,7 +78,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     network.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    network.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-network.png"))); // NOI18N
+    network.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-network.png"))); // NOI18N
     network.setText("Network");
     network.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     network.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -86,7 +89,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     fixStuff.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    fixStuff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-fix.png"))); // NOI18N
+    fixStuff.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-fix.png"))); // NOI18N
     fixStuff.setText("Fix Stuff");
     fixStuff.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     fixStuff.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -97,7 +100,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     display.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    display.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-display.png"))); // NOI18N
+    display.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-display.png"))); // NOI18N
     display.setText("Display");
     display.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     display.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -108,7 +111,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     sound.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    sound.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-sound.png"))); // NOI18N
+    sound.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-sound.png"))); // NOI18N
     sound.setText("Sound");
     sound.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     sound.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -119,7 +122,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     sound1.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    sound1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-datetime.png"))); // NOI18N
+    sound1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-datetime.png"))); // NOI18N
     sound1.setText("Date/Time");
     sound1.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     sound1.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -130,7 +133,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     global.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    global.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-global.png"))); // NOI18N
+    global.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-global.png"))); // NOI18N
     global.setText("Global");
     global.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     global.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -141,7 +144,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     backup.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    backup.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-backup.png"))); // NOI18N
+    backup.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-backup.png"))); // NOI18N
     backup.setText("Backup");
     backup.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     backup.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -152,7 +155,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     printers.setFont(new java.awt.Font("Ubuntu", 0, 15)); // NOI18N
-    printers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-printers.png"))); // NOI18N
+    printers.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-printers.png"))); // NOI18N
     printers.setText("Printers");
     printers.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     printers.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -163,7 +166,7 @@ public class MainPanel extends javax.swing.JPanel {
     });
 
     certs.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
-    certs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig-certificates.png"))); // NOI18N
+    certs.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-certificates.png"))); // NOI18N
     certs.setText("Certificates");
     certs.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     certs.setMargin(new java.awt.Insets(2, 0, 2, 0));
@@ -174,39 +177,76 @@ public class MainPanel extends javax.swing.JPanel {
       }
     });
 
+    apps.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+    apps.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-apps.png"))); // NOI18N
+    apps.setText("Apps");
+    apps.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    apps.setMargin(new java.awt.Insets(2, 0, 2, 0));
+    apps.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    apps.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        appsActionPerformed(evt);
+      }
+    });
+
+    repo.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+    repo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-repo.png"))); // NOI18N
+    repo.setText("Repository");
+    repo.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    repo.setMargin(new java.awt.Insets(2, 0, 2, 0));
+    repo.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    repo.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        repoActionPerformed(evt);
+      }
+    });
+
+    parted.setFont(new java.awt.Font("Ubuntu", 0, 14)); // NOI18N
+    parted.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jconfig/jconfig-parted.png"))); // NOI18N
+    parted.setText("Disk Manager");
+    parted.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    parted.setMargin(new java.awt.Insets(2, 0, 2, 0));
+    parted.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    parted.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        partedActionPerformed(evt);
+      }
+    });
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addGroup(layout.createSequentialGroup()
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-              .addGroup(layout.createSequentialGroup()
-                .addComponent(users, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(groups, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
-              .addGroup(layout.createSequentialGroup()
-                .addComponent(display, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(sound, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-              .addComponent(network, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-              .addComponent(sound1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-              .addComponent(servers, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-              .addComponent(global, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-              .addComponent(fixStuff, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-              .addComponent(backup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
           .addGroup(layout.createSequentialGroup()
             .addComponent(printers, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(certs, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)))
+            .addComponent(certs, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+          .addGroup(layout.createSequentialGroup()
+            .addComponent(users, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(groups, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE))
+          .addGroup(layout.createSequentialGroup()
+            .addComponent(display, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(sound, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+          .addComponent(network, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+          .addComponent(sound1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+          .addComponent(apps, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+          .addComponent(servers, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+          .addComponent(global, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+          .addComponent(repo, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+          .addComponent(fixStuff, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+          .addComponent(backup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+          .addComponent(parted, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         .addContainerGap(74, Short.MAX_VALUE))
     );
     layout.setVerticalGroup(
@@ -229,8 +269,11 @@ public class MainPanel extends javax.swing.JPanel {
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addComponent(printers, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addComponent(certs, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addContainerGap(72, Short.MAX_VALUE))
+          .addComponent(certs, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(apps, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(repo, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(parted, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
   }// </editor-fold>//GEN-END:initComponents
 
@@ -282,7 +325,20 @@ public class MainPanel extends javax.swing.JPanel {
     setPanel(new OpenSSLConfigPanel());
   }//GEN-LAST:event_certsActionPerformed
 
+  private void appsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_appsActionPerformed
+    setPanel(new AppsPanel());
+  }//GEN-LAST:event_appsActionPerformed
+
+  private void repoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_repoActionPerformed
+    setPanel(new RepoPanel());
+  }//GEN-LAST:event_repoActionPerformed
+
+  private void partedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_partedActionPerformed
+    setPanel(new PartedPanel());
+  }//GEN-LAST:event_partedActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JButton apps;
   private javax.swing.JButton backup;
   private javax.swing.JButton certs;
   private javax.swing.JButton display;
@@ -290,7 +346,9 @@ public class MainPanel extends javax.swing.JPanel {
   private javax.swing.JButton global;
   private javax.swing.JButton groups;
   private javax.swing.JButton network;
+  private javax.swing.JButton parted;
   private javax.swing.JButton printers;
+  private javax.swing.JButton repo;
   private javax.swing.JButton servers;
   private javax.swing.JButton sound;
   private javax.swing.JButton sound1;

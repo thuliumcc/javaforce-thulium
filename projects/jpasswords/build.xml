@@ -1,6 +1,7 @@
 <project name="jpasswords" default="jar" basedir=".">
   <description>jpasswords</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jpasswords"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
@@ -63,9 +64,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jpasswords.jar" todir="/usr/share/java"/>
-    <copy file="jpasswords" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jpasswords" perm="+x"/>
     <copy file="jpasswords.desktop" todir="/usr/share/applications"/>
     <copy file="jpasswords.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jpasswords.html" todir="/usr/share/jhelp"/>

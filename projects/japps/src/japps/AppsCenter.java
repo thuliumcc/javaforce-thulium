@@ -1,3 +1,5 @@
+package japps;
+
 /**
  * Created : Mar 2, 2012
  *
@@ -19,7 +21,7 @@ public class AppsCenter extends javax.swing.JFrame {
   public AppsCenter() {
     JFLog.init(JF.getUserPath() + "/.japps.log", true);
     initComponents();
-    initHttps();
+    JF.initHttps();
     setContentPane(new MainPanel());
     setPosition();
     if ((args.length > 0) && (args[0].length() > 0)) {
@@ -62,7 +64,6 @@ public class AppsCenter extends javax.swing.JFrame {
      * Create and display the form
      */
     java.awt.EventQueue.invokeLater(new Runnable() {
-
       public void run() {
         new AppsCenter().setVisible(true);
       }
@@ -110,27 +111,6 @@ public class AppsCenter extends javax.swing.JFrame {
     };
     ProgressDialog dialog = new ProgressDialog(null, true, task);
     dialog.setVisible(true);
-  }
-
-  /** This allows connections to untrusted hosts. */
-  private void initHttps() {
-    TrustManager[] trustAllCerts = new TrustManager[] {
-      new X509TrustManager() {
-        public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-          return null;
-        }
-        public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
-        public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
-      }
-    };
-    // Let us create the factory where we can set some parameters for the connection
-    try {
-      SSLContext sc = SSLContext.getInstance("SSL");
-      sc.init(null, trustAllCerts, new java.security.SecureRandom());
-      SSLSocketFactory sslsocketfactory = (SSLSocketFactory) sc.getSocketFactory();  //this method will work with untrusted certs
-    } catch (Exception e) {
-      JFLog.log(e);
-    }
   }
 
   private void setPosition() {

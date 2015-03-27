@@ -1,5 +1,9 @@
 Whatsnew ...
 
+Nov 7, 2014 - v0.16 released!
+  - new : added xpm support (read only)
+  - fix : bmp support added in Linux
+
 Sept 20, 2014 - v0.15 released!
   - new : added fill at edge modifier for the fill tool
   - fix : alpha channel was striped on load

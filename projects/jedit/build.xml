@@ -1,6 +1,7 @@
 <project name="jedit" default="jar" basedir=".">
   <description>jedit</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jedit"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
@@ -30,16 +31,16 @@
     <jar destfile="jedit.jar" includes="*.class" basedir="${build}">
       <fileset dir="." includes="*.png"/>
       <manifest>
-        <attribute name="Main-Class" value="jedit"/>
+        <attribute name="Main-Class" value="JEdit"/>
       </manifest>
     </jar>
   </target>
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jedit.jar" todir="/usr/share/java"/>
-    <copy file="jedit" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jedit" perm="+x"/>
     <copy file="jedit.desktop" todir="/usr/share/applications"/>
     <copy file="jedit.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jedit.html" todir="/usr/share/jhelp"/>

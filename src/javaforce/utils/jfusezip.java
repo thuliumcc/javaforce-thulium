@@ -57,7 +57,7 @@ public class jfusezip extends Fuse {
   }
 
   public int getattr(String path, Stat stat) {
-    JFLog.log("getattr:" + path);
+//    JFLog.log("getattr:" + path);
     if (path.equals("/")) {
       stat.folder = true;
       return 0;
@@ -84,7 +84,7 @@ public class jfusezip extends Fuse {
   }
 
   public int mkdir(String path, int mode) {
-    JFLog.log("mkdir:" + path);
+//    JFLog.log("mkdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       //TODO
@@ -96,7 +96,7 @@ public class jfusezip extends Fuse {
   }
 
   public int unlink(String path) {
-    JFLog.log("unlink:" + path);
+//    JFLog.log("unlink:" + path);
     try {
       //TODO
       return -1;
@@ -107,7 +107,7 @@ public class jfusezip extends Fuse {
   }
 
   public int rmdir(String path) {
-    JFLog.log("rmdir:" + path);
+//    JFLog.log("rmdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       //TODO
@@ -119,27 +119,27 @@ public class jfusezip extends Fuse {
   }
 
   public int symlink(String target, String link) {
-    JFLog.log("symlink:" + link + "->" + target);
+//    JFLog.log("symlink:" + link + "->" + target);
     return -1;
   }
 
   public int link(String target, String link) {
-    JFLog.log("link:" + link + "->" + target);
+//    JFLog.log("link:" + link + "->" + target);
     return -1;
   }
 
   public int chmod(String path, int mode) {
-    JFLog.log("chmod:" + path);
+//    JFLog.log("chmod:" + path);
     return -1;
   }
 
   public int chown(String path, int mode) {
-    JFLog.log("chown:" + path);
+//    JFLog.log("chown:" + path);
     return -1;
   }
 
   public int truncate(String path, long size) {
-    JFLog.log("truncate:" + path);
+//    JFLog.log("truncate:" + path);
     try {
       //TODO
       return -1;
@@ -158,7 +158,7 @@ public class jfusezip extends Fuse {
   }
 
   public int open(String path, Pointer ffi) {
-    JFLog.log("open:" + path);
+//    JFLog.log("open:" + path);
     if (path.startsWith("/")) path = path.substring(1);
     try {
       ZipEntry ze = zip.getEntry(path);
@@ -170,7 +170,10 @@ public class jfusezip extends Fuse {
       if (fs.canRead) mode += "r";
       fs.canWrite = false;
       if (fs.canWrite) mode += "w";
-      if (mode.length() == 0) {JFLog.log("open:access denied"); return -1;}
+      if (mode.length() == 0) {
+//        JFLog.log("open:access denied");
+        return -1;
+      }
       fs.is = zip.getInputStream(ze);
       attachObject(ffi, fs);
       return 0;
@@ -181,10 +184,16 @@ public class jfusezip extends Fuse {
   }
 
   public int read(String path, Pointer buf, int size, long offset, Pointer ffi) {
-    JFLog.log("read:" + path);
+//    JFLog.log("read:" + path);
     FileState fs = (FileState)getObject(ffi);
-    if (fs == null) {JFLog.log("no fs");return -1;}
-    if (!fs.canRead) {JFLog.log("!read");return -1;}
+    if (fs == null) {
+//      JFLog.log("no fs");
+      return -1;
+    }
+    if (!fs.canRead) {
+//      JFLog.log("!read");
+      return -1;
+    }
     byte data[] = new byte[size];
     try {
       if (offset != fs.offset) return -1;
@@ -198,7 +207,7 @@ public class jfusezip extends Fuse {
         read += amt;
         pos += amt;
       }
-      JFLog.log("read=" + read);
+//      JFLog.log("read=" + read);
       fs.offset += size;
       return read;
     } catch (Exception e) {
@@ -208,7 +217,7 @@ public class jfusezip extends Fuse {
   }
 
   public int write(String path, Pointer buf, int size, long offset, Pointer ffi) {
-    JFLog.log("write:" + path);
+//    JFLog.log("write:" + path);
     FileState fs = (FileState)getObject(ffi);
     if (fs == null) return -1;
     if (!fs.canWrite) return -1;
@@ -226,18 +235,18 @@ public class jfusezip extends Fuse {
   }
 
   public int statfs(String path, Pointer statvfs) {
-    JFLog.log("statfs:" + path);
+//    JFLog.log("statfs:" + path);
     return -1;
   }
 
   public int release(String path, Pointer ffi) {
-    JFLog.log("release:" + path);
+//    JFLog.log("release:" + path);
     detachObject(ffi);
     return 0;
   }
 
   public int readdir(String path, Pointer buf, Pointer filler, Pointer ffi) {
-    JFLog.log("readdir:" + path);
+//    JFLog.log("readdir:" + path);
     if (!path.endsWith("/")) path += "/";
     try {
       Enumeration e = zip.entries();
@@ -249,10 +258,10 @@ public class jfusezip extends Fuse {
         String filepath = name.substring(0, idx+1);
 //        JFLog.log("file=" + name + ",path=" + filepath);
         if (!filepath.equals(path)) continue;
-        JFLog.log("invokeFiller:" + name);
+//        JFLog.log("invokeFiller:" + name);
         if (invokeFiller(filler, buf, name.substring(idx+1), null) == 1) break; //full???
       }
-      JFLog.log("readdir done");
+//      JFLog.log("readdir done");
       return 0;
     } catch (Exception e) {
       JFLog.log(e);
@@ -261,7 +270,7 @@ public class jfusezip extends Fuse {
   }
 
   public int create(String path, int mode, Pointer ffi) {
-    JFLog.log("create:" + path);
+//    JFLog.log("create:" + path);
     try {
       //TODO
       return -1;

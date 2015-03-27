@@ -665,14 +665,14 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
 
   private void localDirKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_localDirKeyPressed
     if (evt.getModifiers() != 0) return;
-    if (evt.getKeyCode() == 13) {
+    if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
       local_chdir(localDir.getText());
     }
   }//GEN-LAST:event_localDirKeyPressed
 
   private void remoteDirKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_remoteDirKeyPressed
     if (evt.getModifiers() != 0) return;
-    if (evt.getKeyCode() == 13) {
+    if (evt.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER) {
       remote_chdir(remoteDir.getText());
     }
   }//GEN-LAST:event_remoteDirKeyPressed
@@ -900,8 +900,10 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
   }
 
   public void disconnect() {
-    localBrowser.closeFile();
-    remoteBrowser.closeFile();
+    localBrowser.closeFile();  //zip or iso
+    localBrowser.close();  //shutdown
+    remoteBrowser.closeFile();  //zip or iso
+    remoteBrowser.close();  //shutdown
     if (sd == null) return;
     if (!sd.protocol.equals("local")) {
       remoteBrowser.setPath(null);
@@ -1094,6 +1096,12 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
         }
       }
     }
+    File folder = new File(wd);
+    if (!folder.exists() || !folder.isDirectory()) {
+      JF.showError("Error", "Can not find:" + wd);
+      localDir.setText(localBrowser.getPath());
+      return;
+    }
     localDir.setText(wd);
     localBrowser.setPath(wd);
     local_ls();
@@ -1144,6 +1152,12 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
           }
         }
       }
+    }
+    File folder = new File(remoteRoot + wd);
+    if (!folder.exists() || !folder.isDirectory()) {
+      JF.showError("Error", "Can not find:" + wd);
+      remoteDir.setText(remoteBrowser.getPath());
+      return;
     }
     remoteDir.setText(wd);
     remoteBrowser.setPath(remoteRoot + wd);

@@ -1,6 +1,7 @@
 <project name="jhelp" default="jar" basedir=".">
   <description>jhelp</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jhelp"/>
   <property name="src" location="."/>
   <property name="build" location="classes"/>
   <property name="classpath" location="../../classes"/>
@@ -25,9 +26,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jhelp.jar" todir="/usr/share/java"/>
-    <copy file="jhelp" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jhelp" perm="+x"/>
     <mkdir dir="/usr/share/jhelp"/>
     <copy file="index.html" todir="/usr/share/jhelp"/>
     <copy file="jhelp.desktop" todir="/usr/share/applications"/>

@@ -1,6 +1,7 @@
 <project name="jrecorddesktop" default="jar" basedir=".">
   <description>jrecorddesktop</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jrecorddesktop"/>
   <property name="src" location="."/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
@@ -82,9 +83,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jrecorddesktop.jar" todir="/usr/share/java"/>
-    <copy file="jrecorddesktop" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jrecorddesktop" perm="+x"/>
     <copy file="jrecorddesktop.desktop" todir="/usr/share/applications"/>
     <copy file="jrecorddesktop.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jrecorddesktop.html" todir="/usr/share/jhelp"/>

@@ -1,6 +1,7 @@
 <project name="jtorrent" default="jar" basedir=".">
   <description>jtorrent</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jtorrent"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
@@ -63,9 +64,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jtorrent.jar" todir="/usr/share/java"/>
-    <copy file="jtorrent" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jtorrent" perm="+x"/>
     <copy file="jtorrentTracker" todir="/usr/bin"/>
     <chmod file="/usr/bin/jtorrentTracker" perm="+x"/>
     <copy file="jtorrentMaker" todir="/usr/bin"/>

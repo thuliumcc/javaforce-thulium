@@ -3,3 +3,4 @@
 set -e
 
 update-desktop-database
+rm /usr/bin/jedit.bin

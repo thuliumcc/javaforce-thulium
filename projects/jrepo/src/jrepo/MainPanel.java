@@ -1,3 +1,5 @@
+package jrepo;
+
 /**
  *
  * Created : Feb 27, 2012
@@ -29,7 +31,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       System.exit(0);
     }
     initMap();
-    if ((RepoApp.args.length > 1) && (RepoApp.args[0].equals("--update"))) {
+    if ((RepoApp.args != null) && (RepoApp.args.length > 1) && (RepoApp.args[0].equals("--update"))) {
       updateRepo = true;
     }
     JFTask localtask = new JFTask() {
@@ -45,6 +47,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
         setProgress(95);
         calcMapCoords();
         loadSelections();
+        updateDesc();
         repaintMap();
         setProgress(100);
         return true;
@@ -67,7 +70,6 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     jLabel1 = new javax.swing.JLabel();
     protocol = new javax.swing.JComboBox();
     choose = new javax.swing.JButton();
-    cancel = new javax.swing.JButton();
     map = new javax.swing.JPanel();
     selection = new javax.swing.JComboBox();
 
@@ -82,33 +84,24 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       }
     });
 
-    cancel.setText("Cancel");
-    cancel.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        cancelActionPerformed(evt);
-      }
-    });
-
     map.setLayout(new java.awt.GridLayout(1, 0));
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+      .addGroup(layout.createSequentialGroup()
         .addContainerGap()
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-          .addComponent(selection, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
           .addGroup(layout.createSequentialGroup()
             .addComponent(jLabel1)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(protocol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(cancel)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(choose))
-          .addComponent(map, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addContainerGap())
+          .addComponent(map, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(selection, javax.swing.GroupLayout.PREFERRED_SIZE, 480, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -119,8 +112,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel1)
           .addComponent(protocol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addComponent(choose)
-          .addComponent(cancel))
+          .addComponent(choose))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(selection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -129,16 +121,11 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     map.getAccessibleContext().setAccessibleName("");
   }// </editor-fold>//GEN-END:initComponents
 
-  private void cancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelActionPerformed
-    System.exit(0);
-  }//GEN-LAST:event_cancelActionPerformed
-
   private void chooseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseActionPerformed
     applyRepo();
   }//GEN-LAST:event_chooseActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JButton cancel;
   private javax.swing.JButton choose;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JPanel map;
@@ -757,7 +744,6 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
           Mirror m = mirrors.get(b);
           if ((m.hostname.equals(hostname)) && (m.name.equals(name))) {
             selIdx = b;
-            updateDesc();
             break;
           }
         }

@@ -373,6 +373,29 @@ public class JFImage extends JComponent implements Icon {
     return svg.save(out, png_data.toByteArray(), size);
   }
 
+  public boolean loadXPM(String filename) {
+    try {
+      return loadXPM(new FileInputStream(filename));
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  public boolean loadXPM(InputStream in) {
+    int buf[];
+    Dimension size = new Dimension(0, 0);
+    buf = new xpm().load(in, size);
+    if (buf == null) {
+      return false;
+    }
+    if (size.width == 0 || size.height == 0) {
+      return false;
+    }
+    setImageSize(size.width, size.height);
+    putPixels(buf, 0, 0, size.width, size.height, 0);
+    return true;
+  }
+
   /** Puts pixels . */
   public void putJFImage(JFImage img, int x, int y) {
     int px[] = img.getPixels();

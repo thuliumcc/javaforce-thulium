@@ -1,6 +1,7 @@
 <project name="jburn" default="jar" basedir=".">
   <description>jburn</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jburn"/>
   <property name="src" location="."/>
   <property name="build" location="classes"/>
   <property name="classpath" location="../../classes"/>
@@ -25,9 +26,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jburn.jar" todir="/usr/share/java"/>
-    <copy file="jburn" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jburn" perm="+x"/>
     <copy file="jburn.desktop" todir="/usr/share/applications"/>
     <copy file="jburn.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jburn.html" todir="/usr/share/jhelp"/>

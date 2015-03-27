@@ -259,6 +259,11 @@
                       <Component id="compact" min="-2" max="-2" attributes="0"/>
                       <Component id="showClock" min="-2" max="-2" attributes="0"/>
                       <Component id="autoHide" min="-2" max="-2" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace max="-2" attributes="0"/>
+                          <Component id="dockSize" min="-2" max="-2" attributes="0"/>
+                      </Group>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
               </Group>
@@ -275,6 +280,11 @@
                   <Component id="showKeyboard" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="compact" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="dockSize" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -299,6 +309,22 @@
         <Component class="javax.swing.JCheckBox" name="compact">
           <Properties>
             <Property name="text" type="java.lang.String" value="Compact controls"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel3">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Dock Size"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="dockSize">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="3">
+                <StringItem index="0" value="48"/>
+                <StringItem index="1" value="32"/>
+                <StringItem index="2" value="24"/>
+              </StringArray>
+            </Property>
           </Properties>
         </Component>
       </SubComponents>

@@ -62,7 +62,11 @@ add-apt-repository ppa:ubuntu-wine/ppa
 
 #add google-chrome repo
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
-echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list
+echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
+
+#add darling repo
+add-apt-repository ppa:thopiekar/darling
+add-apt-repository ppa:thopiekar/gnustep
 
 #update repo
 apt-get --yes update
@@ -103,7 +107,7 @@ mkdir -p /usr/share/jhelp
 
 #install Java packages
 
-apt-get install --yes --allow-unauthenticated --no-install-recommends jlogon jdesktop jterm jtxtedit jpaint jinstall jrepo jwelcome jfile jmedia jarchive jparted jview jconfig plymouth-theme-jflinux jcapture japps jremote jupgrade jtaskmgr jcalc
+apt-get install --yes --no-install-recommends jlogon jdesktop jterm jtxtedit jpaint jinstall jrepo jwelcome jfile jmedia jarchive jparted jview jconfig plymouth-theme-jflinux jcapture japps jremote jupgrade jtaskmgr jcalc
 
 #create /etc/.live
 #user is the live username

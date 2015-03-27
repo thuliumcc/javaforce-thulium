@@ -44,19 +44,17 @@ public class jopen {
       throw new Exception("mime-type not found");
     }
     //open /usr/share/applications/*.desktop
-    String exec = getHandler(mime, action);
-    if (exec == null) {
+    String desktop = getHandler(mime, action);
+    if (desktop == null) {
       if (!action.equals("open")) {
         //try with just "open"
-        exec = getHandler(mime, "open");  //TODO : don't re-read files
+        desktop = getHandler(mime, "open");  //TODO : don't re-read files
       }
-      if (exec == null) {
+      if (desktop == null) {
         throw new Exception("handler not found");
       }
     }
-    String cmd[] = Linux.expandDesktopExec(exec, file);
-    //exec handler with file
-    Runtime.getRuntime().exec(cmd);
+    Linux.executeDesktop(desktop, new String[] {file});
   }
   private static String mimetypes;
 
@@ -85,23 +83,8 @@ public class jopen {
 
   public static String getHandler(String mime, String action) throws Exception {
     String desktop = getDesktop(mime, "/usr/share/applications", action);
-    if (desktop == null) {
-      desktop = getDesktop(mime, JF.getUserPath() + "/.local/share/applications", action);
-      if (desktop == null) {
-        return null;
-      }
-    }
-    FileInputStream fis = new FileInputStream(desktop);
-    byte data[] = JF.readAll(fis);
-    fis.close();
-    String str = new String(data);
-    String lns[] = str.split("\n");
-    for (int a = 0; a < lns.length; a++) {
-      if (lns[a].startsWith("Exec=")) {
-        return lns[a].substring(5).trim();
-      }
-    }
-    return null;
+    if (desktop != null) return desktop;
+    return getDesktop(mime, JF.getUserPath() + "/.local/share/applications", action);
   }
 
   public static String getIcon(String mime, String action) throws Exception {

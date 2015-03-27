@@ -1,6 +1,7 @@
 <project name="jremote" default="jar" basedir=".">
   <description>jremote</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jremote"/>
   <property name="src" location="."/>
   <property name="build" location="classes"/>
   <property name="classpath" location="../../classes"/>
@@ -25,9 +26,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jremote.jar" todir="/usr/share/java"/>
-    <copy file="jremote" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jremote" perm="+x"/>
     <copy file="jremote.desktop" todir="/usr/share/applications"/>
     <copy file="jremote.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jremote.html" todir="/usr/share/jhelp"/>

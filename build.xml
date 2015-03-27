@@ -3,7 +3,7 @@
   <!-- set global properties for this build -->
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
-  <property name="VERSION" value="7.38.0"/>
+  <property name="VERSION" value="7.39.0"/>
 
   <target name="compile" description="compile the source">
     <!-- Compile the java code from ${src} into ${build} -->
@@ -87,6 +87,8 @@
     <chmod file="/usr/bin/jmv" perm="+x"/>
     <copy file="bin/jrm" todir="/usr/bin"/>
     <chmod file="/usr/bin/jrm" perm="+x"/>
+    <copy file="bin/jver" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jver" perm="+x"/>
   </target>
 
   <target name="deb" description="create deb package">

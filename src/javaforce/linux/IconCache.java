@@ -31,6 +31,12 @@ public class IconCache {
       return icon;
     }
     //try to find the icon in different locations
+    if (iconName.endsWith(".xpm")) {
+      if (icon.loadXPM(iconName)) {
+        icons.put(iconName, icon);
+        return icon;
+      }
+    }
     if (icon.loadPNG(iconName)) {
       icons.put(iconName, icon);
       return icon;
@@ -59,6 +65,10 @@ public class IconCache {
       icons.put(iconName, icon);
       return icon;
     }
+    if (icon.loadXPM("/usr/share/pixmaps/" + iconName + ".xpm")) {
+      icons.put(iconName, icon);
+      return icon;
+    }
     //not found - 404
     JFLog.log("icon not found:" + iconName);
     icon.loadPNG(icon.getClass().getClassLoader().getResourceAsStream("jfile-404-icon.png"));
@@ -69,7 +79,7 @@ public class IconCache {
     if ((image.getWidth() == x) && (image.getHeight() == y)) return image;
     JFImage scale = new JFImage(x, y);
     scale.fill(0, 0, x, y, 0x00000000, true);
-    scale.getGraphics().drawImage(image.getImage(), 0,0, x-1,y-1, 0,0, image.getWidth()-1,image.getHeight()-1, null);
+    scale.getGraphics().drawImage(image.getImage(), 0,0, x,y, 0,0, image.getWidth(),image.getHeight(), null);
     return scale;
   }
 

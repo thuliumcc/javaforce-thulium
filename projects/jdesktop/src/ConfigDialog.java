@@ -30,6 +30,11 @@ public class ConfigDialog extends javax.swing.JDialog {
     } else {
       wallpaper.setSelected(true);
     }
+    switch (config.dockSize) {
+      case 48: dockSize.setSelectedIndex(0); break;
+      case 32: dockSize.setSelectedIndex(1); break;
+      case 24: dockSize.setSelectedIndex(2); break;
+    }
     Dimension d = this.getPreferredSize();
     setLocation((Dock.sx - d.width) / 2, (Dock.sy - d.height) / 2);
     bc.setBackground(config.bc);
@@ -65,6 +70,8 @@ public class ConfigDialog extends javax.swing.JDialog {
     showClock = new javax.swing.JCheckBox();
     showKeyboard = new javax.swing.JCheckBox();
     compact = new javax.swing.JCheckBox();
+    jLabel3 = new javax.swing.JLabel();
+    dockSize = new javax.swing.JComboBox();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Settings");
@@ -192,6 +199,10 @@ public class ConfigDialog extends javax.swing.JDialog {
 
     compact.setText("Compact controls");
 
+    jLabel3.setText("Dock Size");
+
+    dockSize.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "48", "32", "24" }));
+
     javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
     jPanel2.setLayout(jPanel2Layout);
     jPanel2Layout.setHorizontalGroup(
@@ -202,7 +213,11 @@ public class ConfigDialog extends javax.swing.JDialog {
           .addComponent(showKeyboard)
           .addComponent(compact)
           .addComponent(showClock)
-          .addComponent(autoHide))
+          .addComponent(autoHide)
+          .addGroup(jPanel2Layout.createSequentialGroup()
+            .addComponent(jLabel3)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(dockSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     jPanel2Layout.setVerticalGroup(
@@ -216,6 +231,10 @@ public class ConfigDialog extends javax.swing.JDialog {
         .addComponent(showKeyboard)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(compact)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(jLabel3)
+          .addComponent(dockSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addContainerGap())
     );
 
@@ -307,9 +326,11 @@ public class ConfigDialog extends javax.swing.JDialog {
   private javax.swing.JCheckBox compact;
   private javax.swing.JTextField desktopFile;
   private javax.swing.JComboBox desktopMode;
+  private javax.swing.JComboBox dockSize;
   private javax.swing.JButton fc;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
+  private javax.swing.JLabel jLabel3;
   private javax.swing.JPanel jPanel1;
   private javax.swing.JPanel jPanel2;
   private javax.swing.JCheckBox mountAudio;
@@ -337,5 +358,10 @@ public class ConfigDialog extends javax.swing.JDialog {
     config.mountAudio = mountAudio.isSelected();
     config.bc = bc.getBackground();
     config.fc = fc.getBackground();
+    switch (dockSize.getSelectedIndex()) {
+      case 0: config.dockSize = 48; break;
+      case 1: config.dockSize = 32; break;
+      case 2: config.dockSize = 24; break;
+    }
   }
 }

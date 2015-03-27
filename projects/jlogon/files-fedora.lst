@@ -1,4 +1,5 @@
 /usr/sbin/jlogon
+/usr/sbin/jlogon.bin
 /usr/sbin/jlogon-runsession
 /usr/sbin/jlogon-rundomain
 /etc/dhcp/dhclient-script

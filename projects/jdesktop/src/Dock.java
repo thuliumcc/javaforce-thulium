@@ -39,15 +39,14 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         JFLog.log(t);
       }
       addTo = buttons;
-      addAppsButton();
-      Dimension d = apps.getPreferredSize();
-      buttonWidth = d.width;
-      buttonHeight = d.height;
-      panelHeight = d.height + 10;
       loadConfig();
+      addAppsButton();
+      addArrows();
+      getDimensions();
+      loadButtons();
       DisplayMode screen_mode = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode();
       try {
-        Linux.x11_set_strut(x11id, (config.autoHide ? 1 : panelHeight-5), 0, 0, screen_mode.getWidth(), screen_mode.getHeight());
+        Linux.x11_set_strut(x11id, (config.autoHide ? 1 : panelHeight-borderSize), 0, 0, screen_mode.getWidth(), screen_mode.getHeight());
       } catch (Throwable t) {
         JFLog.log(t);
       }
@@ -62,13 +61,12 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       addKeyboard();
       addQuadControls();
       addHalfControls();
-      addArrows();
       setLayout(this);
       buttons.setLayout(this);
       setSize(sx, 1);
       setLocation(0, sy-1);
       calcDockHeight();
-      updateConfig(false);
+      updateConfig();
       if (config.autoHide) showDock();
       DesktopCache.buildCache();
       setupClockTimer();
@@ -78,6 +76,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       addMouseListener(ConfigPopup);
       addMouseListener(SoundPopup);
       addMouseListener(ClockPopup);
+      addMouseListener(TaskbarPopup);
       //connect to JBus
       JFLog.log("jbusClient:package=org.jflinux.jdesktop." + System.getenv("JID"));
       jbusClient = new JBusClient("org.jflinux.jdesktop." + System.getenv("JID"), new JBusMethods());
@@ -98,7 +97,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         public void run() {
           try {
             //monitor system tray
-            Linux.x11_tray_main(x11id, sx);
+            Linux.x11_tray_main(x11id, sx, trayPos, buttonHeight + 4);
           } catch (Throwable t) {
             JFLog.log(t);
           }
@@ -164,6 +163,12 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     AdjustTime = new javax.swing.JMenuItem();
     BatteryPopup = new java.awt.PopupMenu();
     BatterySettings = new java.awt.MenuItem();
+    TaskbarPopup = new javax.swing.JPopupMenu();
+    MinimizeAll = new javax.swing.JMenuItem();
+    jSeparator1 = new javax.swing.JPopupMenu.Separator();
+    TaskMgr = new javax.swing.JMenuItem();
+    jSeparator2 = new javax.swing.JPopupMenu.Separator();
+    DockSettings = new javax.swing.JMenuItem();
     buttons = new javax.swing.JPanel();
 
     EmptyTrash.setText("Empty");
@@ -271,6 +276,32 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       }
     });
     BatteryPopup.add(BatterySettings);
+
+    MinimizeAll.setText("Show the desktop");
+    MinimizeAll.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        MinimizeAllActionPerformed(evt);
+      }
+    });
+    TaskbarPopup.add(MinimizeAll);
+    TaskbarPopup.add(jSeparator1);
+
+    TaskMgr.setText("Start Task Manager");
+    TaskMgr.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        TaskMgrActionPerformed(evt);
+      }
+    });
+    TaskbarPopup.add(TaskMgr);
+    TaskbarPopup.add(jSeparator2);
+
+    DockSettings.setText("Settings");
+    DockSettings.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        DockSettingsActionPerformed(evt);
+      }
+    });
+    TaskbarPopup.add(DockSettings);
 
     setAlwaysOnTop(true);
     setMinimumSize(new java.awt.Dimension(1, 1));
@@ -389,6 +420,22 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     new BatteryDialog(null, true).setVisible(true);
   }//GEN-LAST:event_BatterySettingsActionPerformed
 
+  private void DockSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DockSettingsActionPerformed
+    showConfig();
+  }//GEN-LAST:event_DockSettingsActionPerformed
+
+  private void MinimizeAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_MinimizeAllActionPerformed
+    Linux.x11_minimize_all();
+  }//GEN-LAST:event_MinimizeAllActionPerformed
+
+  private void TaskMgrActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_TaskMgrActionPerformed
+    try {
+      Runtime.getRuntime().exec("jtaskmgr");
+    } catch (Exception e) {
+      JFLog.log(e);
+    }
+  }//GEN-LAST:event_TaskMgrActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JMenuItem AdjustTime;
   private java.awt.PopupMenu BatteryPopup;
@@ -397,9 +444,11 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   private javax.swing.JPopupMenu ConfigPopup;
   private javax.swing.JMenuItem ControlCenter;
   private javax.swing.JMenuItem DesktopSettings;
+  private javax.swing.JMenuItem DockSettings;
   private javax.swing.JMenuItem EmptyTrash;
   private javax.swing.JMenuItem Help;
   private javax.swing.JMenuItem Logoff;
+  private javax.swing.JMenuItem MinimizeAll;
   private javax.swing.JPopupMenu PowerPopup;
   private javax.swing.JMenuItem Reboot;
   private javax.swing.JMenuItem Run;
@@ -407,9 +456,13 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   private javax.swing.JMenuItem Shutdown;
   private javax.swing.JMenuItem Sleep;
   private javax.swing.JPopupMenu SoundPopup;
+  private javax.swing.JMenuItem TaskMgr;
+  private javax.swing.JPopupMenu TaskbarPopup;
   private javax.swing.JPopupMenu TrashPopup;
   private javax.swing.JMenuItem Upgrades;
   private javax.swing.JPanel buttons;
+  private javax.swing.JPopupMenu.Separator jSeparator1;
+  private javax.swing.JPopupMenu.Separator jSeparator2;
   // End of variables declaration//GEN-END:variables
 
   public static class App {
@@ -453,6 +506,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     public Card card[];
     public Sink sink[];
     public Source source[];
+    public int dockSize;  //48, 32, 24
     //video config (TODO) - for now in .xrandr.xml
   }
 
@@ -504,6 +558,11 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   public static ArrayList<BlueToothDevice> btDevices = new ArrayList<BlueToothDevice>();
   private int buttonsCount = 0;  //# of app buttons shown in dock (pinned & !pinned)
   private String fileSelection = "";
+  private static final int borderSize = 4;
+  private int trayPos = 0;
+  private final int trayPad = 2;
+  private JButton newButton;
+  private int newButtonIdx;
 
   public void trayIconAdded(int count) {
     JFLog.log("Dock:tray icon added");
@@ -682,6 +741,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     config.dock = new App[0];
     config.showClock = true;
     config.showKeyboard = true;
+    config.dockSize = 48;
     try {
       XML xml = new XML();
       FileInputStream fis = new FileInputStream(JF.getUserPath() + "/" + configFile);
@@ -704,7 +764,24 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       JFLog.log(e2);
       defaultConfig();
     }
-    loadButtons();
+    validateConfig();
+    bx = config.dockSize;
+    by = config.dockSize;
+  }
+
+  public void validateConfig() {
+    if (config.dockSize != 48 && config.dockSize != 32 && config.dockSize != 24) {
+      config.dockSize = 48;
+    }
+  }
+
+  public void getDimensions() {
+    Dimension d = apps.getPreferredSize();
+    buttonWidth = d.width;
+    buttonHeight = d.height;
+    panelHeight = d.height + borderSize * 2;
+    d = left.getPreferredSize();
+    halfWidth = d.width;
   }
 
   public void loadGlobalConfig() {
@@ -756,6 +833,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     config.desktopMode = 3;
     config.bc = Color.BLUE;
     config.fc = Color.WHITE;
+    config.dockSize = 48;
     //add jfile
     addAppIfExists("jfile");
     //add jinstall
@@ -789,8 +867,8 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       setSize(sx, dockHeight);
       setLocation(0, sy - dockHeight);
     } else {
-      setSize(sx, panelHeight - 5);
-      setLocation(0, sy - (panelHeight - 5));
+      setSize(sx, panelHeight - borderSize);
+      setLocation(0, sy - (panelHeight - borderSize));
     }
   }
 
@@ -857,18 +935,27 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   private JComponent addTo;
   private JFImage buttonImage, arrowImage;
   private boolean addArrow = false;
+  private boolean halfSized = false;
 
   public JButton addButton(String icon, String name, String file, int idx, boolean pinned) {
     buttonImage = IconCache.loadIcon(icon);
+    int _bx = bx;
+    int _by = by;
+    if (halfSized) {
+      _bx /= 2;
+    }
     if (addArrow) {
-      buttonImage = IconCache.scaleIcon(buttonImage, bx, bx);
-      JFImage tmpImage = new JFImage(bx, by);
-      tmpImage.fill(0, 0, bx, by, 0, true);
-      tmpImage.getGraphics().drawImage(buttonImage.getImage(), 0,(by-bx)/2 + 4, null);
-      tmpImage.getGraphics().drawImage(arrowImage.getImage(), 0,0, null);
+      buttonImage = IconCache.scaleIcon(buttonImage, _bx, _bx);
+      JFImage tmpImage = new JFImage(_bx, _by);
+      tmpImage.fill(0, 0, _bx, _by, 0, true);
+      tmpImage.getGraphics().drawImage(buttonImage.getImage(), 0,(_by-_bx)/2 + 4, null);
+      tmpImage.getGraphics().drawImage(arrowImage.getImage(),
+        0,0, _bx,_by/6,  //dest
+        0,0, 24,8,  //src
+        null);
       buttonImage = tmpImage;
     } else {
-      buttonImage = IconCache.scaleIcon(buttonImage, bx, by);
+      buttonImage = IconCache.scaleIcon(buttonImage, _bx, _by);
     }
     JButton button = new JButton(buttonImage);
     button.setMargin(new Insets(0,0,0,0));
@@ -878,6 +965,9 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
 //    button.setToolTipText(name);  //mouse over the tooltip causes dock to hide
     button.addMouseListener(this);
     button.putClientProperty("file", file);
+    button.putClientProperty("icon", icon);
+    button.putClientProperty("arrow", new Boolean(addArrow));
+    button.putClientProperty("halfSized", new Boolean(halfSized));
     button.putClientProperty("pinned", new Boolean(pinned));
     button.putClientProperty("group", new Group());
     if (!file.startsWith("#")) {
@@ -925,6 +1015,43 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     }
   }
 
+  public void updateButtonIcon(JButton b) {
+    String icon = (String)b.getClientProperty("icon");
+    if (icon == null) return;
+    Boolean arrow = (Boolean)b.getClientProperty("arrow");
+    Boolean half = (Boolean)b.getClientProperty("halfSized");
+    int _bx = bx;
+    int _by = by;
+    if (half) {
+      _bx /= 2;
+    }
+    buttonImage = IconCache.loadIcon(icon);
+    if (arrow) {
+      buttonImage = IconCache.scaleIcon(buttonImage, _bx, _bx);
+      JFImage tmpImage = new JFImage(_bx, _by);
+      tmpImage.fill(0, 0, _bx, _by, 0, true);
+      tmpImage.getGraphics().drawImage(buttonImage.getImage(), 0,(_by-_bx)/2 + 4, null);
+      tmpImage.getGraphics().drawImage(arrowImage.getImage(),
+        0,0, _bx,_by/6,  //dest
+        0,0, 24,8,  //src
+        null);
+      buttonImage = tmpImage;
+    } else {
+      buttonImage = IconCache.scaleIcon(buttonImage, _bx, _by);
+    }
+    b.setIcon(buttonImage);
+  }
+
+  public void updateButtonsIcons() {
+    //resize all button icons
+    Component c[] = (Component[])buttons.getComponents();
+    for(int a=0;a<c.length;a++) {
+      if (!(c[a] instanceof JButton)) continue;
+      JButton b = (JButton)c[a];
+      updateButtonIcon(b);
+    }
+  }
+
   public void loadButtons() {
     //load buttons for config.app[]
     for(int a=0;a<config.dock.length;) {
@@ -936,11 +1063,29 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     }
   }
 
-  public void updateConfig(boolean updateTray) {
+  public boolean haveApp(String file) {
+    Component buts[] = buttons.getComponents();
+    for(int a=0;a<buts.length;a++) {
+      if (!(buts[a] instanceof JButton)) continue;
+      JButton b = (JButton)buts[a];
+      String bfile = (String)b.getClientProperty("file");
+      if (bfile.equals(file)) return true;
+    }
+    return false;
+  }
+
+  public void updateConfig() {
+    validateConfig();
+    bx = config.dockSize;
+    by = config.dockSize;
+    updateButtonIcon(apps);
+    updateButtonIcon(left);
+    updateButtonIcon(right);
+    getDimensions();
     DisplayMode screen_mode = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDisplayMode();
     JFLog.log("updateConfig:screen=" + screen_mode.getWidth() + "x" + screen_mode.getHeight());
     try {
-      Linux.x11_set_strut(x11id, (config.autoHide ? 1 : panelHeight-5), 0, 0, screen_mode.getWidth(), screen_mode.getHeight());
+      Linux.x11_set_strut(x11id, (config.autoHide ? 1 : panelHeight-borderSize), 0, 0, screen_mode.getWidth(), screen_mode.getHeight());
     } catch (Throwable t) {
       JFLog.log(t);
     }
@@ -985,11 +1130,10 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     } else {
       buttons.remove(keyboard);
     }
-    revalidate();
-    repaint();
-    if (updateTray) {
-      Linux.x11_tray_reposition(screen_mode.getWidth());
-    }
+    bx = config.dockSize;
+    by = config.dockSize;
+    updateButtonsIcons();
+    updateButtons();
   }
 
   public void addAppsButton() {
@@ -1002,14 +1146,23 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         FontMetrics fm = clockImage.getFontMetrics(clockImage.getFont());
         Dimension size = clockImage.getPreferredSize();
         int height = fm.getHeight();
-        int width = fm.stringWidth(clockLine1);
         g.setColor(Color.white);
         g.drawRect(0,0, size.width,size.height);
         g.setColor(Color.black);
         g.setFont(clockFont);
-        g.drawBytes(clockLine1.getBytes(), 0, clockLine1.length(), (size.width - width) / 2, ((size.height/2 - height) / 2) + height);
-        width = fm.stringWidth(clockLine2);
-        g.drawBytes(clockLine2.getBytes(), 0, clockLine2.length(), (size.width - width) / 2, (size.height/2) + ((size.height/2 - height) / 2) + (height/2));  //BUG : last /2 shouldn't be needed but is
+        if (config.dockSize >= 32) {
+          int width = fm.stringWidth(clockLine1);
+          g.drawBytes(clockLine1.getBytes(), 0, clockLine1.length(),
+            (size.width - width) / 2, ((size.height/2 - height) / 2) + height);
+          width = fm.stringWidth(clockLine2);
+          g.drawBytes(clockLine2.getBytes(), 0, clockLine2.length(),
+            (size.width - width) / 2, (size.height/2) + ((size.height/2 - height) / 2) + (height/2));  //BUG : last /2 shouldn't be needed but is
+        } else {
+          //can only do one line
+          int width = fm.stringWidth(clockLine2);
+          g.drawBytes(clockLine2.getBytes(), 0, clockLine2.length(),
+            (size.width - width) / 2, ((size.height - height)/2) + height);
+        }
       }
       public Dimension getPreferredSize() {
         Dimension size = new Dimension();
@@ -1088,18 +1241,19 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   }
 
   private void addKeyboard() {
-    bx = 24;
     addArrow = true;
+    halfSized = true;
     keyboard = addButton("jdesktop-keyboard", "Keyboard", "#keyboard", getLastIdx(), true);
-    bx = 48;
+    bx = config.dockSize;
     addArrow = false;
+    halfSized = false;
   }
 
   private void addQuadControls() {
     quad = new JPanel();
     quad.setLayout(new GridLayout(2,2));
     addTo = quad;
-    bx = by = 21;
+    halfSized = true;
     powerQuad = addButton("jdesktop-power", "Power", "#power", 0, true);
     powerQuad.setComponentPopupMenu(PowerPopup);
     settingsQuad = addButton("jdesktop-config", "Settings", "#config", 0, true);
@@ -1108,14 +1262,14 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     soundQuad = addButton("jdesktop-sound", "Sound", "#sound", 0, true);
     soundQuad.setComponentPopupMenu(SoundPopup);
     addTo = buttons;
-    bx = by = 48;
+    halfSized = false;
     if (config.compact) buttons.add(quad, getLastIdx());
   }
 
   private void addHalfControls() {
-    bx = 24;
     if (config.compact) addTo = new JPanel();
     addArrow = true;
+    halfSized = true;
     powerHalf = addButton("jdesktop-power", "Power", "#power", 0, true);
     powerHalf.setComponentPopupMenu(PowerPopup);
     settingsHalf = addButton("jdesktop-config", "Settings", "#config", 0, true);
@@ -1125,18 +1279,16 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     soundHalf.setComponentPopupMenu(SoundPopup);
     addTo = buttons;
     addArrow = false;
-    bx = 48;
+    halfSized = false;
   }
 
   public void addArrows() {
-    bx = 24;
+    halfSized = true;
     left = addButton("jdesktop-left", "Left", "#left", getLastIdx(), true);
-    Dimension d = left.getPreferredSize();
-    halfWidth = d.width;
     buttons.remove(left);
     right = addButton("jdesktop-right", "Right", "#right", getLastIdx(), true);
     buttons.remove(right);
-    bx = 48;
+    halfSized = false;
   }
 
   private void addApp(String desktop) {
@@ -1178,6 +1330,12 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       }
       if (action.equals("#battery")) {
         updateBattery();
+        return;
+      }
+      if (action.equals("#new")) {
+        //BUG : user should never be able to click this
+        removeNewButton();
+        updateButtons();
         return;
       }
       if (action.equals("#apps")) {
@@ -1301,47 +1459,11 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         return;
       }
       //.desktop file, get Exec= line and execute it
-      FileInputStream fis = new FileInputStream(action);
-      byte data[] = JF.readAll(fis);
-      fis.close();
-      String str = new String(data);
-      String lns[] = str.split("\n");
-      for(int a=0;a<lns.length;a++) {
-        if (lns[a].startsWith("Exec=")) {
-          String cmd[] = Linux.expandDesktopExec(lns[a].substring(5).trim(), "");
-          if (logCmd) {
-            JFLog.log("cmd:");
-            for(int z=0;z<cmd.length;z++) {
-              JFLog.log("cmd[]=" + cmd[z]);
-            }
-          }
-          if (logOutput) {
-            new Thread() {
-              private String cmd[];
-              public Thread init(String cmd[]) {
-                this.cmd = cmd;
-                return this;
-              }
-              public void run() {
-                ShellProcess sp = new ShellProcess();
-                String output = sp.run(cmd, true);
-                JFLog.log("output=" + output);
-              }
-            }.init(cmd).start();
-          } else {
-            Runtime.getRuntime().exec(cmd);
-          }
-          return;
-        }
-      }
-      JF.showError("Error", "No Exec line in " + action);
+      Linux.executeDesktop(action, null);
     } catch (Exception e) {
       JFLog.log(e);
     }
   }
-
-  private static boolean logCmd = false;  //for testing only
-  private static boolean logOutput = false;  //for testing only
 
   public void flashButton(JButton button) {
     if (flashTimer != null) return;
@@ -1541,7 +1663,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
 
   private void calcDockHeight() {
     int pos = dockSliderPos;
-    dockHeight = (panelHeight-5) * pos / 100;
+    dockHeight = (panelHeight-borderSize) * pos / 100;
     if (dockHeight == 0) dockHeight = 1;
   }
 
@@ -1578,6 +1700,13 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     }
   }
 
+  private void removeNewButton() {
+    buttons.remove(newButton);
+    newButton = null;
+    appIdx--;
+    buttonsCount--;
+  }
+
   private java.util.Timer dockSliderTimer = null;
   private final Object sliderLock = new Object();
   private int dockSliderPos = 0;  //percentage of dock visible
@@ -1585,9 +1714,15 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   private boolean dockSliderShow = true;
 
   private void hideDock() {
+    if (newButton != null) {
+      removeNewButton();
+    }
     if (!config.autoHide) return;
     if (isDockHidden) return;
     isDockHidden = true;
+    if (newButton != null) {
+      removeNewButton();
+    }
     if (soundWindow != null) {
       hideSound();
     }
@@ -1732,7 +1867,11 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   }
 
   public void mousePressed(MouseEvent me) {
+//    JFLog.log("press:" + me);
     draggable = me.getButton() == MouseEvent.BUTTON1;
+    if (me.getSource() == this && me.getButton() == MouseEvent.BUTTON3) {
+      TaskbarPopup.show(this, me.getX(), me.getY());
+    }
   }
 
   private volatile boolean showDockTimerActive = false;
@@ -1770,11 +1909,13 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   }
 
   public void mouseReleased(MouseEvent me) {
+//    JFLog.log("release:" + me);
     try {
+      draggable = false;
       if (drag == null) return;
       drag.setBackground(drag_org_color);
-      getContentPane().setCursor(Cursor.getDefaultCursor());
       drag = null;
+      getContentPane().setCursor(Cursor.getDefaultCursor());
       updateAppList();
     } catch (Exception e) {
       JFLog.log(e);
@@ -1799,8 +1940,8 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         String file = (String)button.getClientProperty("file");
         if ((file == null) || (file.startsWith("#"))) return;
         drag = button;
-        dragx = me.getX();
-        dragy = me.getY();
+        dragx = me.getXOnScreen();
+        dragy = me.getYOnScreen();
         drag_width = button.getWidth();
         getContentPane().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         drag_org_color = button.getBackground();
@@ -1813,36 +1954,19 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
             break;
           }
         }
-        JFLog.log("drag:" + file + "," + drag_component_idx);
       } else {
         //move drag
         if (drag_component_idx == -1) return;  //error
-        int delta = me.getX() - dragx;
-        JFLog.log("move:" + delta + "," + drag_width);
-        if (Math.abs(delta) < drag_width) return;
-        if (delta < 0) {
-          //moved left
-          while (delta < 0) {
-            JButton left = (JButton)buttons.getComponent(drag_component_idx-1);
-            if (((String)left.getClientProperty("file")).startsWith("#")) break;
-            //swap buttons
-            buttons.remove(drag);
-            drag_component_idx--;
-            buttons.add(drag, drag_component_idx);
-            delta += drag_width;
-          }
-        } else {
-          //moved right
-          while (delta > 0) {
-            JButton right = (JButton)buttons.getComponent(drag_component_idx+1);
-            if (((String)right.getClientProperty("file")).startsWith("#")) break;
-            //swap buttons
-            buttons.remove(drag);
-            drag_component_idx++;
-            buttons.add(drag, drag_component_idx);
-            delta -= drag_width;
-          }
+        int newX = me.getXOnScreen();
+        if (needArrows) {
+          newX += halfWidth;
         }
+        int newIdx = newX / buttonWidth;
+        if (newIdx < 1) newIdx = 1;
+        if (newIdx >= appIdx) newIdx = appIdx-1;
+        if (newIdx == drag_component_idx) return;
+        drag_component_idx = newIdx;
+        buttons.setComponentZOrder(drag, newIdx);
         updateButtons();
       }
     } catch (Exception e) {
@@ -1886,7 +2010,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     dialog.setVisible(true);
     if (dialog.accepted) {
       dialog.updateConfig(config);
-      updateConfig(false);
+      updateConfig();
       saveConfig();
     }
   }
@@ -1968,114 +2092,122 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     if (isDockHidden) {
       return new Dimension(sx, panelHiddenHeight);
     }
-    return new Dimension(sx, panelHeight + 10);
+    return new Dimension(sx, panelHeight + borderSize*2);
   }
 
   public Dimension minimumLayoutSize(Container p) {
     if (isDockHidden) {
       return new Dimension(sx, panelHiddenHeight);
     }
-    return new Dimension(sx, panelHeight + 10);
+    return new Dimension(sx, panelHeight + borderSize*2);
   }
 
   public void layoutContainer(Container p) {
     try {
       if (p == getContentPane()) {
-        buttons.setBounds(0,0,sx,panelHeight);
+        synchronized(p.getParent().getTreeLock()) {
+          buttons.setBounds(0,0,sx,panelHeight);
+        }
         return;
       }
-      Dimension d;
-      //do we need arrows?
-      int tWidth = 0, bWidth = 0;  //tools x, buttons x
-      bWidth += (appIdx-1) * buttonWidth;  //-1 for apps
-      tWidth += buttonWidth;  //apps button
-      if (config.showClock) {
-        d = clockImage.getPreferredSize();
-        tWidth += d.width;
-      }
-      if (config.showKeyboard) {
-        d = keyboard.getPreferredSize();
-        tWidth += d.width;
-      }
-      if (config.compact) {
-        //quad controls
-        tWidth += buttonWidth;
-      } else {
-        //half controls
-        tWidth += halfWidth * 4;
-      }
-      tWidth += buttonWidth;  //trash
-      tWidth += buttonWidth;  //keyboard
-      int cnt = 0;
-      if (tWidth + bWidth > sx) {
-        //need arrow buttons
-        if (!needArrows) {
-          needArrows = true;
-          buttons.add(left,getLastIdx());
-          buttons.add(right,getLastIdx());
+      synchronized(p.getParent().getTreeLock()) {
+        Dimension d;
+        //do we need arrows?
+        int tWidth = 0, bWidth = 0;  //tools width, buttons width
+        bWidth += appIdx * buttonWidth;
+        if (config.showClock) {
+          d = clockImage.getPreferredSize();
+          tWidth += d.width;
         }
-        tWidth += halfWidth * 2;  //left + right
-        cnt = (sx - tWidth) / buttonWidth;
-        bWidth = cnt * buttonWidth;
-        overflowCnt = buttonsCount - cnt - viewIdx;
-      } else {
-        //no arrows - show all buttons
+        if (config.showKeyboard) {
+          d = keyboard.getPreferredSize();
+          tWidth += d.width;
+        }
+        if (config.compact) {
+          //quad controls
+          tWidth += buttonWidth;
+        } else {
+          //half controls
+          tWidth += halfWidth * 4;
+        }
+        tWidth += buttonWidth;  //trash
+        int trayWidth = Linux.x11_tray_width();
+  //      JFLog.log("dock widths:" + bWidth + "," + trayWidth + "," + tWidth);
+        int cnt = 0;
+        if (bWidth + trayWidth + tWidth > sx) {
+          //need arrow buttons
+          if (!needArrows) {
+            needArrows = true;
+            buttons.add(left,getLastIdx());
+            buttons.add(right,getLastIdx());
+          }
+          int arrowsWidth = halfWidth * 2;  //left + right arrows
+          int appsWidth = buttonWidth;
+          cnt = (sx - appsWidth - tWidth - arrowsWidth - trayWidth) / buttonWidth;
+          bWidth = cnt * buttonWidth;
+          overflowCnt = buttonsCount - cnt - viewIdx;
+        } else {
+          //no arrows - show all buttons
+          if (needArrows) {
+            needArrows = false;
+            buttons.remove(left);
+            buttons.remove(right);
+          }
+          cnt = buttonsCount;
+          viewIdx = 0;
+          overflowCnt = 0;
+        }
+        int cx = 0;
+        apps.setBounds(cx, borderSize, buttonWidth, buttonHeight);
+        cx += buttonWidth;
         if (needArrows) {
-          needArrows = false;
-          buttons.remove(left);
-          buttons.remove(right);
+          left.setBounds(cx, borderSize, halfWidth, buttonHeight);
+          cx += halfWidth;
+          for(int a=1;a<=viewIdx;a++) {
+            p.getComponent(a).setVisible(false);
+          }
         }
-        cnt = buttonsCount;
-        viewIdx = 0;
-        overflowCnt = 0;
-      }
-      int cx = (sx - tWidth - bWidth) / 2;
-      apps.setBounds(cx, 5, buttonWidth, buttonHeight);
-      cx += buttonWidth;
-      if (needArrows) {
-        left.setBounds(cx, 5, halfWidth, buttonHeight);
-        cx += halfWidth;
-        for(int a=1;a<=viewIdx;a++) {
-          p.getComponent(a).setVisible(false);
+        int idx = 1 + viewIdx;
+        while (cnt > 0) {
+          Component c = p.getComponent(idx++);
+          c.setVisible(true);
+          c.setBounds(cx, borderSize, buttonWidth, buttonHeight);
+          cx += buttonWidth;
+          cnt--;
         }
-      }
-      int idx = 1 + viewIdx;
-      while (cnt > 0) {
-        Component c = p.getComponent(idx++);
-        c.setVisible(true);
-        c.setBounds(cx, 5, buttonWidth, buttonHeight);
+        while (idx < appIdx) {
+          p.getComponent(idx++).setVisible(false);
+        }
+        if (needArrows) {
+          right.setBounds(cx, borderSize, halfWidth, buttonHeight);
+          cx += halfWidth;
+        }
+        cx = sx - tWidth;
+        trayPos = cx;
+        Linux.x11_tray_reposition(sx, trayPos, buttonHeight + trayPad);
+        if (config.compact) {
+          quad.setBounds(cx, borderSize, buttonWidth, buttonHeight);
+          cx += buttonWidth;
+        } else {
+          powerHalf.setBounds(cx, borderSize, halfWidth, buttonHeight);
+          cx += halfWidth;
+          settingsHalf.setBounds(cx, borderSize, halfWidth, buttonHeight);
+          cx += halfWidth;
+          networkHalf.setBounds(cx, borderSize, halfWidth, buttonHeight);
+          cx += halfWidth;
+          soundHalf.setBounds(cx, borderSize, halfWidth, buttonHeight);
+          cx += halfWidth;
+        }
+        if (config.showKeyboard) {
+          keyboard.setBounds(cx, borderSize, halfWidth, buttonHeight);
+          cx += halfWidth;
+        }
+        trash.setBounds(cx, borderSize, buttonWidth, buttonHeight);
         cx += buttonWidth;
-        cnt--;
-      }
-      while (idx < appIdx) {
-        p.getComponent(idx++).setVisible(false);
-      }
-      if (needArrows) {
-        right.setBounds(cx, 5, halfWidth, buttonHeight);
-        cx += halfWidth;
-      }
-      if (config.compact) {
-        quad.setBounds(cx, 5, buttonWidth, buttonHeight);
-        cx += buttonWidth;
-      } else {
-        powerHalf.setBounds(cx, 5, halfWidth, buttonHeight);
-        cx += halfWidth;
-        settingsHalf.setBounds(cx, 5, halfWidth, buttonHeight);
-        cx += halfWidth;
-        networkHalf.setBounds(cx, 5, halfWidth, buttonHeight);
-        cx += halfWidth;
-        soundHalf.setBounds(cx, 5, halfWidth, buttonHeight);
-        cx += halfWidth;
-      }
-      if (config.showKeyboard) {
-        keyboard.setBounds(cx, 5, halfWidth, buttonHeight);
-        cx += halfWidth;
-      }
-      trash.setBounds(cx, 5, buttonWidth, buttonHeight);
-      cx += buttonWidth;
-      if (config.showClock) {
-        d = clockImage.getPreferredSize();
-        clockImage.setBounds(cx, 5, d.width, buttonHeight);
+        if (config.showClock) {
+          d = clockImage.getPreferredSize();
+          clockImage.setBounds(cx, borderSize, d.width, buttonHeight);
+        }
       }
     } catch (Exception e) {
       JFLog.log(e);
@@ -2136,7 +2268,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   private String cancelNetworkMethod;
 
   private void loadNetworkIcons() {
-    bx = 24;
+    halfSized = true;
     networkIconsQuad = new JFImage[3];
     networkIconsHalf = new JFImage[3];
     for(int a=0;a<3;a++) {
@@ -2148,7 +2280,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       tmpImage.getGraphics().drawImage(arrowImage.getImage(), 0,0, null);
       networkIconsHalf[a] = tmpImage;
     }
-    bx = 48;
+    halfSized = false;
   }
 
   private void startNetworkTimer(String cancelMethod) {
@@ -2241,6 +2373,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     new File(JF.getUserPath() + "/Music").mkdir();
     new File(JF.getUserPath() + "/Pictures").mkdir();
     new File(JF.getUserPath() + "/Videos").mkdir();
+    new File(JF.getUserPath() + "/Downloads").mkdir();
   }
 
   public void soundinit() {
@@ -2354,7 +2487,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
           return false;
         }
         cmd.add(folder);
-        JFileBrowser.runCmd(cmd.toArray(new String[0]));
+        JFileBrowser.runCmd(null, cmd.toArray(new String[0]));
         return true;
       }
 
@@ -2372,6 +2505,17 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     });
   }
 
+  private int getDragIdx(Point pt) {
+    int x = pt.x;
+    if (needArrows) {
+      x += halfWidth;
+    }
+    x /= buttonWidth;
+    if (x < 1) return 1;
+    if (x >= appIdx) return appIdx-1;
+    return x;
+  }
+
   private void initDockDND() {
     this.setTransferHandler(new TransferHandler() {
       public boolean canImport(TransferHandler.TransferSupport info) {
@@ -2382,7 +2526,21 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
 
         TransferHandler.DropLocation dl = (TransferHandler.DropLocation) info.getDropLocation();
         Point pt = dl.getDropPoint();
-//        JFLog.log("drag to:" + pt.x + "," + pt.y);
+
+        if (newButton == null) {
+          newButtonIdx = getDragIdx(pt);
+          newButton = addButton("jdesktop-new", "New", "#new", newButtonIdx, false);
+          appIdx++;
+          buttonsCount++;
+        } else {
+          int newIdx = getDragIdx(pt);
+          if (newIdx == newButtonIdx) return true;  //no change
+          newButtonIdx = newIdx;
+          buttons.setComponentZOrder(newButton, newButtonIdx);
+        }
+        mouseEntered(null);  //prevent dock for hiding
+
+        updateButtons();
         return true;
       }
 
@@ -2396,9 +2554,9 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
           return false;
         }
 
-//        TransferHandler.DropLocation dl = info.getDropLocation();
-//        Point pt = dl.getDropPoint();
-        String folder = JF.getUserPath() + "/.local/share/Trash";
+        TransferHandler.DropLocation dl = info.getDropLocation();
+        Point pt = dl.getDropPoint();
+        int idx = getDragIdx(pt);
 
         // Get the file(s) that are being dropped.
         Transferable t = info.getTransferable();
@@ -2409,6 +2567,10 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
           return false;
         }
 
+        if (newButton != null) {
+          removeNewButton();
+        }
+
         // Perform the actual import.
         String file;
         for(int a=0;a<data.size();a++) {
@@ -2417,8 +2579,10 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
             case MOVE:
               file = ((File)data.get(a)).getAbsolutePath();
               if (!file.endsWith(".desktop")) continue;
-              addButton(file, true, -1);
-              addApp(file);
+              if (!haveApp(file)) {
+                addButton(file, true, idx);
+                addApp(file);
+              }
               break;
             case LINK:
               //BUG : not supported : ???
@@ -2426,6 +2590,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
           }
         }
         saveConfig();
+        updateButtons();
         return true;
       }
 
@@ -2530,7 +2695,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   }
   private void updateButtons() {
     buttons.revalidate();
-//    buttons.repaint();
+    buttons.repaint();
   }
 
   public class JBusMethods {
@@ -2640,13 +2805,13 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     public void videoChanged(String reason) {
       //TODO : popup window asking to load jconfig:display
       if (reason.equals("jconfig")) {
-        updateConfig(true);
+        updateConfig();
       } else {
         //else udev event : need to call x11_rr_auto first
         java.awt.EventQueue.invokeLater(new Runnable() {
           public void run() {
             Linux.x11_rr_auto();
-            updateConfig(true);
+            updateConfig();
           }
         });
       }

@@ -61,6 +61,7 @@ public class Startup implements ShellProcessListener{
           return;
         }
         JF.sleep(1500);  //wait for X to start
+        Runtime.getRuntime().exec(new String[] {"numlockx", "on"});
         try {
           if (new File("/etc/.live").exists()) {
             doLiveLogon();

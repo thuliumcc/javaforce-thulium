@@ -1,6 +1,7 @@
 <project name="jview" default="jar" basedir=".">
   <description>jview</description>
   <!-- set global properties for this build -->
+  <property name="app" location="jview"/>
   <property name="src" location="."/>
   <property name="build" location="classes"/>
   <property name="classpath" location="../../classes"/>
@@ -26,9 +27,9 @@
 
   <!-- sudo ant install -->
   <target name="install" description="install files">
+    <exec command="gcc loader.c -I../../include -o ${app} -ldl -lpthread"/>
+    <move file="${app}" todir="/usr/bin"/>
     <copy file="jview.jar" todir="/usr/share/java"/>
-    <copy file="jview" todir="/usr/bin"/>
-    <chmod file="/usr/bin/jview" perm="+x"/>
     <copy file="jview.desktop" todir="/usr/share/applications"/>
     <copy file="jview.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
     <copy file="jview.html" todir="/usr/share/jhelp"/>

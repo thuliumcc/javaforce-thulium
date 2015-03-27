@@ -1,3 +1,5 @@
+package japps;
+
 /**
  * Created : Mar 2, 2012
  *
@@ -237,7 +239,7 @@ public class App extends javax.swing.JPanel {
               ShellProcess sp = new ShellProcess();
               sp.removeEnvironmentVariable("TERM");
               sp.addEnvironmentVariable("DEBIAN_FRONTEND", "noninteractive");
-              sp.run(new String[] {"sudo", "apt-get", "-f", "--yes", "--allow-unauthenticated", "install"}, false);
+              sp.run(new String[] {"sudo", "apt-get", "-f", "--yes", "install"}, false);
             }
 
             this.setLabel("Complete");

@@ -728,7 +728,9 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
       if (!(c instanceof JFileIcon)) continue;
       JFileIcon b = (JFileIcon)c;
       b.setSelected(false);
+      b.setTransparent(false);
     }
+    repaint();
   }
 
   private void selectIcons() {
@@ -816,18 +818,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
       if (entry.file.endsWith(".desktop")) {
         //execute desktop file
         try {
-          FileInputStream fis = new FileInputStream(entry.file);
-          byte data[] = JF.readAll(fis);
-          fis.close();
-          String str = new String(data);
-          String lns[] = str.split("\n");
-          for(int a=0;a<lns.length;a++) {
-            if (lns[a].startsWith("Exec=")) {
-              String cmd[] = Linux.expandDesktopExec(lns[a].substring(5).trim(), "");
-              Runtime.getRuntime().exec(cmd);
-              return;
-            }
-          }
+          Linux.executeDesktop(entry.file, null);
         } catch (Exception e) {
           JFLog.log(e);
         }
@@ -924,6 +915,10 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
             }
           });
         }
+      } else if (event.equals("DELETE_SELF") || event.equals("MOVED_SELF")) {
+        if (!desktopMode) {
+          System.exit(0);
+        }
       }
     } catch (Exception e) {
       JFLog.log(e);
@@ -982,11 +977,13 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
         try {
           Process p = Runtime.getRuntime().exec(cmd);
           p.waitFor();
-          java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-              browser.refresh();
-            }
-          });
+          if (browser != null) {
+            java.awt.EventQueue.invokeLater(new Runnable() {
+              public void run() {
+                browser.refresh();
+              }
+            });
+          }
         } catch (Exception e) {
           JFLog.log(e);
         }
@@ -1146,7 +1143,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
       }
 
       protected void exportDone(JComponent source, Transferable data, int action) {
-        refresh();
+        clearSelection();
       }
     });
   }
@@ -1302,6 +1299,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
 
   public void mouseClicked(MouseEvent me) {
     JComponent c = (JComponent)me.getSource();
+    int mod = me.getModifiers();
     if (c == panel) {
       if ((me.getButton() == me.BUTTON3) && (me.getClickCount() == 1)) {
         if (desktopMenu == null) return;
@@ -1310,14 +1308,14 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
         desktopMenu.show(panel, me.getX(), me.getY());
         //TODO : make desktopMenu on top - how ???
       }
-      clearSelection();
+      if ((mod & KeyEvent.CTRL_MASK) == 0) clearSelection();
       return;
     }
     if (c instanceof JFileIcon) {
       JFileIcon b = (JFileIcon)c;
       switch (me.getClickCount()) {
         case 1:
-          clearSelection();
+          if ((mod & KeyEvent.CTRL_MASK) == 0) clearSelection();
           b.setSelected(true);
           break;
         case 2:
@@ -1329,6 +1327,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
   }
 
   public void mousePressed(MouseEvent me) {
+    int mod = me.getModifiers();
     requestFocus();
     dragicon = false;
     dragselection = false;
@@ -1336,7 +1335,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     if (c instanceof JFileIcon) {
       JFileIcon b = (JFileIcon)c;
       if (!b.isSelected()) {
-        clearSelection();
+        if ((mod & KeyEvent.CTRL_MASK) == 0) clearSelection();
         b.setSelected(true);
       }
       if (me.getButton() == MouseEvent.BUTTON3) {
@@ -1522,6 +1521,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
   }
 
   private void update() {
+    if (panel == null) return;  //refresh not called yet
     repaint();
     panel.repaint();
   }
@@ -1570,5 +1570,9 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     }
     cmd.add(path);
     runCmd(this, cmd.toArray(new String[0]));
+  }
+
+  public void close() {
+    stopFolderListener();
   }
 }

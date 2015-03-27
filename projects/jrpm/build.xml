@@ -1,5 +1,5 @@
 <project name="jrpm" default="help" basedir=".">
-  <description>paint</description>
+  <description>rpm</description>
   <!-- set global properties for this build -->
   <property name="JRPMVERSION" value="1.0"/>
 
