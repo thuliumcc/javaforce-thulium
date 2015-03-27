@@ -1,6 +1,9 @@
 jfFTP
 =====
 
+Nov 1, 2014 - version 0.4
+  - new : added some common keyboard shortcuts
+
 Oct 6, 2014 - version 0.3.0
   - new : added support for SSH Identity keys (*.pem)
   - fix : smb option was removed from SiteMgr ???

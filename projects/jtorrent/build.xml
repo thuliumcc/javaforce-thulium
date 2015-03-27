@@ -1,7 +1,7 @@
 <project name="jtorrent" default="jar" basedir=".">
   <description>jtorrent</description>
   <!-- set global properties for this build -->
-  <property name="src" location="."/>
+  <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
   <property name="JTORRENTVERSION" value="0.4"/>
@@ -89,6 +89,17 @@
     <copy file="jtorrent-${JTORRENTVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
   </target>
 
+  <!-- Requires WiX toolset in PATH -->
+  <target name="msi" depends="jar" description="create windows installer">
+    <exec command="i686-w64-mingw32-windres -O coff -i jtorrent.rc -o jtorrent.res"/>
+    <exec command="i686-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jtorrent.res -o jtorrent32.exe"/>
+    <exec command="x86_64-w64-mingw32-windres -O coff -i jtorrent.rc -o jtorrent.res"/>
+    <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jtorrent.res -o jtorrent64.exe"/>
+    <exec command="candle -o wix.obj wix.xml"/>
+    <exec command="light -o jtorrent-${JTORRENTVERSION}.msi wix.obj"/>
+    <move file="jtorrent-${JTORRENTVERSION}.msi" todir="/home/pquiring/zips"/>
+  </target>
+
   <target name="release-bin" depends="sign-jar" description="create release zip file">
     <zip destfile="jtorrent-${JTORRENTVERSION}.zip">
       <fileset dir=".">
@@ -97,9 +108,29 @@
         <include name="run*.bat"/>
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
-      <fileset dir="../../jars" includes="javaforce.jar"/>
     </zip>
     <move file="jtorrent-${JTORRENTVERSION}.zip" todir="/home/pquiring/zips"/>
+  </target>
+
+  <target name="release-src" depends="" description="create release zip file">
+    <zip destfile="jtorrent-src-${JTORRENTVERSION}.zip">
+      <fileset dir="../..">
+        <include name="license.txt"/>
+        <include name="projects/jtorrent/src/*.java"/>
+        <include name="projects/jtorrent/src/*.form"/>
+        <include name="projects/jtorrent/*.c"/>
+        <include name="projects/jtorrent/*.txt"/>
+        <include name="projects/jtorrent/*.xml"/>
+        <include name="projects/jtorrent/*.png"/>
+        <include name="projects/jtorrent/*.ico"/>
+        <include name="projects/jtorrent/*.rc"/>
+        <include name="projects/jtorrent/run*.bat"/>
+        <include name="projects/jtorrent/nbproject/*.xml"/>
+        <include name="jars/javaforce.jar"/>
+        <include name="include/*.h"/>
+      </fileset>
+    </zip>
+    <move file="jtorrent-src-${JTORRENTVERSION}.zip" todir="/home/pquiring/zips"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

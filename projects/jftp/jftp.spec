@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jftp
-Version: 0.3
+Version: 0.4
 Release: 1
 Summary: FTP Manager
 License: LGPL

@@ -18,7 +18,7 @@ import javaforce.jbus.*;
 import javaforce.linux.*;
 import javaforce.utils.*;
 
-public class JFileBrowser extends javax.swing.JComponent implements MouseListener, MouseMotionListener, monitordir.Listener {
+public class JFileBrowser extends javax.swing.JComponent implements MouseListener, MouseMotionListener, KeyListener, monitordir.Listener {
 
   /**
    * Creates new form JFileBrowser
@@ -39,13 +39,14 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
    * @param autoArrange - auto arrange by name
    * @param jbusClient - a JBusClient client
    * @param desktopMode - desktopMode (always use openFile for files)
+   * @param fileClipboard - file selection storage
    */
 
   public JFileBrowser(int view, String path, JPopupMenu desktopMenu, JPopupMenu fileMenu
     , String wallPaperFile, int wallPaperView, boolean saveConfig
     , String openFolder, String openFile, Color backClr, Color foreClr
     , boolean useScrolling, boolean arrangeIconsVertical, boolean showHidden, boolean autoArrange
-    , JBusClient jbusClient, boolean desktopMode)
+    , JBusClient jbusClient, boolean desktopMode, FileClipboard fileClipboard)
   {
     setView(view);
     this.desktopMenu = desktopMenu;
@@ -63,6 +64,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     this.autoArrange = autoArrange;
     this.jbusClient = jbusClient;
     this.desktopMode = desktopMode;
+    this.fileClipboard = fileClipboard;
     filterRegex = ".*";
     filter = new FilenameFilter() {
       public boolean accept(File dir, String name) {
@@ -73,6 +75,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     setLayout(null);
     setFocusable(true);
     setPath(path);  //must do last since it calls refresh()
+    addKeyListener(this);
   }
 
   public static final int VIEW_ICONS = 1;
@@ -101,6 +104,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
   private JBusClient jbusClient;
   private FilenameFilter filter;
   private String filterRegex;
+  private FileClipboard fileClipboard;
 
   private JFImage wallPaper;
 
@@ -208,6 +212,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     };
     panel.addMouseListener(this);
     panel.addMouseMotionListener(this);
+    panel.addKeyListener(this);
     panel.setLayout(null);
     panel.setBounds(0,0,getWidth(),getHeight());
     if (useScrolling) {
@@ -396,6 +401,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     buttonImage = IconCache.scaleIcon(buttonImage, ix, iy);
     entry.button = new JFileIcon(this, buttonImage, entry, view == VIEW_ICONS);
     entry.button.setToolTipText(entry.name);
+    entry.button.addKeyListener(this);
     entry.button.addMouseListener(this);
     entry.button.addMouseMotionListener(this);
     if ((!useScrolling) && (view == VIEW_ICONS)) {
@@ -524,6 +530,36 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     repaint();
   }
 
+  public void keyTyped(KeyEvent e) {
+  }
+
+  public void keyPressed(KeyEvent e) {
+    int keycode = e.getKeyCode();
+    int mods = e.getModifiers();
+//    JFLog.log("keyPressed:" + mods + "," + (char)keycode);
+    if (mods == KeyEvent.CTRL_MASK) {
+      switch (keycode) {
+        case KeyEvent.VK_C:
+          copy();
+          break;
+        case KeyEvent.VK_X:
+          cut();
+          break;
+        case KeyEvent.VK_V:
+          paste();
+          break;
+      }
+    }
+    if (mods == 0) {
+      switch (keycode) {
+        case KeyEvent.VK_DELETE: delete(); break;
+      }
+    }
+  }
+
+  public void keyReleased(KeyEvent e) {
+  }
+
   public class Config {
     public FileEntry file[];
   }
@@ -649,6 +685,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
 
   public void refresh() {
     if (path == null) return;
+//    JFLog.log("JFileBrowser:refresh");
     try {
       stopFolderListener();
       removeAll();
@@ -815,9 +852,9 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
   private final Object lock = new Object();
 
   public void folderChangeEvent(String event, String file) {
-//    JFLog.log("event:" + event + ":" + file);
+//    JFLog.log("folderChangeEvent:" + event + ":" + file);
     try {
-      if (event.equals("CREATED")) {
+      if (event.equals("CREATED") || event.equals("MOVED_TO")) {
         if ((file.startsWith(".")) && (!showHidden)) return;
         newFiles.add(file);
         java.awt.EventQueue.invokeLater(new Runnable() {
@@ -839,7 +876,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
             update();
           }
         });
-      } else if (event.equals("DELETED")) {
+      } else if (event.equals("DELETED") || event.equals("MOVED_FROM")) {
         if (/*view == VIEW_LIST ||*/ view == VIEW_DETAILS) {
           //need to do a refresh in 100ms (just removing the icon would look bad)
           synchronized(lock) {
@@ -939,12 +976,22 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     return null;
   }
 
-  public static void runCmd(String cmd[], int numFiles) {
-    try {
-      Runtime.getRuntime().exec(cmd);
-    } catch (Exception e) {
-      JFLog.log(e);
-    }
+  public static void runCmd(final JFileBrowser browser,final String cmd[]) {
+    new Thread() {
+      public void run() {
+        try {
+          Process p = Runtime.getRuntime().exec(cmd);
+          p.waitFor();
+          java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+              browser.refresh();
+            }
+          });
+        } catch (Exception e) {
+          JFLog.log(e);
+        }
+      }
+    }.start();
   }
 
   public static int cntFiles(String fn) {
@@ -1041,7 +1088,6 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
         ArrayList<String> cmd = new ArrayList<String>();
         boolean move = false;
         boolean copy = false;
-        int cnt = 0;
         String fn;
         for(int a=0;a<data.size();a++) {
           switch (info.getDropAction()) {
@@ -1050,13 +1096,11 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
               copy = true;
               fn = ((File)data.get(a)).getAbsolutePath();
               cmd.add(fn);
-              cnt += cntFiles(fn);
               break;
             case MOVE:
               if (copy) return false;  //Can that happen?
               move = true;
               cmd.add(((File)data.get(a)).getAbsolutePath());
-              cnt++;
               break;
             case LINK:
               return false;  //BUG : not supported : ???
@@ -1071,8 +1115,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
           return false;
         }
         cmd.add(folder);
-        runCmd(cmd.toArray(new String[0]), cnt);
-        refresh();
+        runCmd(JFileBrowser.this, cmd.toArray(new String[0]));
         return true;
       }
 
@@ -1082,14 +1125,12 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
 
       protected Transferable createTransferable(JComponent c) {
         FileEntry fefiles[] = getSelected();
-        ArrayList<File> files = new ArrayList<File>();
+        final ArrayList<File> files = new ArrayList<File>();
 
         for (int i = 0; i < fefiles.length; i++) {
           files.add(new File(fefiles[i].file));
         }
         return new Transferable() {
-          private java.util.List<File> files;
-
           public DataFlavor[] getTransferDataFlavors() {
             return new DataFlavor[] {DataFlavor.javaFileListFlavor};
           }
@@ -1101,12 +1142,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
           public Object getTransferData(DataFlavor df) throws UnsupportedFlavorException, IOException {
             return files;
           }
-
-          public Transferable init(java.util.List<File> files) {
-            this.files = files;
-            return this;
-          }
-        }.init(files);
+        };
       }
 
       protected void exportDone(JComponent source, Transferable data, int action) {
@@ -1201,7 +1237,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
       cmd.add("jmv");
       for(int a=0;a<list.length;a++) cmd.add(list[a].file);
       cmd.add(JF.getUserPath() + "/.local/share/Trash");
-      runCmd(cmd.toArray(new String[0]), list.length);
+      runCmd(this, cmd.toArray(new String[0]));
     }
   }
 
@@ -1211,7 +1247,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     ArrayList<String> cmd = new ArrayList<String>();
     cmd.add("jrm");
     for(int a=0;a<list.length;a++) cmd.add(list[a].file);
-    runCmd(cmd.toArray(new String[0]), list.length);
+    runCmd(this, cmd.toArray(new String[0]));
   }
 
   public int getCount() {
@@ -1488,5 +1524,51 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
   private void update() {
     repaint();
     panel.repaint();
+  }
+
+  //use clipboard or jdesktop
+
+  public void cut() {
+    FileEntry list[] = getSelected();
+    if ((list == null) || (list.length == 0)) return;
+    String fs = "cut";
+    for(int a=0;a<list.length;a++) {
+      fs += ":" + list[a].file;
+    }
+    fileClipboard.set(fs);
+    setSelectedTransparent();
+  }
+  public void copy() {
+    FileEntry list[] = getSelected();
+    if ((list == null) || (list.length == 0)) return;
+    String fs = "copy";
+    for(int a=0;a<list.length;a++) {
+      fs += ":" + list[a].file;
+    }
+    fileClipboard.set(fs);
+  }
+
+  public void paste() {
+    fileClipboard.get();
+  }
+
+  public void paste(String fileSelection) {
+    if (fileSelection == null) return;
+    String f[] = fileSelection.split(":");
+    ArrayList<String> cmd = new ArrayList<String>();
+    if (f[0].equals("cut")) {
+      //cut
+      cmd.add("jmv");
+    } else if (f[0].equals("copy")) {
+      //copy
+      cmd.add("jcp");
+    } else {
+      JFLog.log("Error:unknown clipboard operation=" + f[0]);
+    }
+    for(int a=1;a<f.length;a++) {
+      cmd.add(f[a]);
+    }
+    cmd.add(path);
+    runCmd(this, cmd.toArray(new String[0]));
   }
 }

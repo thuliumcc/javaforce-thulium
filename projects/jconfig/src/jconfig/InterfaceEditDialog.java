@@ -259,6 +259,7 @@ public class InterfaceEditDialog extends javax.swing.JDialog {
     iface.dhcp6 = dhcp6.isSelected();
     iface.ip6 = ip6.getText();
     iface.gateway6 = gw6.getText();
+    accepted = true;
     dispose();
   }//GEN-LAST:event_acceptActionPerformed
 
@@ -315,5 +316,7 @@ public class InterfaceEditDialog extends javax.swing.JDialog {
     Rectangle s = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
     setLocation(s.width/2 - d.width/2, s.height/2 - d.height/2);
   }
+
+  public boolean accepted;
 
 }

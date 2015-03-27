@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" UpgradeCode="{99CE8370-51AC-4729-8CCE-B2BBE8CA027F}" Version="0.4" Language="1033" Name="jfFTP" Manufacturer="Peter Quiring">
+  <Product Id="*" UpgradeCode="{3B9FE65B-98CD-42B1-BA7D-2841C2C0B32B}" Version="0.4" Language="1033" Name="jfTorrent" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
 
-    <Icon Id="icon.ico" SourceFile="jftp.ico"/>
+    <Icon Id="icon.ico" SourceFile="jtorrent.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico"/>
 
     <!-- Step 1: Define the directory structure -->
     <Directory Id="TARGETDIR" Name="SourceDir">
       <Directory Id="ProgramFilesFolder">
-        <Directory Id="APPLICATIONROOTDIRECTORY" Name="jftp"/>
+        <Directory Id="APPLICATIONROOTDIRECTORY" Name="jtorrent"/>
       </Directory>
       <Directory Id="ProgramMenuFolder">
 <!-- Use the following if you want Shortcut in its own folder -->
-<!--        <Directory Id="ApplicationProgramsFolder" Name="jfFTP"/> -->
+<!--        <Directory Id="ApplicationProgramsFolder" Name="jfTorrent"/> -->
       </Directory>
     </Directory>
 
     <!-- Step 2: Add files to your installer package -->
     <DirectoryRef Id="APPLICATIONROOTDIRECTORY">
-      <Component Id="appfiles" Guid="{71FE1D1E-FE5F-44EB-8EA8-3815BC36D3DC}">
-        <File Id="jftp.jar" Source="jftp.jar" KeyPath="yes"/>
+      <Component Id="appfiles" Guid="{2B3945E4-19A6-43E0-8BF6-5D3D3C179F5D}">
+        <File Id="jtorrent.jar" Source="jtorrent.jar" KeyPath="yes"/>
         <File Id="javaforce.jar" Source="javaforce.jar"/>
-        <File Id="jcifs.jar" Source="jcifs.jar"/>
-        <File Id="jsch.jar" Source="jsch.jar"/>
-        <File Id="jzlib.jar" Source="jzlib.jar"/>
-        <File Id="jftp32.exe" Source="jftp32.exe"/>
-        <File Id="jftp64.exe" Source="jftp64.exe"/>
+        <File Id="jtorrent32.exe" Source="jtorrent32.exe"/>
+        <File Id="jtorrent64.exe" Source="jtorrent64.exe"/>
+        <File Id="run.bat" Source="run.bat"/>
+        <File Id="runMaker.bat" Source="runMaker.bat"/>
+        <File Id="runTracker.bat" Source="runTracker.bat"/>
       </Component>
     </DirectoryRef>
 
     <!-- Step 2b: Add the shortcut to your installer package -->
 <!-- Change Id to ApplicationProgramsFolder if you want Shortcut in its own folder -->
     <DirectoryRef Id="ProgramMenuFolder">
-      <Component Id="ApplicationShortcut" Guid="{32616FEB-4683-46F0-8121-B15CAF6799F9}">
-        <Shortcut Id="ApplicationStartMenuShortcut" Name="jfFTP" Description="Java FTP Client" Target="[APPLICATIONROOTDIRECTORY]jftp32.exe"
+      <Component Id="ApplicationShortcut" Guid="{628BA10A-882E-4D34-B1D8-B5E352B3E6F2}">
+        <Shortcut Id="ApplicationStartMenuShortcut" Name="jfTorrent" Description="Java Torrent Editor" Target="[APPLICATIONROOTDIRECTORY]jtorrent32.exe"
           WorkingDirectory="APPLICATIONROOTDIRECTORY"/>
 <!-- Use the following if you want Shortcut in its own folder -->
 <!--        <RemoveFolder Id="ApplicationProgramsFolder" On="uninstall"/> -->
-        <RegistryValue Root="HKCU" Key="Software\Microsoft\jfFTP" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
+        <RegistryValue Root="HKCU" Key="Software\Microsoft\jfTorrent" Name="installed" Type="integer" Value="1" KeyPath="yes"/>
       </Component>
     </DirectoryRef>
 

@@ -17,17 +17,20 @@ public class GLMatrix implements Cloneable {
     return cln;
   }
   public void setIdentity() {
-    for(int a=1;a<15;a++) m[a] = 0.0f;
-    m[0] = 1.0f;
-    m[5] = 1.0f;
-    m[10] = 1.0f;
-    m[15] = 1.0f;
+    for(int a=0;a<16;a++) {
+      if (a % 5 == 0)
+        m[a] = 1.0f;
+      else
+        m[a] = 0.0f;
+    }
   }
   public void setIdentity3x3() {  //effectively reset rotation
-    for(int a=1;a<12;a++) m[a] = 0.0f;
-    m[0] = 1.0f;
-    m[5] = 1.0f;
-    m[10] = 1.0f;
+    for(int a=0;a<11;a++) {
+      if (a % 5 == 0)
+        m[a] = 1.0f;
+      else
+        m[a] = 0.0f;
+    }
   }
   public void set(GLMatrix src) {
     for(int a=0;a<16;a++) m[a] = src.m[a];

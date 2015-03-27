@@ -142,7 +142,7 @@ public class AddAppWindow extends javax.swing.JFrame {
     browser = new JFileBrowser(JFileBrowser.VIEW_ICONS, "/usr/share/applications"
       , DesktopMenu, IconMenu, null, -1
       , false, "jfile", "jopen", Color.white, Color.black
-      , true, true, false, true, Dock.jbusClient, false);
+      , true, true, false, true, Dock.jbusClient, false, Dock.dock);
     panel.add(browser);
     revalidate();
     browser.setFilter(".*[.]desktop");

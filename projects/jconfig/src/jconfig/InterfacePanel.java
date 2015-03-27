@@ -130,7 +130,7 @@ public class InterfacePanel extends javax.swing.JPanel {
     Interface iface = getInterface(eth);
     InterfaceEditDialog dialog = new InterfaceEditDialog(ConfigApp.This, true, iface);
     dialog.setVisible(true);
-    saveConfig();
+    if (dialog.accepted) saveConfig();
   }//GEN-LAST:event_editActionPerformed
 
   private void listValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_listValueChanged

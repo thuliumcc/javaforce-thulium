@@ -140,17 +140,39 @@ public class Server {
     config.dns3 = "";
   }
 
+  public void updateInterface(Interface iface) {
+    //update config options
+    Interface update = null;
+    for(int a=0;a<config.iface.length;a++) {
+      Interface i = config.iface[a];
+      if (i.dev.equals(iface.dev)) {
+        update = i;
+        break;
+      }
+    }
+    if (update == null) return;
+    iface.dhcp4 = update.dhcp4;
+    iface.dhcp6 = update.dhcp6;
+    iface.disableIP6 = update.disableIP6;
+    iface.ip4 = update.ip4;
+    iface.mask4 = update.mask4;
+    iface.gateway4 = update.gateway4;
+    iface.ip6 = update.ip6;
+    iface.gateway6 = update.gateway6;
+  }
+
   public Interface getInterface(String dev) {
     Interface iface;
+    loadConfig();  //redo in case of changes
     //try interfaceList first
     for(int a=0;a<interfaceList.size();a++) {
       iface = interfaceList.get(a);
       if (iface.dev.equals(dev)) {
+        updateInterface(iface);
         return iface;
       }
     }
     //try config next
-    loadConfig();  //redo in case of changes
     for(int a=0;a<config.iface.length;a++) {
       iface = config.iface[a];
       if (iface.dev.equals(dev)) {
@@ -199,8 +221,7 @@ public class Server {
   public void setupInterface(Interface iface) {
     //ensure interface link is active
     if (!iface.link) {
-      JFLog.log("jnetworkmgr:Unable to setup interface (link down):" + iface.dev);
-      return;
+      JFLog.log("Warning:jnetworkmgr:setting up interface but link is down:" + iface.dev);
     }
     ShellProcess sp = new ShellProcess();
     if (iface.dhcp4) {
@@ -222,7 +243,7 @@ public class Server {
       }
     }
     if (iface.dhcp6) {
-      DHCPClient client = new DHCPClient(iface, false); client.start(); dhcpClients.add(client);
+      DHCPClient client = new DHCPClient(iface, false);
       client.start();
       dhcpClients.add(client);
     } else {
@@ -360,7 +381,7 @@ public class Server {
     if (highestRoute != iface) return;
     String routers[] = iface.routers.split(" ");
     exec(new String[] {"route", "del", "-net", "0.0.0.0"});
-    String staticRoutes[] = iface.static_routes.split(" ");
+//    String staticRoutes[] = iface.static_routes.split(" ");
     //TODO : undo static routes???
     //find next interface with lower priority and switch to it's routing
     if (useLower) {

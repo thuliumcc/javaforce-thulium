@@ -19,7 +19,7 @@ import javaforce.utils.*;
 
 import jfile.*;
 
-public class Dock extends javax.swing.JWindow implements ActionListener, MouseListener, MouseMotionListener, LayoutManager, X11Listener, monitordir.Listener {
+public class Dock extends javax.swing.JWindow implements ActionListener, MouseListener, MouseMotionListener, LayoutManager, X11Listener, monitordir.Listener, FileClipboard {
 
   /**
    * Creates new form Dock
@@ -503,6 +503,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   private Object x11id = null;
   public static ArrayList<BlueToothDevice> btDevices = new ArrayList<BlueToothDevice>();
   private int buttonsCount = 0;  //# of app buttons shown in dock (pinned & !pinned)
+  private String fileSelection = "";
 
   public void trayIconAdded(int count) {
     JFLog.log("Dock:tray icon added");
@@ -1387,20 +1388,16 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   private String vpnList = "";
   private String wapList = "";
 
-  private static String quote(String str) {
-    return "\"" + str + "\"";
-  }
-
   private void showSettingsPopup() {
     ConfigPopup.show(config.compact ? settingsQuad : settingsHalf, 0, -calcMenuHeight(ConfigPopup));
   }
 
   private void getWAPList() {
-    jbusClient.call("org.jflinux.jnetworkmgr", "getWAPList", quote(jbusClient.pack));
+    jbusClient.call("org.jflinux.jnetworkmgr", "getWAPList", JBusClient.quote(jbusClient.pack));
   }
 
   private void getVPNList() {
-    jbusClient.call("org.jflinux.jnetworkmgr", "getVPNList", quote(jbusClient.pack));
+    jbusClient.call("org.jflinux.jnetworkmgr", "getVPNList", JBusClient.quote(jbusClient.pack));
   }
 
   private static class WAP {
@@ -2086,7 +2083,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   }
 
   private void disconnectVPN(String name) {
-    jbusClient.call("org.jflinux.jnetworkmgr", "disconnectVPN", quote(name));
+    jbusClient.call("org.jflinux.jnetworkmgr", "disconnectVPN", JBusClient.quote(name));
   }
 
   private void connectVPN(String name) {
@@ -2094,12 +2091,12 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       disconnectVPN(name.substring(0, name.length() - 2));
     } else {
       startNetworkTimer("cancelVPN");
-      jbusClient.call("org.jflinux.jnetworkmgr", "connectVPN", quote(jbusClient.pack) + "," + quote(name));
+      jbusClient.call("org.jflinux.jnetworkmgr", "connectVPN", JBusClient.quote(jbusClient.pack) + "," + JBusClient.quote(name));
     }
   }
 
   private void disconnectWAP(String ssid) {
-    jbusClient.call("org.jflinux.jnetworkmgr", "disconnectWAP" , quote(ssid));
+    jbusClient.call("org.jflinux.jnetworkmgr", "disconnectWAP" , JBusClient.quote(ssid));
   }
 
   private void connectWAP(String dev, String ssid, String encType) {
@@ -2114,7 +2111,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       }
       startNetworkTimer("cancelWAP");
       jbusClient.call("org.jflinux.jnetworkmgr", "connectWAP",
-        quote(jbusClient.pack) + "," + quote(dev) + "," + quote(ssid) + "," + quote(encType) + "," + quote(key));
+        JBusClient.quote(jbusClient.pack) + "," + JBusClient.quote(dev) + "," + JBusClient.quote(ssid) + "," + JBusClient.quote(encType) + "," + JBusClient.quote(key));
     }
   }
 
@@ -2357,7 +2354,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
           return false;
         }
         cmd.add(folder);
-        JFileBrowser.runCmd(cmd.toArray(new String[0]), cmd.size() - 4);
+        JFileBrowser.runCmd(cmd.toArray(new String[0]));
         return true;
       }
 
@@ -2544,7 +2541,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       showDock();
     }
     public void getWelcome(String pack) {
-      jbusClient.call(pack, "setWelcome", quote("" + config.welcome));
+      jbusClient.call(pack, "setWelcome", JBusClient.quote("" + config.welcome));
     }
     public void setWelcome(String state) {
       config.welcome = state.equals("true");
@@ -2663,9 +2660,9 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         jfusesmb fuse = new jfusesmb();
         String args[] = new String[] {uri, mount};
         if (!fuse.auth(args, pass)) {
-          if (callback != null) jbusClient.call(callback, "fuseFail", quote(uri));
+          if (callback != null) jbusClient.call(callback, "fuseFail", JBusClient.quote(uri));
         } else {
-          if (callback != null) jbusClient.call(callback, "fuseSuccess", quote(uri));
+          if (callback != null) jbusClient.call(callback, "fuseSuccess", JBusClient.quote(uri));
           JFTask task = new JFTask() {
             public boolean work() {
               jfusesmb fuse = (jfusesmb)this.getProperty("fuse");
@@ -2694,9 +2691,9 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         jfusezip fuse = new jfusezip();
         String args[] = new String[] {uri, mount};
         if (!fuse.auth(args, pass)) {
-          if (callback != null) jbusClient.call(callback, "fuseFail", quote(uri));
+          if (callback != null) jbusClient.call(callback, "fuseFail", JBusClient.quote(uri));
         } else {
-          if (callback != null) jbusClient.call(callback, "fuseSuccess", quote(uri));
+          if (callback != null) jbusClient.call(callback, "fuseSuccess", JBusClient.quote(uri));
           JFTask task = new JFTask() {
             public boolean work() {
               jfusezip fuse = (jfusezip)this.getProperty("fuse");
@@ -2725,9 +2722,9 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         jfuseiso fuse = new jfuseiso();
         String args[] = new String[] {uri, mount};
         if (!fuse.auth(args, pass)) {
-          if (callback != null) jbusClient.call(callback, "fuseFail", quote(uri));
+          if (callback != null) jbusClient.call(callback, "fuseFail", JBusClient.quote(uri));
         } else {
-          if (callback != null) jbusClient.call(callback, "fuseSuccess", quote(uri));
+          if (callback != null) jbusClient.call(callback, "fuseSuccess", JBusClient.quote(uri));
           JFTask task = new JFTask() {
             public boolean work() {
               jfuseiso fuse = (jfuseiso)this.getProperty("fuse");
@@ -2753,16 +2750,40 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
           task.start();
         }
       } else {
-        if (callback != null) jbusClient.call(callback, "fuseFail", quote(uri));
+        if (callback != null) jbusClient.call(callback, "fuseFail", JBusClient.quote(uri));
       }
     }
     public void setWAPList(String list) {
       wapList = list;
-   }
+    }
     public void setVPNList(String list) {
       vpnList = list;
       showNetworkPopup();
     }
+    //jfile : file ops (should use clipboard)
+    public void setFileSelection(String selection) {
+      JFLog.log("setSelection:" + selection);
+      fileSelection = selection;
+    }
+    public void getFileSelection(String pack) {
+      if (fileSelection == null) return;
+      JFLog.log("getSelection:" + pack);
+      jbusClient.call(pack, "getFileSelection", JBusClient.quote(fileSelection));
+    }
+    public void clearFileSelection() {
+      JFLog.log("clearSelection");
+      fileSelection = null;
+    }
   }
 
+  public void get() {
+    if (fileSelection == null) return;
+    Desktop.desktop.browser.paste(JBusClient.decodeSafe(fileSelection));
+  }
+  public void set(String fileset) {
+    fileSelection = fileset;
+  }
+  public void clear() {
+    fileSelection = "";
+  }
 }

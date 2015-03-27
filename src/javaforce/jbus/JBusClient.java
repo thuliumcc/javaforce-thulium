@@ -172,4 +172,16 @@ public class JBusClient extends Thread {
     }
     s = null;
   }
+
+  public static String quote(String str) {
+    return "\"" + str + "\"";
+  }
+
+  public static String encodeSafe(String in) {
+    return in.replaceAll("&", "&amp;").replaceAll("\"", "&quot;");  //order matters here
+  }
+
+  public static String decodeSafe(String in) {
+    return in.replaceAll("&quot;", "\"").replaceAll("&amp;", "&");
+  }
 }

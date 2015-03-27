@@ -10,7 +10,7 @@
 # SEE: https://help.ubuntu.com/community/LiveCDCustomizationFromScratch
 #
 
-ARCH=i386
+ARCH=amd64
 
 cp /etc/lsb-release /tmp
 chmod +x /tmp/lsb-release

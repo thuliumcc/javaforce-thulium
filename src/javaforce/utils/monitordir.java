@@ -102,6 +102,8 @@ public class monitordir {
           switch (_mask & IN_MASK) {
             case IN_CREATE: _event = "CREATED"; break;
             case IN_DELETE: _event = "DELETED"; break;
+            case IN_MOVED_FROM: _event = "MOVED_FROM"; break;
+            case IN_MOVED_TO: _event = "MOVED_TO"; break;
           }
           if (_event == null) continue;
           Listener listener = map.get(_wd);
@@ -119,6 +121,8 @@ public class monitordir {
   private static final int IN_CREATE = 0x100;
   private static final int IN_DELETE = 0x200;
   private static final int IN_MASK = 0x300;  //mask off other event bits (ie: IN_ISDIR)
+  private static final int IN_MOVED_FROM = 0x040;
+  private static final int IN_MOVED_TO = 0x080;
 /*
   public class inotify_event extends Structure {
      public int wd;       // Watch descriptor

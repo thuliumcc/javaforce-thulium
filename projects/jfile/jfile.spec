@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jfile
-Version: 0.10
+Version: 0.11
 Release: 1
 Summary: File Manager
 License: LGPL

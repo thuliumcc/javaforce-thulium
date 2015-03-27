@@ -1,5 +1,22 @@
 What's new...
 
+Nov 1/2014 : JF 7.38.0 released!
+  - javaforce.utils.monitordir (Linux:inotify service)
+    - added MOVED_TO & MOVED_FROM events
+  - jFile/0.11
+    - cut/copy/paste now implemented using a global clipboard now
+    - added some common keyboard shortcuts
+  - jDesktop/0.26
+    - stores cut/copy/paste in a special clipboard (since Java Clipboard does not support cut to clipboard)
+  - jConfig/0.11
+    - fix : Interface dialog still tries to save config on cancel
+  - jLogon/0.16
+    - fix : network issues
+  - jfFTP/0.4
+    - added some common keyboard shortcuts
+  - jfTorrent/0.4
+    - added MSI package
+
 Oct 25/2014 : JF 7.37.0 released!
   - jPhoneLite/1.9.2
     - some minor fixes
