@@ -9,6 +9,7 @@ import javax.net.ssl.*;
 //remove these for Android
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
@@ -23,7 +24,7 @@ import javax.swing.*;
 public class JF {
 
   public static String getVersion() {
-    return "7.44.0";
+    return "7.45.0";
   }
 
   public static void sleep(int milli) {
@@ -1248,4 +1249,45 @@ public class JF {
     }
   }
 
+  /** Creates a field list used for JNA Structures. */
+  public static java.util.List makeFieldList(Class cls) {
+    //This "assumes" compiler places fields in order as defined (some don't)
+    ArrayList<String> list = new ArrayList<String>();
+    Field fields[] = cls.getFields();
+    for(int a=0;a<fields.length;a++) {
+      String name = fields[a].getName();
+      if (name.startsWith("ALIGN_")) continue;  //field of Structure
+      list.add(name);
+    }
+    return list;
+  }
+
+  /** Modifies a JPanel so it can use a JMenuBar.
+   *
+   * Usage:
+   *   - Create a JPanel (parent) with another JPanel (child) inside it that
+   *     fills the space
+   *   - place your controls in the child JPanel
+   *   - Create a JMenuBar (NetBeans will place it in "Other Components")
+   *   - in the ctor after initComponents() call setJPanelMenuBar()
+   *     ie: setJPanelMenuBar(this, child, menuBar);
+   *
+   * Note:
+   *   a client property "root" is set in the parent JPanel to the JRootPane created
+   *     if you need later.
+   *
+   */
+  public static void setJPanelMenuBar(JPanel parent, JPanel child, JMenuBar menuBar) {
+    parent.removeAll();
+    parent.setLayout(new BorderLayout());
+    JRootPane root = new JRootPane();
+    parent.add(root, BorderLayout.CENTER);
+    root.setJMenuBar(menuBar);
+    root.getContentPane().add(child);
+    parent.putClientProperty("root", root);  //if you need later
+  }
+
+  public static void donate() {
+    showMessage("Donate", "If you find this program useful,\nplease send $5 US or more via Paypal to pquiring@gmail.com\nThanks!");
+  }
 }

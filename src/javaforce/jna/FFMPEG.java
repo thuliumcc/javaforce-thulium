@@ -60,7 +60,7 @@ public class FFMPEG {
     }
     //...etc...
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVFormatContext(Pointer ptr) {
       super(ptr);
@@ -91,7 +91,7 @@ public class FFMPEG {
 
     //...etc...
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVStream(Pointer ptr) {
       super(ptr);
@@ -102,7 +102,7 @@ public class FFMPEG {
     public int type;
     //...etc...
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVCodec(Pointer ptr) {
       super(ptr);
@@ -111,7 +111,7 @@ public class FFMPEG {
   public static class AVClass extends Structure {
     public Pointer name;
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVClass(Pointer ptr) {
       super(ptr);
@@ -226,7 +226,7 @@ public class FFMPEG {
       return super.fieldOffset(field);
     }
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVCodecContext(Pointer ptr) {
       super(ptr);
@@ -248,7 +248,7 @@ public class FFMPEG {
     public long pos;
     public long convergence_duration;
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVPacket() {}
     public AVPacket(Pointer ptr) {
@@ -288,7 +288,7 @@ public class FFMPEG {
     public long channel_layout;
     //...etc...
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVFrame(Pointer ptr) {
       super(ptr);
@@ -301,7 +301,7 @@ public class FFMPEG {
     public int priv_data_size;
     public Pointer write_header, write_packet, write_trailer, interleave_packet, query_codec, get_output_timestamp;
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVOutputFormat(Pointer ptr) {
       super(ptr);
@@ -312,7 +312,7 @@ public class FFMPEG {
     public Pointer data[] = new Pointer[8];
     public int linesize[] = new int[8];
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVPicture(Pointer ptr) {
       super(ptr);
@@ -323,7 +323,7 @@ public class FFMPEG {
   public static class AVRational extends Structure implements Structure.ByValue {
     public int num, den;
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVRational(Pointer ptr) {
       super(ptr);
@@ -334,7 +334,7 @@ public class FFMPEG {
     public String name;
     //...etc...
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVInputFormat(Pointer ptr) {
       super(ptr);
@@ -354,7 +354,7 @@ public class FFMPEG {
     public long pos;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public AVIOContext(Pointer ptr) {
       super(ptr);
@@ -362,18 +362,6 @@ public class FFMPEG {
     public AVIOContext() {}
   }
 */
-
-  private static List makeFieldList(Class cls) {
-    //This "assumes" compiler places fields in order as defined (some don't)
-    ArrayList<String> list = new ArrayList<String>();
-    Field fields[] = cls.getFields();
-    for(int a=0;a<fields.length;a++) {
-      String name = fields[a].getName();
-      if (name.startsWith("ALIGN_")) continue;  //field of Structure
-      list.add(name);
-    }
-    return list;
-  }
 
   //constants
   private static final int AVMEDIA_TYPE_VIDEO = 0;

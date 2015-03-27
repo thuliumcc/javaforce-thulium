@@ -1,14 +1,13 @@
+/**
+ *
+ * @author pquiring
+ */
 
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
 
 import javaforce.*;
-
-/**
- *
- * @author pquiring
- */
 
 public class SiteFTP extends Site implements FTP.ProgressListener {
   public FTP ftp;
@@ -72,9 +71,12 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
       remoteDir.setText(wd);
       parseRemote(wd, ftp.ls("."));
     } catch (Exception e) {
-      setStatus("Error:" + e);
+      setStatus(null);
       JFLog.log(e);
       addLog("Error:" + e);
+      addLog(ftp.getLastResponse());
+      remoteFilesTableModel.setRowCount(0);
+      remoteFilesTableModel.addRow(new Object[] {"Error"});
     }
   }
 
@@ -83,13 +85,12 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
     path = path.replaceAll("\\\\", "/");
     try {
       ftp.cd(path);
-      String wd = remote_pwd();
-      remoteDir.setText(wd);
-      parseRemote(wd, ftp.ls("."));
+      remote_ls();
     } catch (Exception e) {
-      setStatus("Error:" + e);
+      setStatus(null);
       JFLog.log(e);
       addLog("Error:" + e);
+      addLog(ftp.getLastResponse());
     }
   }
 
@@ -153,9 +154,10 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
             if (aborted) break;
           }
         } catch (Exception e) {
-          setStatus("Error:" + e);
+          setStatus(null);
           JFLog.log(e);
-          addLog("" + e);
+          addLog("Error:" + e);
+          addLog(ftp.getLastResponse());
         }
         local_chdir(".");  //refresh
       }
@@ -163,7 +165,14 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
   }
 
   public void download_file(File remote, File local) {
-    try { ftp.get(remote, local); } catch (Exception e) { setStatus("Error:" + e); JFLog.log(e); addLog("" + e); }
+    try {
+      ftp.get(remote, local);
+    } catch (Exception e) {
+      setStatus(null);
+      JFLog.log(e);
+      addLog("Error:" + e);
+      addLog(ftp.getLastResponse());
+    }
   }
 
   @Override
@@ -225,9 +234,10 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
             if (aborted) break;
           }
         } catch (Exception e) {
-          setStatus("Error:" + e);
+          setStatus(null);
           JFLog.log(e);
-          addLog("" + e);
+          addLog("Error:" + e);
+          addLog(ftp.getLastResponse());
         }
         remote_chdir(".");  //refresh
       }
@@ -235,7 +245,14 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
   }
 
   public void upload_file(File local, File remote) {
-    try { ftp.put(local, remote); } catch (Exception e) { setStatus("Error:" + e); JFLog.log(e); addLog("" + e); }
+    try {
+      ftp.put(local, remote);
+    } catch (Exception e) {
+      setStatus(null);
+      JFLog.log(e);
+      addLog("Error:" + e);
+      addLog(ftp.getLastResponse());
+    }
   }
 
   public void abort() {
@@ -262,9 +279,10 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
     try {
       ftp.mkdir(file);
     } catch (Exception e) {
-      setStatus("Error:" + e);
+      setStatus(null);
       JFLog.log(e);
       addLog("Error:" + e);
+      addLog(ftp.getLastResponse());
     }
   }
 
@@ -329,9 +347,10 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
     try {
       ftp.rm(file);
     } catch (Exception e) {
-      setStatus("Error:" + e);
+      setStatus(null);
       JFLog.log(e);
       addLog("Error:" + e);
+      addLog(ftp.getLastResponse());
     }
   }
 
@@ -349,9 +368,10 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
         }
       }
     } catch (Exception e) {
-      setStatus("Error:" + e);
+      setStatus(null);
       JFLog.log(e);
       addLog("Error:" + e);
+      addLog(ftp.getLastResponse());
     }
   }
 
@@ -380,9 +400,10 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
     try {
       ftp.rename(from, to);
     } catch (Exception e) {
-      setStatus("Error:" + e);
+      setStatus(null);
       JFLog.log(e);
       addLog("Error:" + e);
+      addLog(ftp.getLastResponse());
     }
   }
 
@@ -411,9 +432,10 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
       setPerms(dialog.value, remoteFile);
       remote_chdir(".");  //refresh
     } catch (Exception e) {
-      setStatus("Error:" + e);
+      setStatus(null);
       JFLog.log(e);
       addLog("Error:" + e);
+      addLog(ftp.getLastResponse());
     }
   }
 
@@ -422,9 +444,10 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
       ftp.chmod(value, remoteFile);
       remote_chdir(".");  //refresh
     } catch (Exception e) {
-      setStatus("Error:" + e);
+      setStatus(null);
       JFLog.log(e);
       addLog("Error:" + e);
+      addLog(ftp.getLastResponse());
     }
   }
 

@@ -1,6 +1,9 @@
 jfFTP
 =====
 
+Mar 26, 2015 - version 0.6
+  - fix : ftp support improved (fault tolerance)
+
 Feb 9, 2015 - version 0.5
   - fix : progress bar works now with all protocols
   - fix : download filenames were reversed

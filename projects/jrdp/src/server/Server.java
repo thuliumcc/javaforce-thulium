@@ -120,7 +120,7 @@ public class Server extends javax.swing.JFrame implements ActionListener {
     rdpPassword = new javax.swing.JTextField();
     generateSSL = new javax.swing.JButton();
     status = new javax.swing.JLabel();
-    jButton1 = new javax.swing.JButton();
+    donate = new javax.swing.JButton();
 
     setTitle("jfRDP Server");
 
@@ -153,10 +153,10 @@ public class Server extends javax.swing.JFrame implements ActionListener {
 
     status.setText("Status : ...");
 
-    jButton1.setText("Donate");
-    jButton1.addActionListener(new java.awt.event.ActionListener() {
+    donate.setText("Donate");
+    donate.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        jButton1ActionPerformed(evt);
+        donateActionPerformed(evt);
       }
     });
 
@@ -170,7 +170,7 @@ public class Server extends javax.swing.JFrame implements ActionListener {
           .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
             .addComponent(generateSSL)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(jButton1)
+            .addComponent(donate)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
             .addComponent(Cancel)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -209,7 +209,7 @@ public class Server extends javax.swing.JFrame implements ActionListener {
           .addComponent(save)
           .addComponent(Cancel)
           .addComponent(generateSSL)
-          .addComponent(jButton1))
+          .addComponent(donate))
         .addContainerGap())
     );
 
@@ -230,9 +230,9 @@ public class Server extends javax.swing.JFrame implements ActionListener {
     generateSSL();
   }//GEN-LAST:event_generateSSLActionPerformed
 
-  private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-    JF.showMessage("Donate", "If you find this program useful, please send $5 USD or more via paypal to pquiring@gmail.com");
-  }//GEN-LAST:event_jButton1ActionPerformed
+  private void donateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_donateActionPerformed
+    JF.donate();
+  }//GEN-LAST:event_donateActionPerformed
 
   /**
    * @param args the command line arguments
@@ -249,8 +249,8 @@ public class Server extends javax.swing.JFrame implements ActionListener {
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton Cancel;
+  private javax.swing.JButton donate;
   private javax.swing.JButton generateSSL;
-  private javax.swing.JButton jButton1;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;

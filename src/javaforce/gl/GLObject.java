@@ -12,7 +12,7 @@ public class GLObject implements Cloneable {
   public JFArrayFloat vpl;  //vertex position list
   public JFArrayFloat tcl;  //texture coords list
   public JFArrayInt vil;  //vertex index list
-  public int texidx;     //texture index (-1 = none)
+  public String textureName;     //texture name
   public boolean texloaded;
   public boolean visible;
 //animation data
@@ -27,7 +27,7 @@ public class GLObject implements Cloneable {
   public int maxframeCount;
   public int vpb = -1, tcb = -1, vib = -1;  //GL Buffers
   public GLObject() {
-    texidx = -1;
+    textureName = null;
     texloaded = false;
     frameIndex = 0;
     vpl = new JFArrayFloat();
@@ -48,7 +48,7 @@ public class GLObject implements Cloneable {
     GLObject cln = new GLObject();
     cln.vpl = vpl;
     cln.tcl = tcl;
-    cln.texidx = texidx;
+    cln.textureName = textureName;
     cln.texloaded = texloaded;
     cln.visible = visible;
     cln.tl = tl;

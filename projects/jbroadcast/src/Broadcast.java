@@ -24,7 +24,7 @@ import javaforce.voip.*;
 
 public class Broadcast extends javax.swing.JFrame implements SIPClientInterface, RTPInterface, ActionListener {
 
-  public final String version = "0.27";
+  public final String version = "0.28";
 
   public String startList = null;
   public String cfgSuffix = "";
@@ -43,6 +43,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       setTitle("jfBroadcast/" + version);
     JFLog.init(JF.getUserPath() + "/jfbroadcast" + cfgSuffix + ".log", true);
     loadSetup();
+    setOptsState();
     updateAvailableLists();
     new Thread() {
       @Override
@@ -163,7 +164,8 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     greeting_threshold = new javax.swing.JTextField();
     silence_threshold = new javax.swing.JTextField();
     silence_duration = new javax.swing.JTextField();
-    disable_detect = new javax.swing.JCheckBox();
+    human_vm_detect = new javax.swing.JCheckBox();
+    voicemail_hangup = new javax.swing.JCheckBox();
     jPanel7 = new javax.swing.JPanel();
     jLabel13 = new javax.swing.JLabel();
     enable_g729a = new javax.swing.JCheckBox();
@@ -254,6 +256,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     jScrollPane2 = new javax.swing.JScrollPane();
     help = new javax.swing.JTextArea();
     save_setup = new javax.swing.JButton();
+    jButton1 = new javax.swing.JButton();
 
     setTitle("jfBroadcast");
 
@@ -509,7 +512,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
 
     jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Options"));
 
-    jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Human/Machine Detection Options"));
+    jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Human/Voicemail Detection Options"));
 
     jLabel2.setText("Greeting Detection Threshold:");
     jLabel2.setToolTipText("100-32000 (default = 1000)");
@@ -518,7 +521,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     jLabel3.setToolTipText("100-32000 (default = 1000)");
 
     jLabel4.setText("Silence Duration (ms):");
-    jLabel4.setToolTipText("100-5000 (default = 1000)");
+    jLabel4.setToolTipText("100-5000 (default = 2000)");
 
     greeting_threshold.setText("1000");
     greeting_threshold.setToolTipText("100-32000 (default = 1000)");
@@ -526,18 +529,32 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     silence_threshold.setText("1000");
     silence_threshold.setToolTipText("100-32000 (default = 1000)");
 
-    silence_duration.setText("100");
+    silence_duration.setText("2000");
     silence_duration.setToolTipText("100-5000 (default = 1000)");
 
-    disable_detect.setText("Disable human/machine detection");
+    human_vm_detect.setSelected(true);
+    human_vm_detect.setText("Enable human/voicemail detection");
+    human_vm_detect.setToolTipText("Start messages after human/voicemail greeting.");
+    human_vm_detect.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        human_vm_detectActionPerformed(evt);
+      }
+    });
+
+    voicemail_hangup.setText("Voicemail hangup");
+    voicemail_hangup.setToolTipText("Hangup call if voicemail is detected.");
 
     javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
     jPanel1.setLayout(jPanel1Layout);
     jPanel1Layout.setHorizontalGroup(
       jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(jPanel1Layout.createSequentialGroup()
+        .addComponent(human_vm_detect)
+        .addGap(0, 0, Short.MAX_VALUE))
+      .addGroup(jPanel1Layout.createSequentialGroup()
         .addContainerGap()
         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+          .addComponent(voicemail_hangup, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
           .addGroup(jPanel1Layout.createSequentialGroup()
             .addComponent(jLabel2)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -551,15 +568,12 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
               .addComponent(silence_threshold)
               .addComponent(silence_duration, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE))))
         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-      .addGroup(jPanel1Layout.createSequentialGroup()
-        .addComponent(disable_detect)
-        .addGap(0, 0, Short.MAX_VALUE))
     );
     jPanel1Layout.setVerticalGroup(
       jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(jPanel1Layout.createSequentialGroup()
         .addContainerGap()
-        .addComponent(disable_detect)
+        .addComponent(human_vm_detect)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel2)
@@ -572,6 +586,8 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel4)
           .addComponent(silence_duration, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addComponent(voicemail_hangup)
         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
 
@@ -748,8 +764,8 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
         .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+          .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addContainerGap(40, Short.MAX_VALUE))
     );
 
@@ -1227,6 +1243,13 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       }
     });
 
+    jButton1.setText("Donate");
+    jButton1.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jButton1ActionPerformed(evt);
+      }
+    });
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -1238,6 +1261,8 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
           .addGroup(layout.createSequentialGroup()
             .addComponent(jLabel1)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jButton1)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(save_setup))
           .addGroup(layout.createSequentialGroup()
             .addComponent(start)
@@ -1251,7 +1276,8 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel1)
-          .addComponent(save_setup))
+          .addComponent(save_setup)
+          .addComponent(jButton1))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(jTabbedPane1)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
@@ -1348,6 +1374,14 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     createList();
   }//GEN-LAST:event_create_listActionPerformed
 
+  private void human_vm_detectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_human_vm_detectActionPerformed
+    setOptsState();
+  }//GEN-LAST:event_human_vm_detectActionPerformed
+
+  private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    JF.donate();
+  }//GEN-LAST:event_jButton1ActionPerformed
+
   /**
    * @param args the command line arguments
    */
@@ -1374,7 +1408,6 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
   private javax.swing.JCheckBox day7;
   private javax.swing.JSpinner delay;
   private javax.swing.JButton delete_list;
-  private javax.swing.JCheckBox disable_detect;
   private javax.swing.JCheckBox enable;
   private javax.swing.JCheckBox enable_g711a;
   private javax.swing.JCheckBox enable_g711u;
@@ -1404,7 +1437,9 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
   private javax.swing.JRadioButton gotouser;
   private javax.swing.JTextField greeting_threshold;
   private javax.swing.JTextArea help;
+  private javax.swing.JCheckBox human_vm_detect;
   private javax.swing.JButton import_list;
+  private javax.swing.JButton jButton1;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel10;
   private javax.swing.JLabel jLabel11;
@@ -1487,6 +1522,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
   private javax.swing.JLabel status;
   private javax.swing.JRadioButton terminate;
   private javax.swing.JLabel title;
+  private javax.swing.JCheckBox voicemail_hangup;
   private javax.swing.JTextField wav_filename;
   private javax.swing.JRadioButton xfer;
   private javax.swing.JTextField xfer_digit;
@@ -1903,6 +1939,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     String end[] = new String[] {"17:00", "17:00", "17:00", "17:00", "17:00", "17:00", "17:00"};
     //sip port range
     int sip_start, sip_end;
+    boolean voicemail_hangup;
   }
 
   private Settings settings;
@@ -1929,7 +1966,6 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
 
       number_lines.setValue(new Integer(settings.numberLines));
       xfer_number.setText(settings.xfer);
-      disable_detect.setSelected(settings.disable_detect);
       if (settings.delay == 0) settings.delay = 100;
       delay.setValue(new Integer(settings.delay));
       enable_xfer.setSelected(settings.enable_xfer);
@@ -1945,9 +1981,11 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       enable_reinvites.setSelected(settings.enable_reinvites);
       check_update.setSelected(settings.check_update);
 
+      human_vm_detect.setSelected(!settings.disable_detect);
       greeting_threshold.setText(Integer.toString(settings.greetingThreshold));
       silence_threshold.setText(Integer.toString(settings.silenceThreshold));
       silence_duration.setText(Integer.toString(settings.silenceDuration));
+      voicemail_hangup.setSelected(settings.voicemail_hangup);
 
       if (settings.day == null) {
         settings.day = new boolean[] {false, true, true, true, true, true, false};
@@ -2007,9 +2045,11 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     delay.setValue(new Integer(100));
     maxRingTime.setValue(new Integer(60));
     maxAttempts.setValue(new Integer(3));
+    human_vm_detect.setSelected(true);
     greeting_threshold.setText("1000");
     silence_threshold.setText("1000");
-    silence_duration.setText("1000");
+    silence_duration.setText("2000");
+    voicemail_hangup.setSelected(false);
     day1.setSelected(false);
     day2.setSelected(true);
     day3.setSelected(true);
@@ -2091,7 +2131,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     value = JF.atoi(silence_threshold.getText());
     if (value < 100 || value > 32000) silence_threshold.setText("1000");
     value = JF.atoi(silence_duration.getText());
-    if (value < 100 || value > 5000) silence_duration.setText("1000");
+    if (value < 100 || value > 5000) silence_duration.setText("2000");
   }
 
   public void saveSetup() {
@@ -2110,7 +2150,11 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       settings.wav_filename = "";  //obsolete
       settings.numberLines = (Integer)(number_lines.getValue());
       settings.xfer = xfer_number.getText();
-      settings.disable_detect = disable_detect.isSelected();
+      settings.disable_detect = !human_vm_detect.isSelected();
+      settings.greetingThreshold = JF.atoi(greeting_threshold.getText());
+      settings.silenceThreshold = JF.atoi(silence_threshold.getText());
+      settings.silenceDuration = JF.atoi(silence_duration.getText());
+      settings.voicemail_hangup = voicemail_hangup.isSelected();
       settings.delay = (Integer)(delay.getValue());
       settings.enable_xfer = enable_xfer.isSelected();
       settings.xfer_digit = xfer_digit.getText().charAt(0);
@@ -2408,10 +2452,11 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     enable_g711a.setEnabled(state);
     enable_reinvites.setEnabled(state);
     check_update.setEnabled(state);
-    disable_detect.setEnabled(state);
+    human_vm_detect.setEnabled(state);
     greeting_threshold.setEnabled(state);
     silence_threshold.setEnabled(state);
     silence_duration.setEnabled(state);
+    voicemail_hangup.setEnabled(state);
     export_list.setEnabled(state);
     delay.setEnabled(state);
     enable_xfer.setEnabled(state);
@@ -2625,12 +2670,21 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
             //detect end of hello/answering machine beep
             if (lines[a].rtp.getDefaultChannel().getSamples(tmp)) {
               int avg = 0;
+              int peek = 0;
+              int val;
               for(int p=0;p<160;p++) {
-                avg += Math.abs(tmp[p]);
+                val = Math.abs(tmp[p]);
+                avg += val;
+                if (val > peek) peek = val;
               }
               avg /= 160;
               if (avg > settings.silenceThreshold) {
                 lines[a].quietcount = 0;
+                if (settings.voicemail_hangup && isVoiceMailBeep(tmp, peek)) {
+                  sip.bye(lines[a].callid);
+                  endCall(lines[a], "voicemail");
+                  continue;
+                }
               } else {
                 lines[a].quietcount++;
               }
@@ -3094,7 +3148,72 @@ JFLog.log("connected : number=" + lines[a].number);
       }
     }
   }
+
+  private void setOptsState() {
+    boolean state = human_vm_detect.isSelected();
+    greeting_threshold.setEnabled(state);
+    silence_threshold.setEnabled(state);
+    silence_duration.setEnabled(state);
+    voicemail_hangup.setEnabled(state);
+  }
+
+  //voicemail beep is 0.2 sec @ 987.8 Hz (B5 note)
+  //volume is around 7000 (16bit)
+  private boolean isVoiceMailBeep(short samples[], int peek) {
+    //basically check if wave moves up/down smoothly and maintains a
+    //relative constant volume
+    int dir = 0;  //unknown
+    short last = samples[1];
+    if (peek < 2000) return false;  //too quiet
+    if (peek > 30000) return false;  //too loud
+    int pmax = peek + 1000;
+    int pmin = peek - 1000;
+    int nmax = -peek + 1000;
+    int nmin = -peek - 1000;
+    if (last > samples[0]) {
+      dir = 1;
+    } else {
+      dir = -1;
+    }
+    int wc = -1;  //samples / wave count
+    for(int a=2;a<160;a++) {
+      short now = samples[a];
+      if (dir == 1) {
+        if (now < last) {
+          //hit a peek
+          if (wc != -1) {
+            if (last < pmin || last > pmax) {
+//              System.out.println("+last <> peek:" + last + "<" + pmin + ">" + pmax);
+              return false;
+            }
+            if (wc < 7 || wc > 9) {
+//              System.out.println("wc=" + wc);
+              return false;
+            }  //Hz out of range
+          }
+          wc = 0;  //start wave count
+          dir = -1;
+        }
+      } else {
+        if (now > last) {
+          //hit valley
+          if (wc != -1) {
+            if (last < nmin || last > nmax) {
+//              System.out.println("-last <> peek:" + last + "<" + nmin + ">" + nmax + ":wc=" + wc);
+              return false;
+            }
+          }
+          dir = 1;
+        }
+      }
+      if (wc != -1) wc++;
+      last = now;
+    }
+    return true;
+  }
+
   public SystemTray tray;
   public TrayIcon icon;
   public MenuItem exit, show;
+
 }

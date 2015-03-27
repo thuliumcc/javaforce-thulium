@@ -80,7 +80,7 @@ public class Wav {
   public void close() {
     try { wav.close(); } catch (Exception e) {}
   }
-  /** Reads entire wav samples and closes file. */
+  /** Reads all samples and closes file. */
   public boolean readAllSamples() {
     try {
       samples8 = JF.readAll(wav, dataLength);
@@ -105,11 +105,13 @@ public class Wav {
       return false;
     }
   }
+
   /** Returns next chunk of samples. */
   public byte[] readSamples(int nSamples) {
     int byteLength = nSamples*bytes*chs;
     byte read8[];
-    try { read8 = JF.readAll(wav, byteLength); } catch (Exception e) {return null;}
+    read8 = JF.readAll(wav, byteLength);
+    if (read8 == null) return null;
     byte read32[];
     int lenXchs = nSamples * chs, pos = 0, pos24 = 0;
     switch (bits) {
@@ -144,5 +146,62 @@ public class Wav {
         return read32;
     }
     return null;
+  }
+
+  public boolean save(String fn) {
+    try {
+      FileOutputStream fos = new FileOutputStream(fn);
+      boolean ret = save(fos);
+      fos.close();
+      return ret;
+    } catch (Exception e) {
+      JFLog.log(e);
+      return false;
+    }
+  }
+
+  /** Save entire wav file (supports 16/32bit only) */
+  public boolean save(OutputStream os) {
+    if (bits != 16 && bits != 32) return false;
+    int size = 0;
+    switch (bits) {
+      case 16:
+        bytes = 2;
+        size = samples16.length * 2;
+        break;
+      case 32:
+        bytes = 4;
+        size = samples32.length * 4;
+        break;
+    }
+    try {
+      byte data[] = new byte[20];
+      //write RIFF header (20 bytes);
+      LE.setString(data, 0, 4, "RIFF");
+      LE.setuint32(data, 4, size + 36);  //rest of file size
+      LE.setString(data, 8, 4, "WAVE");
+      LE.setString(data, 12, 4, "fmt ");
+      LE.setuint32(data, 16, 16);  //fmt size
+      os.write(data, 0, 20);
+      //write fmt header (16 bytes)
+      data = new byte[16 + 4 + 4];
+      LE.setuint16(data, 0, 1);  //PCM
+      LE.setuint16(data, 2, chs);
+      LE.setuint32(data, 4, rate);
+      LE.setuint32(data, 8, bytes * chs * rate);  //bytes rate/sec
+      LE.setuint32(data, 12, bytes * chs);  //block align
+      LE.setuint16(data, 14, bits);
+      LE.setString(data, 16, 4, "data");
+      LE.setuint32(data, 20, size);
+      os.write(data, 0, 16 + 4 + 4);
+      switch (bits) {
+        case 16: os.write(LE.shortArray2byteArray(samples16, null)); break;
+        case 32: os.write(LE.intArray2byteArray(samples32, null)); break;
+      }
+    } catch (Exception e) {
+      errmsg = e.toString();
+      return false;
+    }
+    return false;
   }
 }

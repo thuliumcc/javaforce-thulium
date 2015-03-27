@@ -1,4 +1,4 @@
-jPhoneLite/1.9.3 beta 1
+jPhoneLite/1.9.3
 
 Java VoIP Audio/Video SoftPhone (SIP)
 http://jphonelite.sourceforge.net

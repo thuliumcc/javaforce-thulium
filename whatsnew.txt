@@ -1,5 +1,15 @@
 What's new...
 
+Mar 26/2015 : JF 7.45.0 released!
+  - jfBroadcast/0.28
+    - new : added voicemail detection
+    - fix : increased default silence duration to 2000ms
+    - fix : some options were not saved to disk
+  - jPhoneLite/1.9.3
+    - new : added Online Help button
+  - jfFTP/0.6
+    - fix : improved ftp support
+
 Mar 19/2015 : JF 7.44.0 released!
   - javaforce.jna.WinWebBrowser
     - new class to embed ActiveX Browser into a java.awt.Canvas

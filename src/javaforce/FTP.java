@@ -11,37 +11,73 @@ import javax.net.ssl.*;
 public class FTP {
 
   public static interface ProgressListener {
-
     public void setProgress(int value);
   }
 
-  public FTP() {
-  }
   private Socket s;
+  private Socket ds;
   private InputStream is;
   private OutputStream os;
   private BufferedReader br;
   private boolean passive = true;
   private String host;  //passive host
   private int pasvport; //passive port
-  private ServerSocket active;  //active socket
+  private ServerSocket ss;  //active socket
   private boolean log = false;
   private ProgressListener progress;
   private boolean aborted = false;
+  private boolean active = true;
+  private Reader reader;
+
   public boolean debug = false;
   /**
    * Holds the repsonse strings from the last executed command
    */
-  public String response[];
+  public ArrayList<String> response = new ArrayList<String>();
+
+  public int getResponseLength() {
+    synchronized(response) {
+      return response.size();
+    }
+  }
+
+  public void addResponse(String r) {
+    synchronized(response) {
+      response.add(r);
+    }
+  }
+
+  public String getNextResponse() {
+    synchronized(response) {
+      if (response.size() == 0) return null;
+      return response.remove(0);
+    }
+  }
+
+  public String getLastResponse() {
+    while (!aborted) {
+      synchronized(response) {
+        if (response.size() == 0) return null;
+        String res = response.remove(0);
+        if (res.charAt(3) == ' ') {
+          return res;
+        }
+      }
+    }
+    return null;
+  }
 
   public boolean connect(String host, int port) throws Exception {
+    active = true;
     s = new Socket(host, port);
     is = s.getInputStream();
     br = new BufferedReader(new InputStreamReader(is));
     os = s.getOutputStream();
     this.host = host;
-    getResponse();
-    if (response[response.length - 1].startsWith("220")) {
+    reader = new Reader();
+    reader.start();
+    wait4Response();
+    if (getLastResponse().startsWith("220")) {
       return true;
     }
     disconnect();  //not valid FTP site
@@ -49,6 +85,7 @@ public class FTP {
   }
 
   public boolean connectSSL(String host, int port) throws Exception {
+    active = true;
     TrustManager[] trustAllCerts = new TrustManager[]{
       new X509TrustManager() {
         public java.security.cert.X509Certificate[] getAcceptedIssuers() {
@@ -73,8 +110,10 @@ public class FTP {
     br = new BufferedReader(new InputStreamReader(is));
     os = s.getOutputStream();
     this.host = host;
-    getResponse();
-    if (response[response.length - 1].startsWith("220")) {
+    reader = new Reader();
+    reader.start();
+    wait4Response();
+    if (getLastResponse().startsWith("220")) {
       return true;
     }
     disconnect();  //not valid FTP site
@@ -86,12 +125,14 @@ public class FTP {
   }
 
   public void disconnect() throws Exception {
+    active = false;
     if (s != null) {
       s.close();
     }
     s = null;
     is = null;
     os = null;
+    reader = null;
   }
 
   public void addProgressListener(ProgressListener progress) {
@@ -108,8 +149,8 @@ public class FTP {
 
   public boolean setBinary() throws Exception {
     cmd("type i");
-    getResponse();
-    if (!response[response.length - 1].startsWith("200")) {
+    wait4Response();
+    if (!getLastResponse().startsWith("200")) {
       return false;
     }
     return true;
@@ -117,8 +158,8 @@ public class FTP {
 
   public boolean setAscii() throws Exception {
     cmd("type a");
-    getResponse();
-    if (!response[response.length - 1].startsWith("200")) {
+    wait4Response();
+    if (!getLastResponse().startsWith("200")) {
       return false;
     }
     return true;
@@ -126,13 +167,13 @@ public class FTP {
 
   public boolean login(String user, String pass) throws Exception {
     cmd("user " + user);
-    getResponse();
-    if (!response[response.length - 1].startsWith("331")) {
+    wait4Response();
+    if (!getLastResponse().startsWith("331")) {
       return false;
     }
     cmd("pass " + pass);
-    getResponse();
-    if (!response[response.length - 1].startsWith("230")) {
+    wait4Response();
+    if (!getLastResponse().startsWith("230")) {
       return false;
     }
     return true;
@@ -140,19 +181,24 @@ public class FTP {
 
   public void logout() throws Exception {
     cmd("quit");
-    getResponse();  //should be "221" but ignored
+    wait4Response();  //should be "221" but ignored
+    getLastResponse();
   }
 
   public void cmd(String cmd) throws Exception {
     if ((s == null) || (s.isClosed())) {
       throw new Exception("not connected");
     }
+    aborted = false;
     if (log) {
       if (cmd.startsWith("pass ")) {
         JFLog.log("pass ****");
       } else {
         JFLog.log(cmd);
       }
+    }
+    synchronized(response) {
+      response.clear();
     }
     cmd += "\r\n";
     os.write(cmd.getBytes());
@@ -164,14 +210,16 @@ public class FTP {
     FileOutputStream fos = new FileOutputStream(out);
     getData(fos);
     fos.close();
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public void get(String filename, OutputStream os) throws Exception {
     getPort();
     cmd("retr " + filename);
     getData(os);
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public InputStream getStart(String filename) throws Exception {
@@ -185,14 +233,16 @@ public class FTP {
   }
 
   public void getFinish() throws Exception {
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public void put(InputStream is, String filename) throws Exception {
     getPort();
     cmd("stor " + filename);
     putData(is);
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public void put(String in, String filename) throws Exception {
@@ -201,7 +251,8 @@ public class FTP {
     FileInputStream fis = new FileInputStream(in);
     putData(fis);
     fis.close();
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public void put(File local, File remote) throws Exception {
@@ -216,48 +267,56 @@ public class FTP {
   }
 
   public void putFinish() throws Exception {
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public void cd(String path) throws Exception {
     cmd("cwd " + path);
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public void chmod(int mode, String path) throws Exception {
     cmd("site chmod " + Integer.toString(mode, 8) + " " + path);
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public void mkdir(String path) throws Exception {
     cmd("mkd " + path);
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public void rename(String oldpath, String newpath) throws Exception {
     cmd("rnfr " + oldpath);
-    getResponse();
+    wait4Response();
+    getLastResponse();
     cmd("rnto " + newpath);
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public void rm(String path) throws Exception {
     cmd("dele " + path);
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public void rmdir(String path) throws Exception {
     cmd("rmd " + path);
-    getResponse();
+    wait4Response();
+    getLastResponse();
   }
 
   public String ls(String path) throws Exception {
     getPort();
-    cmd("dir " + path);
+    cmd("list " + path);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     getData(baos);
-    getResponse();
-    if (!response[response.length - 1].startsWith("226")) {
+    wait4Response();
+    if (!getLastResponse().startsWith("226")) {
       throw new Exception("bad listing");
     }
     return baos.toString();
@@ -265,9 +324,8 @@ public class FTP {
 
   public String pwd() throws Exception {
     cmd("pwd");
-    getResponse();
-    int res = response.length - 1;
-    String str = response[res];
+    wait4Response();
+    String str = getLastResponse();
     if (!str.startsWith("257")) {
       throw new Exception("pwd failed");
     }
@@ -282,8 +340,8 @@ public class FTP {
   private void getPort() throws Exception {
     if (passive) {
       cmd("pasv");
-      getResponse();
-      String str = response[response.length - 1];
+      wait4Response();
+      String str = getLastResponse();
       if (!str.startsWith("227")) {
         throw new Exception("pasv failed");
       }
@@ -296,12 +354,12 @@ public class FTP {
       int lo = Integer.valueOf(strs[5].substring(0, strs[5].indexOf(")")));
       pasvport = (hi << 8) + lo;
     } else {
-      active = new ServerSocket();
-      int hi = active.getLocalPort() >> 8;
-      int lo = active.getLocalPort() & 0xff;
+      ss = new ServerSocket();
+      int hi = ss.getLocalPort() >> 8;
+      int lo = ss.getLocalPort() & 0xff;
       cmd(s.getLocalAddress().getHostAddress().replaceAll("[.]", ",") + "," + hi + "," + lo);
-      getResponse();
-      String str = response[response.length - 1];
+      wait4Response();
+      String str = getLastResponse();
       if (!str.startsWith("200")) {
         throw new Exception("port failed");
       }
@@ -310,16 +368,14 @@ public class FTP {
 
   private InputStream getData() throws Exception {
     aborted = false;
-    Socket ds;
     if (passive) {
       ds = new Socket(host, pasvport);
     } else {
-      ds = active.accept();
+      ds = ss.accept();
     }
-    byte data[] = new byte[BUFSIZ];
     InputStream dis = ds.getInputStream();
-    getResponse();
-    if (!response[response.length - 1].startsWith("150")) {
+    wait4Response();
+    if (!getLastResponse().startsWith("150")) {
       throw new Exception("bad get");
     }
     return dis;
@@ -327,20 +383,21 @@ public class FTP {
 
   private void getData(OutputStream os) throws Exception {
     aborted = false;
-    Socket ds;
     if (passive) {
       ds = new Socket(host, pasvport);
     } else {
-      ds = active.accept();
+      ds = ss.accept();
     }
     byte data[] = new byte[BUFSIZ];
     InputStream dis = ds.getInputStream();
-    getResponse();
-    if (!response[response.length - 1].startsWith("150")) {
+    wait4Response();
+    if (!getLastResponse().startsWith("150")) {
       throw new Exception("bad get");
     }
     int read, total = 0;
+    startTimeoutThread();
     while (!ds.isClosed() && !aborted) {
+      timeoutCounter = 0;
       read = dis.read(data);
       if (read == -1) {
         break;
@@ -354,7 +411,11 @@ public class FTP {
       }
     }
     //read any remaining data left in buffers
+    if (aborted) {
+      return;
+    }
     do {
+      timeoutCounter = 0;
       read = dis.read(data);
       if (read > 0) {
         os.write(data, 0, read);
@@ -364,20 +425,19 @@ public class FTP {
         }
       }
     } while ((read > 0) && (!aborted));
+    stopTimeoutThread();
   }
 
   private OutputStream putData() throws Exception {
     aborted = false;
-    Socket ds;
     if (passive) {
       ds = new Socket(host, pasvport);
     } else {
-      ds = active.accept();
+      ds = ss.accept();
     }
-    byte data[] = new byte[BUFSIZ];
     OutputStream dos = ds.getOutputStream();
-    getResponse();
-    if (!response[response.length - 1].startsWith("150")) {
+    wait4Response();
+    if (!getLastResponse().startsWith("150")) {
       throw new Exception("bad put");
     }
     return dos;
@@ -385,20 +445,21 @@ public class FTP {
 
   private void putData(InputStream is) throws Exception {
     aborted = false;
-    Socket ds;
     if (passive) {
       ds = new Socket(host, pasvport);
     } else {
-      ds = active.accept();
+      ds = ss.accept();
     }
     byte data[] = new byte[BUFSIZ];
     OutputStream dos = ds.getOutputStream();
-    getResponse();
-    if (!response[response.length - 1].startsWith("150")) {
+    wait4Response();
+    if (!getLastResponse().startsWith("150")) {
       throw new Exception("bad put");
     }
     int total = 0;
+    startTimeoutThread();
     while ((!ds.isClosed()) && (is.available() > 0) && (!aborted)) {
+      timeoutCounter = 0;
       int read = is.read(data);
       if (read > 0) {
         dos.write(data, 0, read);
@@ -408,27 +469,81 @@ public class FTP {
         }
       }
     }
+    stopTimeoutThread();
     dos.flush();
     ds.close();
+    ds = null;
   }
 
-  private void getResponse() throws Exception {
-    ArrayList<String> tmp = new ArrayList<String>();
-    String str;
-    while (!s.isClosed()) {
-      str = br.readLine();
-      tmp.add(str);
-      if (str.charAt(3) == ' ') {
-        break;
-      }
-    }
-    int size = tmp.size();
-    response = new String[size];
-    for (int a = 0; a < size; a++) {
-      response[a] = tmp.get(a);
-      if (debug) {
-        System.out.println(response[a]);
+  private void wait4Response() throws Exception {
+    while (!aborted) {
+      synchronized(response) {
+        int size = response.size();
+        if (size > 0) {
+          String last = response.get(size-1);
+          if (last.charAt(3) == ' ') return;
+        }
+        response.wait();
       }
     }
   }
-};
+
+  private class Reader extends Thread {
+    public void run() {
+      while (active) {
+        try {
+          String res = br.readLine();
+          JFLog.log(res);
+          addResponse(res);
+          if (res.charAt(3) == ' ') {
+            synchronized(response) {
+              response.notify();
+            }
+          }
+          if (res.startsWith("5")) {
+            JFLog.log("Aborted");
+            aborted = true;
+            if (ds != null) {
+              ds.close();
+              ds = null;
+            }
+          }
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
+  }
+
+  private Timer timer;
+  private int timeoutCounter;
+
+  private void startTimeoutThread() {
+    timeoutCounter = 0;
+    if (timer != null) {
+      timer.cancel();
+      timer = null;
+    }
+    timer = new Timer();
+    timer.scheduleAtFixedRate(new TimerTask() {
+      public void run() {
+        timeoutCounter++;
+        if (timeoutCounter == 20) {
+          JFLog.log("Error:Transfer Timeout");
+          aborted = true;
+          if (ds != null) {
+            try {ds.close();} catch (Exception e) {}
+            ds = null;
+          }
+          timer.cancel();
+          timer = null;
+        }
+      }
+    }, 1000, 1000);
+  }
+
+  private void stopTimeoutThread() {
+    timer.cancel();
+    timer = null;
+  }
+}

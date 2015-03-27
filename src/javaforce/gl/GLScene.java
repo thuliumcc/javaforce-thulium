@@ -19,8 +19,8 @@ public class GLScene {
   private boolean needinittex = true;
 
   private ArrayList<GLModel> ml;
-  private HashMap<Integer, GLTexture> tl; //texture list
-  private HashMap<Integer, GLModel> mtl; //model templates list
+  private HashMap<String, GLTexture> tl; //texture list
+  private HashMap<String, GLModel> mtl; //model templates list
 
   private ArrayList<Integer> freeglidlist;
 
@@ -32,7 +32,6 @@ public class GLScene {
     texturePath = "";
     blankTexture = new GLTexture();
     blankTexture.set(new int[] {-1},1,1);  //white pixel
-    modelPath = "";
   }
 
   public String texturePath;
@@ -103,8 +102,8 @@ public class GLScene {
   public void reset() {
     if (tl != null) releaseTextures();
     ml = new ArrayList<GLModel>();
-    tl = new HashMap<Integer, GLTexture>();
-    mtl = new HashMap<Integer, GLModel>();
+    tl = new HashMap<String, GLTexture>();
+    mtl = new HashMap<String, GLModel>();
     m_camera = new GLMatrix();
     m_model = new GLMatrix();
   }
@@ -161,35 +160,33 @@ public class GLScene {
       for(int b=0;b<size2;b++) {
         obj = ml.get(a).ol.get(b);
         if (obj.texloaded) continue;
-        if (!loadTexture(ml.get(a).ol.get(b).texidx)) return false;
+        if (!loadTexture(ml.get(a).ol.get(b).textureName)) return false;
         obj.texloaded = true;
       }
     }
     return true;
   }
-  private boolean loadTexture(int texidx) {
-    String fn;
+  private boolean loadTexture(String fn) {
     GLTexture tex;
 
-    if (texidx == -1) return true;
-    if (tl.get(texidx) != null) {
-      tl.get(texidx).refcnt++;
+    tex = tl.get(fn);
+    if (tex != null) {
+      tex.refcnt++;
       return true;
     }
     needinittex = true;
-    fn = texturePath + String.format("%08x.png", texidx);
     tex = new GLTexture();
     if (!tex.load(fn)) return false;
     tex.refcnt = 1;
-    tl.put(texidx, tex);
+    tl.put(fn, tex);
     return true;
   }
-//directly load a texture
-  public boolean setTexture(int texidx, int px[], int w, int h) {
-    GLTexture tex = tl.get(texidx);
+  //directly load a texture
+  public boolean setTexture(String fn, int px[], int w, int h) {
+    GLTexture tex = tl.get(fn);
     if (tex == null) {
       tex = new GLTexture();
-      tl.put(texidx, tex);
+      tl.put(fn, tex);
     } else {
       tex.needload = true;
     }
@@ -269,7 +266,7 @@ public class GLScene {
     int size = mod.ol.size();
     for(int a=0;a<size;a++) {
       obj = mod.ol.get(a);
-      tl.get(obj.texidx).refcnt--;
+      tl.get(obj.textureName).refcnt--;
     }
     ml.remove(idx);
   }
@@ -322,8 +319,8 @@ public class GLScene {
         mat.mult4x4(obj.m);
         gl.glUniformMatrix4fv(mmu, 1, GL.GL_FALSE, mat.m);  //model matrix
         //setup rotate/translation/scale
-        if ((obj.texidx != -1) && (tl.get(obj.texidx).glid != -1)) {
-          int glid = tl.get(obj.texidx).glid;
+        if ((obj.textureName != null) && (tl.get(obj.textureName).glid != -1)) {
+          int glid = tl.get(obj.textureName).glid;
           gl.glBindTexture(GL.GL_TEXTURE_2D, glid);
         } else {
           gl.glBindTexture(GL.GL_TEXTURE_2D, blankTexture.glid);
@@ -334,21 +331,18 @@ public class GLScene {
     }
     gl.glFlush();
   }
-  public String modelPath;
-  public GLModel load3DS(int idx) {
-    String fn;
+  public GLModel load3DS(String fn) {
     GLModel mod;
 
-    mod = mtl.get(idx);
+    mod = mtl.get(fn);
     if (mod != null) {
       mod.refcnt++;
-      mod = (GLModel)mod.clone();
       return mod;
     }
-    fn = modelPath + String.format("%08x.3ds", idx);
-    mod = GLModel.load3DS(fn);
+
+    mod = GL_3DS.load(fn);
     if (mod == null) return null;
-    mtl.put(idx, mod);
+    mtl.put(fn, mod);
     mod.refcnt = 1;
     mod = (GLModel)mod.clone();
     return mod;

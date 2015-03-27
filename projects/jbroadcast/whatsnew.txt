@@ -1,6 +1,10 @@
 ChangeLog
 =========
 
+3-26-2015 : version 0.28
+ - new : added voicemail detection
+ - fix : some options where not saved to disk
+
 1-17-2015 : version 0.27
  - fix : greatly improved -allowdups performance
 

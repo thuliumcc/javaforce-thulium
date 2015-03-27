@@ -36,7 +36,7 @@ public class WinSound {
     public short wBitsPerSample;
     public short cbSize;
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
   }
   public static class WaveHdr extends Structure {
@@ -49,7 +49,7 @@ public class WinSound {
     public Pointer lpNext;
     public Pointer reserved;
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
   }
   public static class WaveOutCaps extends Structure {
@@ -60,7 +60,7 @@ public class WinSound {
     public short channels, reserved;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
   }
   public static class WaveInCaps extends Structure {
@@ -71,7 +71,7 @@ public class WinSound {
     public short channels, reserved;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
   }
   public static interface WinMM extends StdCallLibrary {
@@ -99,18 +99,6 @@ public class WinSound {
   }
   public static interface KERNEL extends StdCallLibrary {
     public int GetLastError();
-  }
-
-  private static List makeFieldList(Class cls) {
-    //This "assumes" compiler places fields in order as defined (some don't)
-    ArrayList<String> list = new ArrayList<String>();
-    Field fields[] = cls.getFields();
-    for(int a=0;a<fields.length;a++) {
-      String name = fields[a].getName();
-      if (name.startsWith("ALIGN_")) continue;  //field of Structure
-      list.add(name);
-    }
-    return list;
   }
 
   private static WinMM winmm;

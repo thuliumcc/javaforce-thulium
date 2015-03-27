@@ -391,7 +391,7 @@ public class WinRDPClient {
 
   public boolean dispose() {
     active = false;
-    ww.PostMessage();  //wake processMessage() loop
+    ww.postMessage();  //wake processMessage() loop
     return true;
   }
 

@@ -566,7 +566,7 @@ public class WinRDPServer {
 
   public boolean stop() {
     active = false;
-    ww.PostMessage();
+    ww.postMessage();
     return true;
   }
 

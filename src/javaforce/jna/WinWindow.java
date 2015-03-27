@@ -44,6 +44,8 @@ public class WinWindow {
     public boolean GetClientRect(Pointer hwnd, RECT rect);
     public Pointer GetParent(Pointer hwnd);
     public boolean DestroyWindow(Pointer hwnd);
+    public Pointer GetSystemMenu(Pointer hwnd, boolean revert);
+    public boolean InsertMenuItem(Pointer hmenu, int item, boolean byPos,MENUITEMINFO menuinfo);
   }
 
   public interface Kernel extends StdCallLibrary {
@@ -107,6 +109,10 @@ public class WinWindow {
     return hwnd;
   }
 
+  public void wrap(Pointer hwnd) {
+    this.hwnd = hwnd;
+  }
+
   public void setPos(int x,int y,int width,int height) {
     user.SetWindowPos(hwnd, null, x, y, width, height
       , 0x0004 | 0x0010 | 0x0040 | 0x0002);
@@ -131,19 +137,17 @@ public class WinWindow {
     user.DispatchMessageA(msg);
   }
 
-  public void PostMessage() {
+  public void postMessage() {
     user.PostMessageA(hwnd, 0x400, null, null);  //0x400 = WM_USER
   }
 
-  private static List makeFieldList(Class cls) {
-    //This "assumes" compiler places fields in order as defined (some don't)
-    ArrayList<String> list = new ArrayList<String>();
-    Field fields[] = cls.getFields();
-    for(int a=0;a<fields.length;a++) {
-      String name = fields[a].getName();
-      if (name.startsWith("ALIGN_")) continue;  //field of Structure
-      list.add(name);
-    }
-    return list;
+  public void insertMenuItem(String name, int id) {
+    MENUITEMINFO menuinfo = new MENUITEMINFO();
+    menuinfo.cbSize = menuinfo.size();
+    menuinfo.fMask = 0x40 | 0x02;  //MIIM_STRING | MIIM_ID
+    menuinfo.wId = id;
+    menuinfo.typeData = name;
+    menuinfo.cch = name.length();
+    user.InsertMenuItem(hwnd, id, false, menuinfo);
   }
 }

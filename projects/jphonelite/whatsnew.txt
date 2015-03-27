@@ -1,4 +1,6 @@
 CHANGELOG:
+3-26-2015 : v1.9.3 released
+  - added Online Help button to configure window (see ticket #25)
 2-9-2015 : v1.9.3 beta 1 (not released)
   - added support for inbound calls where SDP is not in INVITE but in ACK instead (see RFC 3665 sec 3.6)
     see ticket #24

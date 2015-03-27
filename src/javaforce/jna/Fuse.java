@@ -48,7 +48,7 @@ public class Fuse {
     public long st_ino;  //ignored ???   //88  //moved
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public int fieldOffset(String name) {
       return super.fieldOffset(name);
@@ -80,7 +80,7 @@ public class Fuse {
       public long st_ctimensec;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public int fieldOffset(String name) {
       return super.fieldOffset(name);
@@ -109,7 +109,7 @@ public class Fuse {
     public int f_namemax;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public int fieldOffset(String name) {
       return super.fieldOffset(name);
@@ -135,7 +135,7 @@ public class Fuse {
     public long f_namemax;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public int fieldOffset(String name) {
       return super.fieldOffset(name);
@@ -157,7 +157,7 @@ public class Fuse {
     public int poll_events;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public int fieldOffset(String name) {
       return super.fieldOffset(name);
@@ -178,7 +178,7 @@ public class Fuse {
 //    public int poll_events;  //3.0
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public int fieldOffset(String name) {
       return super.fieldOffset(name);
@@ -364,18 +364,6 @@ public class Fuse {
     int callback(Pointer path, int mode, Pointer ffi);
   }
 
-  private static List makeFieldList(Class cls) {
-    //This "assumes" compiler places fields in order as defined (some don't)
-    ArrayList<String> list = new ArrayList<String>();
-    Field fields[] = cls.getFields();
-    for(int a=0;a<fields.length;a++) {
-      String name = fields[a].getName();
-      if (name.startsWith("ALIGN_")) continue;  //field of Structure
-      list.add(name);
-    }
-    return list;
-  }
-
   public class fuse_operations extends Structure {
     public Callback getattr;
     public Callback readlink;
@@ -424,7 +412,7 @@ public class Fuse {
     public Callback fallocate;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public int fieldOffset(String name) {
       return super.fieldOffset(name);
@@ -435,7 +423,7 @@ public class Fuse {
     public int id;  //not used for now
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
   }
 

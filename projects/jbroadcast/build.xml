@@ -1,11 +1,11 @@
 <project name="broadcast" default="jar" basedir=".">
   <description>broadcast</description>
   <!-- set global properties for this build -->
-  <property name="app" location="jbroadcast"/>
+  <property name="app" value="jbroadcast"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
-  <property name="JBROADCASTVERSION" value="0.27"/>
+  <property name="version" value="0.28"/>
 
   <target name="depjars">
     <jar destfile="javaforce.jar">
@@ -58,16 +58,16 @@
 
   <target name="deb" description="create deb package">
     <exec executable="jdeb">
-      <arg value="jbroadcast-${JBROADCASTVERSION}_all.deb"/>
+      <arg value="jbroadcast-${version}_all.deb"/>
     </exec>
-    <copy file="jbroadcast-${JBROADCASTVERSION}_all.deb" todir="../../repo/ubuntu"/>
+    <copy file="jbroadcast-${version}_all.deb" todir="../../repo/ubuntu"/>
   </target>
 
   <target name="rpm" description="create rpm package">
     <exec executable="jrpm">
       <arg value="jbroadcast.spec"/>
     </exec>
-    <copy file="jbroadcast-${JBROADCASTVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+    <copy file="jbroadcast-${version}-1.noarch.rpm" todir="../../repo/fedora"/>
   </target>
 
   <!-- Requires WiX toolset in PATH -->
@@ -77,12 +77,12 @@
     <exec command="x86_64-w64-mingw32-windres -O coff -i jbroadcast.rc -o jbroadcast.res"/>
     <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jbroadcast.res -o jbroadcast64.exe"/>
     <exec command="candle -o wix.obj wix.xml"/>
-    <exec command="light -o jbroadcast-${JBROADCASTVERSION}.msi wix.obj"/>
-    <move file="jbroadcast-${JBROADCASTVERSION}.msi" todir="/home/pquiring/zips"/>
+    <exec command="light -o jfbroadcast-${version}.msi wix.obj"/>
+    <move file="jfbroadcast-${version}.msi" todir="/home/pquiring/zips"/>
   </target>
 
   <target name="release-bin" depends="jar" description="create release zip file">
-    <zip destfile="jbroadcast-${JBROADCASTVERSION}.zip">
+    <zip destfile="jfbroadcast-${version}.zip">
       <fileset dir=".">
         <include name="*.jar"/>
         <include name="*.txt"/>
@@ -90,11 +90,11 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="jbroadcast-${JBROADCASTVERSION}.zip" todir="/home/pquiring/zips"/>
+    <move file="jfbroadcast-${version}.zip" todir="/home/pquiring/zips"/>
   </target>
 
   <target name="release-src" depends="" description="create release zip file">
-    <zip destfile="jbroadcast-src-${JBROADCASTVERSION}.zip">
+    <zip destfile="jfbroadcast-src-${version}.zip">
       <fileset dir="../..">
         <include name="license.txt"/>
         <include name="projects/jbroadcast/src/*.java"/>
@@ -113,7 +113,7 @@
         <include name="include/*.h"/>
       </fileset>
     </zip>
-    <move file="jbroadcast-src-${JBROADCASTVERSION}.zip" todir="/home/pquiring/zips"/>
+    <move file="jfbroadcast-src-${version}.zip" todir="/home/pquiring/zips"/>
   </target>
 
   <target name="javadoc" description="generate java documentation">

@@ -36,7 +36,7 @@ public class LnxCom {
     public int c_ospeed;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public termios() {}
     public termios(Pointer ptr) {
@@ -154,17 +154,5 @@ public class LnxCom {
       c.close(fd);
       fd = -1;
     }
-  }
-
-  private static List makeFieldList(Class cls) {
-    //This "assumes" compiler places fields in order as defined (some don't)
-    ArrayList<String> list = new ArrayList<String>();
-    Field fields[] = cls.getFields();
-    for(int a=0;a<fields.length;a++) {
-      String name = fields[a].getName();
-      if (name.startsWith("ALIGN_")) continue;  //field of Structure
-      list.add(name);
-    }
-    return list;
   }
 }

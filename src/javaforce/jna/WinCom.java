@@ -34,14 +34,14 @@ public class WinCom {
     public byte XonChar, XoffChar, ErrorChar, EofChar, EvtChar;  //char
     public short resv2;
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
   }
   public static class COMMTIMEOUTS extends Structure {
     public int ReadIntervalTimeout, ReadTotalTimeoutMultiplier, ReadTotalTimeoutConstant;
     public int WriteTotalTimeoutMultiplier, WriteTotalTimeoutConstant;
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
   }
   public static interface Kernel extends StdCallLibrary {
@@ -121,16 +121,5 @@ public class WinCom {
       kernel.CloseHandle(handle);
       handle = null;
     }
-  }
-  private static List makeFieldList(Class cls) {
-    //This "assumes" compiler places fields in order as defined (some don't)
-    ArrayList<String> list = new ArrayList<String>();
-    Field fields[] = cls.getFields();
-    for(int a=0;a<fields.length;a++) {
-      String name = fields[a].getName();
-      if (name.startsWith("ALIGN_")) continue;  //field of Structure
-      list.add(name);
-    }
-    return list;
   }
 }

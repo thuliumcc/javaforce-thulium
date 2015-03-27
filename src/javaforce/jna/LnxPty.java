@@ -29,7 +29,7 @@ public class LnxPty {
     public int c_ospeed;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public termios() {}
     public termios(Pointer ptr) {
@@ -44,7 +44,7 @@ public class LnxPty {
     public short ws_ypixel;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public winsize() {}
     public winsize(Pointer ptr) {
@@ -56,7 +56,7 @@ public class LnxPty {
     public NativeLong tv_sec, tv_usec;
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public timeval() {}
     public timeval(Pointer ptr) {
@@ -68,7 +68,7 @@ public class LnxPty {
     public byte[] bits = new byte[128];  //must be 1024 bits
 
     protected List getFieldOrder() {
-      return makeFieldList(getClass());
+      return JF.makeFieldList(getClass());
     }
     public fd_set() {}
     public fd_set(Pointer ptr) {
@@ -168,18 +168,6 @@ public class LnxPty {
       JFLog.log(t);
       return false;
     }
-  }
-
-  private static List makeFieldList(Class cls) {
-    //This "assumes" compiler places fields in order as defined (some don't)
-    ArrayList<String> list = new ArrayList<String>();
-    Field fields[] = cls.getFields();
-    for(int a=0;a<fields.length;a++) {
-      String name = fields[a].getName();
-      if (name.startsWith("ALIGN_")) continue;  //field of Structure
-      list.add(name);
-    }
-    return list;
   }
 
   /** Spawns cmd with args and env (both must be null terminated arrays) and returns new pty. */
