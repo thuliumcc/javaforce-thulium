@@ -21,7 +21,7 @@ import javax.swing.*;
 public class JF {
 
   public static String getVersion() {
-    return "7.31.0";
+    return "7.32.0";
   }
 
   public static void sleep(int milli) {
@@ -105,6 +105,18 @@ public class JF {
         return Integer.parseInt(str.substring(1));
       }
       return Integer.parseInt(str);
+    } catch (Exception e) {
+      JFLog.log(e);
+      return -1;
+    }
+  }
+
+  public static float atof(String str) {
+    if (str.length() == 0) {
+      return 0;
+    }
+    try {
+      return Float.parseFloat(str);
     } catch (Exception e) {
       JFLog.log(e);
       return -1;

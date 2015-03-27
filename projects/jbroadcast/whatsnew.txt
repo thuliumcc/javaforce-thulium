@@ -1,6 +1,12 @@
 ChangeLog
 =========
 
+10-6-2014 : version 0.24
+ - new : added -dbpath and -cfgsuffix command line options
+ - new : added sip port range
+ - these new features allow more than once instance to run on the same computer at once (user requested feature)
+ - fix : after calling is complete sip port is now released
+
 9-15-2014 : version 0.23
  - new : tray icon (Windows 7 theme)
 

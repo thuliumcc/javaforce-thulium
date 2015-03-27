@@ -13,13 +13,14 @@ import javaforce.*;
 
 public class FTPApp extends javax.swing.JFrame {
 
-  public static String version = "0.2.2";
+  public static String version = "0.3";
 
   /**
    * Creates new form JFftp
    */
   public FTPApp() {
     initComponents();
+    setTitle("jfFTP/" + version);
     JF.centerWindow(this);
     JFLog.init(JF.getUserPath() + "/.jfftp.log", true);
     Site.loadIcons(this.getClass());

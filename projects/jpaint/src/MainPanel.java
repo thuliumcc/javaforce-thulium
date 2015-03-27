@@ -352,7 +352,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     toolbar1.add(selkeyclr);
 
     backswap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/backswap.png"))); // NOI18N
-    backswap.setToolTipText("Alternate background checker patter");
+    backswap.setToolTipText("Alternate background checker pattern.");
     backswap.setFocusable(false);
     backswap.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     backswap.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);

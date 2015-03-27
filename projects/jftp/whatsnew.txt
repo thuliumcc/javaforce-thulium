@@ -1,5 +1,9 @@
-jfftp
+jfFTP
 =====
+
+Oct 6, 2014 - version 0.3.0
+  - new : added support for SSH Identity keys (*.pem)
+  - fix : smb option was removed from SiteMgr ???
 
 Apr 15, 2014 - version 0.2.2
   - new : bringing back this project to life

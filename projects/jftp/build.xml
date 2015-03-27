@@ -4,7 +4,7 @@
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
-  <property name="JFTPVERSION" value="0.2.2"/>
+  <property name="JFTPVERSION" value="0.3"/>
 
   <target name="depjars">
     <jar destfile="javaforce.jar">
@@ -98,7 +98,7 @@
     <move file="jftp-${JFTPVERSION}.msi" todir="/home/pquiring/zips"/>
   </target>
 
-  <target name="release-bin" depends="sign-jar" description="create release zip file">
+  <target name="release-bin" depends="jar" description="create release zip file">
     <zip destfile="jftp-${JFTPVERSION}.zip">
       <fileset dir=".">
         <include name="*.jar"/>

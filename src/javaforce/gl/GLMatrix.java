@@ -127,7 +127,7 @@ public class GLMatrix implements Cloneable {
     setIdentity();
     m[0+0*4] = x;
     m[1+1*4] = y;
-    m[3+3*4] = z;
+    m[2+2*4] = z;
   }
 
   /** Adds rotation assuming there is currently no translation. */
@@ -389,7 +389,7 @@ Scaling
 
 x 0 0 0
 0 y 0 0
-0 0 1 0
-0 0 0 z
+0 0 z 0
+0 0 0 1
 
 */

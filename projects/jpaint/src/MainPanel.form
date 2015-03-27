@@ -391,7 +391,7 @@
             <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
               <Image iconType="3" name="/backswap.png"/>
             </Property>
-            <Property name="toolTipText" type="java.lang.String" value="Alternate background checker patter"/>
+            <Property name="toolTipText" type="java.lang.String" value="Alternate background checker pattern."/>
             <Property name="focusable" type="boolean" value="false"/>
             <Property name="horizontalTextPosition" type="int" value="0"/>
             <Property name="verticalTextPosition" type="int" value="3"/>

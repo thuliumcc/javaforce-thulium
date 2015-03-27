@@ -41,8 +41,16 @@ public class SiteSFTP extends SiteFTP {
       setStatus("Connecting...");
       jschsession = jsch.getSession(sd.username, sd.host, Integer.valueOf(sd.port));
 //System.out.println("session = " + jschsession);
-      jschsession.setPassword(sd.password);
-      jschsession.setUserInfo(new MyUserInfo(sd.password));
+      if (sd.sshKey.length() == 0) {
+        jschsession.setPassword(sd.password);
+        jschsession.setUserInfo(new MyUserInfo(sd.password));
+      } else {
+        JFLog.log("using key:" + sd.sshKey);
+        jsch.addIdentity(sd.sshKey);
+        java.util.Properties config = new java.util.Properties ();
+        config.put("StrictHostKeyChecking", "no");
+        jschsession.setConfig(config);
+      }
       setStatus("Login...");
       jschsession.connect(30000);
       channel = (ChannelSftp) jschsession.openChannel("sftp");

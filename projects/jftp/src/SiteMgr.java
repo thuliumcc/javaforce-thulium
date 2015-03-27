@@ -13,6 +13,8 @@ import javax.swing.JOptionPane;
 import javax.swing.tree.TreeSelectionModel;
 
 import javaforce.*;
+import javax.swing.JFileChooser;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
 
@@ -54,6 +56,9 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
     localDir = new javax.swing.JTextField();
     jLabel2 = new javax.swing.JLabel();
     remoteDir = new javax.swing.JTextField();
+    jLabel3 = new javax.swing.JLabel();
+    tSSHKey = new javax.swing.JTextField();
+    selectSSHKey = new javax.swing.JButton();
     listScroll = new javax.swing.JScrollPane();
     tree = new javax.swing.JTree();
     bNewFolder = new javax.swing.JButton();
@@ -108,7 +113,7 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
 
     lProtocol.setText("Protocol");
 
-    cbProtocol.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "FTP (21)", "FTPS (990)", "SFTP (22)", "SMB (445)" }));
+    cbProtocol.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "FTP (21)", "FTPS (990)", "SFTP (22)", "SMB(445)" }));
     cbProtocol.addItemListener(new java.awt.event.ItemListener() {
       public void itemStateChanged(java.awt.event.ItemEvent evt) {
         cbProtocolItemStateChanged(evt);
@@ -152,35 +157,51 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
 
     jLabel2.setText("Init Remote Folder");
 
+    jLabel3.setText("Identity Key");
+
+    selectSSHKey.setText("File ...");
+    selectSSHKey.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        selectSSHKeyActionPerformed(evt);
+      }
+    });
+
     javax.swing.GroupLayout settingsLayout = new javax.swing.GroupLayout(settings);
     settings.setLayout(settingsLayout);
     settingsLayout.setHorizontalGroup(
       settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, settingsLayout.createSequentialGroup()
+      .addGroup(settingsLayout.createSequentialGroup()
         .addContainerGap()
-        .addGroup(settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-          .addComponent(tPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
-          .addComponent(lName, javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(lHost, javax.swing.GroupLayout.Alignment.LEADING)
-          .addGroup(javax.swing.GroupLayout.Alignment.LEADING, settingsLayout.createSequentialGroup()
-            .addComponent(lProtocol)
-            .addGap(46, 46, 46)
-            .addComponent(lPort)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 50, Short.MAX_VALUE))
-          .addComponent(lUsername, javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(lPassword, javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(jLabel2, javax.swing.GroupLayout.Alignment.LEADING)
-          .addGroup(javax.swing.GroupLayout.Alignment.LEADING, settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-            .addComponent(remoteDir, javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(localDir, javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tUsername, javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, settingsLayout.createSequentialGroup()
-              .addComponent(cbProtocol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-              .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-              .addComponent(tPort))
-            .addComponent(tHost, javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(tName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)))
+        .addGroup(settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addComponent(tPassword, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE)
+          .addGroup(settingsLayout.createSequentialGroup()
+            .addComponent(tSSHKey)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(selectSSHKey))
+          .addGroup(settingsLayout.createSequentialGroup()
+            .addGroup(settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+              .addComponent(lName)
+              .addComponent(lHost)
+              .addGroup(settingsLayout.createSequentialGroup()
+                .addComponent(lProtocol)
+                .addGap(46, 46, 46)
+                .addComponent(lPort))
+              .addComponent(lUsername)
+              .addComponent(lPassword)
+              .addComponent(jLabel1)
+              .addComponent(jLabel2)
+              .addGroup(settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                .addComponent(remoteDir, javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(localDir, javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(tUsername, javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.LEADING, settingsLayout.createSequentialGroup()
+                  .addComponent(cbProtocol, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                  .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                  .addComponent(tPort))
+                .addComponent(tHost, javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(tName, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 155, Short.MAX_VALUE))
+              .addComponent(jLabel3))
+            .addGap(0, 0, Short.MAX_VALUE)))
         .addContainerGap())
     );
     settingsLayout.setVerticalGroup(
@@ -210,6 +231,12 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(tPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(jLabel3)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(settingsLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(tSSHKey, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(selectSSHKey))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(jLabel1)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(localDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -217,7 +244,7 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
         .addComponent(jLabel2)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(remoteDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addContainerGap(53, Short.MAX_VALUE))
+        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
 
     tree.setDragEnabled(true);
@@ -252,9 +279,9 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
           .addComponent(bDelete, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
           .addComponent(bNewFolder, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
           .addComponent(bNewSite, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         .addComponent(settings, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        .addContainerGap())
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -272,7 +299,7 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
             .addComponent(bNewSite)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(bNewFolder))
-          .addComponent(listScroll, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE))
+          .addComponent(listScroll, javax.swing.GroupLayout.Alignment.LEADING))
         .addContainerGap())
     );
 
@@ -327,6 +354,7 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
       if (child.name.equalsIgnoreCase("port")) tPort.setText(child.content);
       if (child.name.equalsIgnoreCase("username")) tUsername.setText(child.content);
       if (child.name.equalsIgnoreCase("password")) tPassword.setText(decodePassword(child.content));
+      if (child.name.equalsIgnoreCase("sshkey")) tSSHKey.setText(child.content);
       if (child.name.equalsIgnoreCase("localDir")) localDir.setText(child.content);
       if (child.name.equalsIgnoreCase("remoteDir")) remoteDir.setText(child.content);
     }
@@ -335,6 +363,16 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
 
   private void cbProtocolItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbProtocolItemStateChanged
     tPort.setText(ports[cbProtocol.getSelectedIndex()]);
+    switch (cbProtocol.getSelectedIndex()) {
+      case 0:  //ftp
+      case 1:  //ftps (ssl)
+      case 3:  //smb
+        tSSHKey.setEditable(false);
+        break;
+      case 2:  //sftp (ssh)
+        tSSHKey.setEditable(true);
+        break;
+    }
   }//GEN-LAST:event_cbProtocolItemStateChanged
 
   private void bDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bDeleteActionPerformed
@@ -370,6 +408,7 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
     xml.addSetTag(selectedTag, "port", "", tPort.getText());
     xml.addSetTag(selectedTag, "username", "", tUsername.getText());
     xml.addSetTag(selectedTag, "password", "", encodePassword(new String(tPassword.getPassword())));
+    xml.addSetTag(selectedTag, "sshkey", "", tSSHKey.getText());
     xml.addSetTag(selectedTag, "localDir", "", localDir.getText());
     xml.addSetTag(selectedTag, "remoteDir", "", remoteDir.getText());
     show(selectedTag);
@@ -403,6 +442,7 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
             if (child2.name.equals("port")) retValue[cnt].port = child2.content;
             if (child2.name.equals("username")) retValue[cnt].username = child2.content;
             if (child2.name.equals("password")) retValue[cnt].password = decodePassword(child2.content);
+            if (child2.name.equals("sshkey")) retValue[cnt].sshKey = child2.content;
             if (child2.name.equals("localDir")) retValue[cnt].localDir = child2.content;
             if (child2.name.equals("remoteDir")) retValue[cnt].remoteDir = child2.content;
           }
@@ -423,10 +463,22 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
     retValue[0].port = tPort.getText();
     retValue[0].username = tUsername.getText();
     retValue[0].password = new String(tPassword.getPassword());
+    retValue[0].sshKey = tSSHKey.getText();
     retValue[0].localDir = localDir.getText();
     retValue[0].remoteDir = remoteDir.getText();
     setVisible(false);
   }//GEN-LAST:event_bConnectActionPerformed
+
+  private void selectSSHKeyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectSSHKeyActionPerformed
+    JFileChooser chooser = new JFileChooser();
+    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    chooser.addChoosableFileFilter(new FileNameExtensionFilter("PEM", "pem"));
+    chooser.setMultiSelectionEnabled(false);
+    chooser.setCurrentDirectory(new File(JF.getUserPath()));
+    if (chooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+      tSSHKey.setText(chooser.getSelectedFile().toString());
+    }
+  }//GEN-LAST:event_selectSSHKeyActionPerformed
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton bConnect;
@@ -437,6 +489,7 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
   private javax.swing.JComboBox cbProtocol;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
+  private javax.swing.JLabel jLabel3;
   private javax.swing.JLabel lHost;
   private javax.swing.JLabel lName;
   private javax.swing.JLabel lPassword;
@@ -446,11 +499,13 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
   private javax.swing.JScrollPane listScroll;
   private javax.swing.JTextField localDir;
   private javax.swing.JTextField remoteDir;
+  private javax.swing.JButton selectSSHKey;
   private javax.swing.JPanel settings;
   private javax.swing.JTextField tHost;
   private javax.swing.JTextField tName;
   private javax.swing.JPasswordField tPassword;
   private javax.swing.JTextField tPort;
+  private javax.swing.JTextField tSSHKey;
   private javax.swing.JTextField tUsername;
   private javax.swing.JTree tree;
   // End of variables declaration//GEN-END:variables
@@ -558,6 +613,8 @@ public class SiteMgr extends javax.swing.JDialog implements XML.XMLEvent {
     tPort.setText("21");
     tUsername.setText("");
     tPassword.setText("");
+    tSSHKey.setText("");
+    tSSHKey.setEditable(false);
     bDelete.setEnabled(false);
     isNew = true;
     tName.setEditable(true);

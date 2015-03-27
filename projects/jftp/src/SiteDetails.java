@@ -25,6 +25,7 @@ public class SiteDetails {
   public String port;
   public String username;
   public String password;
+  public String sshKey;  //filename to PEM file
   public String localDir;
   public String remoteDir;
 }

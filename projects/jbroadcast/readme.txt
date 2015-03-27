@@ -55,6 +55,16 @@ Command Line Options
 --------------------
 -start <list>
   Starts a list as soon as the program starts.  Useful for starting jfBroadcast at a certain time.
+  Example : -start default
+-dbpath PATH
+  Sets the path where the database is stored. (Default depends on OS)
+  Example : -dbpath c:\folder
+-cfgsuffix SUFFIX
+  Adds SUFFIX (a simple name) to the config files used. (Default = broadcast.cfg and broadcast-msgs.cfg)
+  Example : -cfgsuffix i1    (will force broadcasti1.cfg and broadcast-msgsi1.cfg to be used)
+
+Note : With -dbpath and -cfgsuffix it is possible to run multiple copies on the same system as long as you
+       configure each instance to use different SIP Port ranges that do not overlap.
 
 Donote
 ------

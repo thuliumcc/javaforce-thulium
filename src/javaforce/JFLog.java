@@ -19,6 +19,12 @@ public class JFLog {
   }
   private static Hashtable<Integer, LogInstance> list = new Hashtable<Integer, LogInstance>();
 
+  private static class TraceException extends Exception {
+    public TraceException(String msg) {
+      super(msg);
+    }
+  }
+
   public static boolean init(int id, String filename, boolean append, PrintStream stdout) {
     LogInstance log = new LogInstance();
     log.stdout = stdout;
@@ -142,8 +148,12 @@ public class JFLog {
     buf.append(t.toString());
     buf.append("\r\n");
     StackTraceElement ste[] = t.getStackTrace();
+    int start = 0;
+    if (t instanceof TraceException) {
+      start = 1;  //skip JFLog.logTrace() step
+    }
     if (ste != null) {
-      for (int a = 0; a < ste.length; a++) {
+      for (int a = start; a < ste.length; a++) {
         buf.append("\tat ");
         buf.append(ste[a].toString());
         buf.append("\r\n");
@@ -210,4 +220,21 @@ public class JFLog {
   public static OutputStream getOutputStream() {
     return getOutputStream(0);
   }
+
+  public static void logTrace(int id, String msg) {
+    try {
+      throw new TraceException(msg);
+    } catch (Exception e) {
+      log(id, e);
+    }
+  }
+
+  public static void logTrace(String msg) {
+    try {
+      throw new TraceException(msg);
+    } catch (Exception e) {
+      log(0, e);
+    }
+  }
+
 }

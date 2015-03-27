@@ -10,24 +10,23 @@ public class SQL {
 
   public static String path;
 
-  static {
-    //setup derby.system.home
-    if (JF.isWindows()) {
-      path = System.getenv("ProgramData");  //Win Vista/7/8
-      if (path == null) {
-        path = System.getenv("AllUsersProfile");  //Win 2000/XP/2003
-        if (path == null) {
-          JFLog.log("Unable to find common data folder");
-          System.exit(1);
-        }
-      }
-    } else {
-      path = "/var/lib";
-    }
-    System.setProperty("derby.system.home", path);
-  }
-
   public static boolean initOnce() {
+    if (path == null) {
+      if (JF.isWindows()) {
+        path = System.getenv("ProgramData");  //Win Vista/7/8
+        if (path == null) {
+          path = System.getenv("AllUsersProfile");  //Win 2000/XP/2003
+          if (path == null) {
+            JFLog.log("Unable to find common data folder");
+            System.exit(1);
+          }
+        }
+      } else {
+        path = "/var/lib";
+      }
+    }
+    //setup derby.system.home
+    System.setProperty("derby.system.home", path);
     try {
       Class.forName("org.apache.derby.jdbc.EmbeddedDriver").newInstance();
     } catch (Exception e) {

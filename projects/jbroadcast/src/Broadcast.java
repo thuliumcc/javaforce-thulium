@@ -24,16 +24,23 @@ import javaforce.voip.*;
 
 public class Broadcast extends javax.swing.JFrame implements SIPClientInterface, RTPInterface, ActionListener {
 
-  public final String version = "0.23";
+  public final String version = "0.24";
+
+  public String startList = null;
+  public String cfgSuffix = "";
 
   /** Creates new form Broadcast */
   public Broadcast() {
+    processArgs();
     SQL.initOnce();
     initComponents();
     setPosition();
     loadHelp();
-    setTitle("jfBroadcast/" + version);
-    JFLog.init(JF.getUserPath() + "/jfbroadcast.log", true);
+    if (cfgSuffix.length() > 0)
+      setTitle("jfBroadcast/" + version + ":" + cfgSuffix);
+    else
+      setTitle("jfBroadcast/" + version);
+    JFLog.init(JF.getUserPath() + "/jfbroadcast" + cfgSuffix + ".log", true);
     loadSetup();
     updateAvailableLists();
     new Thread() {
@@ -52,7 +59,24 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     buttonGroup1.add(gotoidx);
     buttonGroup1.add(xfer);
     loadQuestion();
-    processArgs();
+    if (startList != null) {
+      //do -start command line option
+      int cnt = selected_list.getItemCount();
+      boolean ok = false;
+      for(int b=0;b<cnt;b++) {
+        String item = (String)selected_list.getItemAt(b);
+        if (item.equals(startList)) {
+          selected_list.setSelectedIndex(b);
+          start.doClick();
+          ok = true;
+          break;
+        }
+      }
+      if (!ok) {
+        JFLog.log("Error:specifed list for -start option not found");
+      }
+    }
+    //set icons
     JFImage appicon = new JFImage();
     appicon.loadPNG(this.getClass().getClassLoader().getResourceAsStream("jbroadcast.png"));
     setIconImage(appicon.getImage());
@@ -112,6 +136,10 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     sip_auth = new javax.swing.JTextField();
     sip_host = new javax.swing.JTextField();
     sip_pass = new javax.swing.JTextField();
+    jLabel34 = new javax.swing.JLabel();
+    sip_start = new javax.swing.JTextField();
+    jLabel36 = new javax.swing.JLabel();
+    sip_end = new javax.swing.JTextField();
     jPanel3 = new javax.swing.JPanel();
     create_list = new javax.swing.JButton();
     list_name = new javax.swing.JTextField();
@@ -249,6 +277,17 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
 
     jLabel12.setText("pass");
 
+    jLabel34.setText("SIP Port Range:");
+    jLabel34.setToolTipText("Valid range : 1024 thru 65535");
+
+    sip_start.setText("6000");
+    sip_start.setToolTipText("1024 - 60000");
+
+    jLabel36.setText("to");
+
+    sip_end.setText("9000");
+    sip_end.setToolTipText("1024 - 65535");
+
     javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
     jPanel2.setLayout(jPanel2Layout);
     jPanel2Layout.setHorizontalGroup(
@@ -271,7 +310,16 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
           .addGroup(jPanel2Layout.createSequentialGroup()
             .addComponent(jLabel12)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(sip_pass, javax.swing.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE)))
+            .addComponent(sip_pass, javax.swing.GroupLayout.DEFAULT_SIZE, 616, Short.MAX_VALUE))
+          .addGroup(jPanel2Layout.createSequentialGroup()
+            .addComponent(jLabel34)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(sip_start, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(jLabel36)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(sip_end, javax.swing.GroupLayout.PREFERRED_SIZE, 55, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addGap(0, 0, Short.MAX_VALUE)))
         .addContainerGap())
     );
     jPanel2Layout.setVerticalGroup(
@@ -291,7 +339,14 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel12)
-          .addComponent(sip_pass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+          .addComponent(sip_pass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addGap(18, 18, 18)
+        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(sip_start, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(jLabel36)
+          .addComponent(sip_end, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(jLabel34))
+        .addGap(247, 247, 247))
     );
 
     jTabbedPane1.addTab("SIP", jPanel2);
@@ -401,7 +456,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
         .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(import_list)
           .addComponent(export_list))
-        .addContainerGap(299, Short.MAX_VALUE))
+        .addContainerGap(302, Short.MAX_VALUE))
     );
 
     jTabbedPane1.addTab("Lists", jPanel3);
@@ -445,7 +500,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(jPanel11Layout.createSequentialGroup()
         .addContainerGap()
-        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 381, Short.MAX_VALUE)
+        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
         .addContainerGap())
     );
 
@@ -896,7 +951,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       .addGroup(jPanel9Layout.createSequentialGroup()
         .addContainerGap()
         .addComponent(jPanel10, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addContainerGap(146, Short.MAX_VALUE))
+        .addContainerGap(149, Short.MAX_VALUE))
     );
 
     jTabbedPane1.addTab("Times", jPanel9);
@@ -1141,7 +1196,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
           .addComponent(goto_9, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addComponent(xfer)
-        .addContainerGap(180, Short.MAX_VALUE))
+        .addContainerGap(183, Short.MAX_VALUE))
     );
 
     jTabbedPane1.addTab("Messages / Questions", jPanel5);
@@ -1159,7 +1214,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     );
     jPanel6Layout.setVerticalGroup(
       jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 403, Short.MAX_VALUE)
+      .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 406, Short.MAX_VALUE)
     );
 
     jTabbedPane1.addTab("Help", jPanel6);
@@ -1376,6 +1431,8 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
   private javax.swing.JLabel jLabel31;
   private javax.swing.JLabel jLabel32;
   private javax.swing.JLabel jLabel33;
+  private javax.swing.JLabel jLabel34;
+  private javax.swing.JLabel jLabel36;
   private javax.swing.JLabel jLabel4;
   private javax.swing.JLabel jLabel5;
   private javax.swing.JLabel jLabel6;
@@ -1413,8 +1470,10 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
   private javax.swing.JTextField silence_threshold;
   private javax.swing.JRadioButton single;
   private javax.swing.JTextField sip_auth;
+  private javax.swing.JTextField sip_end;
   private javax.swing.JTextField sip_host;
   private javax.swing.JTextField sip_pass;
+  private javax.swing.JTextField sip_start;
   private javax.swing.JTextField sip_user;
   private javax.swing.JButton start;
   private javax.swing.JTextField start1;
@@ -1760,6 +1819,20 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     }
     int cnt = 0;
     try {
+      int start = Integer.valueOf(sip_start.getText());
+      if (start < 1024 || start > 60000) {
+        setStatus("Error:SIP Port start is not in range");
+        return false;
+      }
+      int end = Integer.valueOf(sip_end.getText());
+      if (end < 1024 || end > 60000) {
+        setStatus("Error:SIP Port end is not in range");
+        return false;
+      }
+      if (end < start || (end-start < 1000)) {
+        setStatus("Error:SIP Port range is invalid");
+        return false;
+      }
       for(int a=0;a<NUMQUESTIONS;a++) {
         if (!questions.enabled[a]) continue;
         File test = new File(questions.wav[a]);
@@ -1810,13 +1883,15 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     boolean day[] = new boolean[] {false, true, true, true, true, true, false};
     String start[] = new String[] {"10:00", "10:00", "10:00", "10:00", "10:00", "10:00", "10:00"};
     String end[] = new String[] {"17:00", "17:00", "17:00", "17:00", "17:00", "17:00", "17:00"};
+    //sip port range
+    int sip_start, sip_end;
   }
 
   private Settings settings;
 
   public final void loadSetup() {
     try {
-      FileInputStream fis = new FileInputStream(JF.getUserPath() + "/broadcast.cfg");
+      FileInputStream fis = new FileInputStream(JF.getUserPath() + "/broadcast" + cfgSuffix + ".cfg");
       ObjectInputStream ois = new ObjectInputStream(fis);
       settings = (Settings)ois.readObject();
       fis.close();
@@ -1825,6 +1900,15 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       sip_auth.setText(settings.sip_auth);
       sip_host.setText(settings.sip_host);
       sip_pass.setText(settings.sip_pass);
+
+      if (settings.sip_start == 0) {
+        settings.sip_start = 6000;
+        settings.sip_end = 9000;
+      }
+
+      sip_start.setText("" + settings.sip_start);
+      sip_end.setText("" + settings.sip_end);
+
       number_lines.setValue(new Integer(settings.numberLines));
       xfer_number.setText(settings.xfer);
       disable_detect.setSelected(settings.disable_detect);
@@ -1880,7 +1964,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       end6.setText(settings.end[5]);
       end7.setText(settings.end[6]);
 
-      fis = new FileInputStream(JF.getUserPath() + "/broadcast-msgs.cfg");
+      fis = new FileInputStream(JF.getUserPath() + "/broadcast-msgs" + cfgSuffix + ".cfg");
       ois = new ObjectInputStream(fis);
       questions = (Questions)ois.readObject();
 
@@ -1899,6 +1983,8 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
 
   private void loadDefaults() {
     settings = new Settings();
+    sip_start.setText("6000");
+    sip_end.setText("9000");
     number_lines.setValue(new Integer(16));
     delay.setValue(new Integer(100));
     maxRingTime.setValue(new Integer(60));
@@ -1994,13 +2080,15 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     validateOptions();
     saveQuestion();
     try {
-      FileOutputStream fos = new FileOutputStream(JF.getUserPath() + "/broadcast.cfg");
+      FileOutputStream fos = new FileOutputStream(JF.getUserPath() + "/broadcast" + cfgSuffix + ".cfg");
       ObjectOutputStream oos = new ObjectOutputStream(fos);
       settings = new Settings();
       settings.sip_user = sip_user.getText();
       settings.sip_auth = sip_auth.getText();
       settings.sip_host = sip_host.getText();
       settings.sip_pass = sip_pass.getText();
+      settings.sip_start = Integer.valueOf(sip_start.getText());
+      settings.sip_end = Integer.valueOf(sip_end.getText());
       settings.wav_filename = "";  //obsolete
       settings.numberLines = (Integer)(number_lines.getValue());
       settings.xfer = xfer_number.getText();
@@ -2039,7 +2127,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       settings.end[6] = end7.getText();
       oos.writeObject(settings);
       fos.close();
-      fos = new FileOutputStream(JF.getUserPath() + "/broadcast-msgs.cfg");
+      fos = new FileOutputStream(JF.getUserPath() + "/broadcast-msgs" + cfgSuffix + ".cfg");
       oos = new ObjectOutputStream(fos);
       oos.writeObject(questions);
       fos.close();
@@ -2051,12 +2139,14 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     setStatus("OK : saved");
   }
 
-  public int localsipport = 5061;
+  public int firstlocalsipport = 6000;
+  public int nextlocalsipport = 6000;
+  public int lastlocalsipport = 9000;
 
   public int getlocalsipport() {
-    int ret = localsipport;
-    localsipport++;
-    if (localsipport == 6000) localsipport = 5061;
+    int ret = nextlocalsipport;
+    nextlocalsipport++;
+    if (nextlocalsipport == lastlocalsipport) nextlocalsipport = firstlocalsipport;
     return ret;
   }
 
@@ -2100,6 +2190,9 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       return;
     }
     saveSetup();
+    firstlocalsipport = settings.sip_start;
+    nextlocalsipport = firstlocalsipport;
+    lastlocalsipport = settings.sip_end;
     skipCount = 0;
     maxquietcount = settings.silenceDuration / 20;
     //lock resources
@@ -2153,13 +2246,12 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     //create SIP resources
     lineCount = (Integer)number_lines.getValue();
     sip = new SIPClient();
-    int sipport = 5060;
     int fail = 0;
-    while (!sip.init(getHost(sip_host.getText()), getPort(sip_host.getText(), sipport), getlocalsipport(), this, SIP.Transport.UDP)) {
-      sipport++;
+    while (!sip.init(getHost(sip_host.getText()), getPort(sip_host.getText(), 5060), getlocalsipport(), this, SIP.Transport.UDP)) {
       fail++;
       if (fail == 10) {
         setStatus("Error:SIP init failed");
+        state = states.STOPPED;
         start.setText("Start!");
         return;
       }
@@ -2234,6 +2326,8 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     if (state == states.STOPPING) {
       setStatus("stopped");
     }
+    sip.unregister();
+    sip.uninit();
     state = states.STOPPED;
     start.setText("Start!");
   }
@@ -2280,6 +2374,8 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     sip_auth.setEnabled(state);
     sip_user.setEnabled(state);
     sip_pass.setEnabled(state);
+    sip_start.setEnabled(state);
+    sip_end.setEnabled(state);
     save_setup.setEnabled(state);
     create_list.setEnabled(state);
     delete_list.setEnabled(state);
@@ -2920,20 +3016,23 @@ JFLog.log("connected : number=" + lines[a].number);
           JFLog.log("Error:Must include list with -start option");
           return;
         }
-        int cnt = selected_list.getItemCount();
-        boolean ok = false;
-        for(int b=0;b<cnt;b++) {
-          String item = (String)selected_list.getItemAt(b);
-          if (item.equals(args[a])) {
-            selected_list.setSelectedIndex(b);
-            start.doClick();
-            ok = true;
-            break;
-          }
+        startList = args[a++];
+      }
+      if (args[a].equals("-dbpath")) {
+        a++;
+        if (a == args.length) {
+          JFLog.log("Error:Must include path with -dbpath option");
+          return;
         }
-        if (!ok) {
-          JFLog.log("Error:specifed list for -start option not found");
+        SQL.path = args[a++];
+      }
+      if (args[a].equals("-cfgsuffix")) {
+        a++;
+        if (a == args.length) {
+          JFLog.log("Error:Must include string with -cfgsuffix option");
+          return;
         }
+        cfgSuffix = args[a++];
       }
     }
   }

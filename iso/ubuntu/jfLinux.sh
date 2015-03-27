@@ -3,8 +3,8 @@
 #
 # Create jfLinux from scratch
 #
-# NOTE:Make sure to change ARCH to x86_64 for 64bit systems
-# Valid options are : i386 and x86_64
+# NOTE:Make sure to change ARCH to amd64 for 64bit systems
+# Valid options are : i386 and amd64
 # i686 (HOSTTYPE) is not valid
 #
 # SEE: https://help.ubuntu.com/community/LiveCDCustomizationFromScratch
@@ -98,7 +98,7 @@ sudo cp default.sources.list chroot/etc/apt/sources.list
 
 #install needed cd iso creation tools
 
-sudo apt-get install --yes syslinux squashfs-tools genisoimage
+sudo apt-get install --yes isolinux squashfs-tools genisoimage
 #sbm???
 
 mkdir -p image/{casper,isolinux,install}
@@ -107,7 +107,7 @@ for file in chroot/boot/vmlinuz-*; do sudo cp $file image/casper/vmlinuz; done
 
 for file in chroot/boot/initrd.img-*; do sudo cp $file image/casper/initrd.gz; done
 
-cp /usr/lib/syslinux/isolinux.bin image/isolinux/
+cp /usr/lib/ISOLINUX/isolinux.bin image/isolinux/
 
 cp /boot/memtest86+.bin image/install/memtest
 cp /boot/sbm.img image/install/

@@ -1,5 +1,14 @@
 What's new...
 
+Oct 6/2014 : JF 7.32.0 released!
+  - jfBroadcast/0.24
+    - added -dbpath and -cfgsuffix and sip port ranges to allow multiple copies to run (user requested feature)
+  - jfFTP/0.3
+    - added SSH Identity Key support
+  - updated Ubuntu ISO build scripts for Ubuntu 14.10 (still not working yet)
+    - amd64 should be used for 64bit targets, not x86_64
+    - some build files are in different packages (syslinux -> isolinux)
+
 Sept 20/2014 : JF 7.31.0 released!
   - jfPaint/0.15
     - added new fill mode (fill edges)
