@@ -230,7 +230,6 @@ public class LnxPty {
    * Works 100% of the time.
    */
   private boolean fork_nofork(String cmd, String args[], String env[]) {
-    JFLog.log("fork:no fork version");
     String slaveName;
     master = c.posix_openpt(O_RDWR | O_NOCTTY);
     if (master == -1) return false;
@@ -361,7 +360,6 @@ public class LnxPty {
    *
    */
   private boolean fork_java(String cmd, String args[], String env[]) {
-    JFLog.log("fork:Java version");
     ProcessBuilder pb = new ProcessBuilder();
     master = c.posix_openpt(O_RDWR | O_NOCTTY);
     if (master == -1) return false;
@@ -421,7 +419,6 @@ public class LnxPty {
    * Fails 30% of the time.
    */
   private boolean fork_forkpty(String cmd, String args[], String env[]) {
-    JFLog.log("fork:forkpty version");
     IntByReference masterRef = new IntByReference();
 //    termios attrs = new termios();
 //    winsize size = new winsize();
@@ -449,7 +446,6 @@ public class LnxPty {
    * Fails 30% of the time.
    */
   private boolean fork_old(String cmd, String args[], String env[]) {
-    JFLog.log("fork:org version");
     String slaveName;
     master = c.posix_openpt(O_RDWR | O_NOCTTY);
     if (master == -1) return false;

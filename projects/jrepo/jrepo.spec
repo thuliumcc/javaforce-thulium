@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jrepo
-Version: 0.1
+Version: 0.2
 Release: 1
 Summary: Java geo-graphical repository selection tool
 License: LGPL

@@ -7,9 +7,10 @@
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
-import javaforce.JFLog;
-import javaforce.linux.Linux;
 import javax.swing.table.*;
+
+import javaforce.*;
+import javaforce.linux.*;
 
 
 public class CalendarWindow extends javax.swing.JWindow {
@@ -21,7 +22,7 @@ public class CalendarWindow extends javax.swing.JWindow {
     super();
     initComponents();
     x11id = Linux.x11_get_id(this);
-    JFLog.log("Calendar.window=0x" + x11id);
+    JFLog.log("Calendar.window=0x" + Integer.toString(JF.atoi(x11id.toString()), 16));
     try {
       Linux.x11_set_dock(x11id);
     } catch (Throwable t) {
@@ -31,6 +32,8 @@ public class CalendarWindow extends javax.swing.JWindow {
     Dimension d = getPreferredSize();
     setLocation(pos.x - d.width + width, pos.y - d.height - 5);
 //    cal.setSelectionBackground(Color.green);
+    setAlwaysOnTop(true);
+    toFront();
   }
 
   /**

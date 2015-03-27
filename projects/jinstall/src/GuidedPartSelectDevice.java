@@ -64,7 +64,7 @@ public class GuidedPartSelectDevice extends IPanel {
     Data.guidedTarget = Data.devices.get(target.getSelectedIndex());
     return new GuidedPartitioning();
   }
-  public IPanel prev() {return new InstallTypes();}
+  public IPanel prev() {return new TimeZone();}
   public IPanel getThis() {return this;}
 
 }

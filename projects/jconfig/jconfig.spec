@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jconfig
-Version: 0.9
+Version: 0.10
 Release: 1
 Summary: Control Center
 License: LGPL

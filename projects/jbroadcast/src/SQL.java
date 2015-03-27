@@ -1,3 +1,4 @@
+import java.io.*;
 import java.sql.*;
 import java.util.*;
 
@@ -22,7 +23,8 @@ public class SQL {
           }
         }
       } else {
-        path = "/var/lib";
+        path = "/home/" + System.getenv("USER") + "/.local/lib/";
+        new File(path).mkdirs();
       }
     }
     //setup derby.system.home

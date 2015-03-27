@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jparted
-Version: 0.3
+Version: 0.4
 Release: 1
 Summary: Java Partition Editor
 License: LGPL

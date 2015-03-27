@@ -1,6 +1,6 @@
 package jparted;
 
-/**
+/** Panel interface (used by jInstall to use PartitionEditorPanel)
  *
  * Created : Feb 17, 2012
  *

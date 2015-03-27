@@ -10,6 +10,7 @@
  */
 package javaforce;
 
+import java.lang.reflect.*;
 import java.util.*;
 import java.io.*;
 
@@ -237,10 +238,9 @@ public class ShellProcess {
    * Forcefully terminates the process.
    */
   public void destroy() {
-    if (p == null) {
-      return;
+    if (p != null) {
+      p.destroy();
     }
-    p.destroy();
   }
 
   private void _destroy() {
@@ -354,5 +354,23 @@ public class ShellProcess {
 
   public OutputStream getOutputStream() {
     return os;
+  }
+
+  /** Returns pid on Unix systems. */
+  public int getpid() {
+    if (JF.isWindows()) return -1;
+    try {
+      Class cls = p.getClass();
+      Field f = cls.getField("pid");
+      return f.getInt(p);
+    } catch (Exception e) {
+      JFLog.log(e);
+      return -1;
+    }
+  }
+
+  public boolean isAlive() {
+    if (p == null) return false;
+    return p.isAlive();
   }
 }

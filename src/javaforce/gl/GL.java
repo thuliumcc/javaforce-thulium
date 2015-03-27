@@ -467,7 +467,8 @@ public class GL {
     }
   }
 
-  void swap() {
+  /** Makes your rendering visible. */
+  public void swap() {
     if (os == OS.WINDOWS) {
       gdi32.SwapBuffers(whdc);
     } else if (os == OS.MAC) {
@@ -477,13 +478,13 @@ public class GL {
     }
   }
 
-  void lock() {
+  private void lock() {
     if (os == OS.MAC) {
       nsview.lockFocus();
     }
   }
 
-  void unlock() {
+  private void unlock() {
     if (os == OS.MAC) {
       nsview.unlockFocus();
     }
@@ -493,7 +494,7 @@ public class GL {
     lock();
     makeCurrent();
     iface.render(this);
-    if (!renderOffscreen) swap();
+//    if (!renderOffscreen) swap();
     unlock();
   }
 
@@ -507,7 +508,7 @@ public class GL {
     } else {
       makeCurrent();
       iface.render(this);
-      if (!renderOffscreen) swap();
+//      if (!renderOffscreen) swap();
     }
   }
 

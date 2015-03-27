@@ -19,7 +19,19 @@ public class GetUserDetails extends IPanel {
    */
   public GetUserDetails() {
     initComponents();
-    localhost.setText("computer" + Math.abs(new Random().nextInt(65535)));
+    if (Data.fullName != null) {
+      fullName.setText(Data.fullName);
+    }
+    if (Data.loginName != null) {
+      loginName.setText(Data.loginName);
+    }
+    if (Data.localhost == null)
+      localhost.setText("computer" + Math.abs(new Random().nextInt(65535)));
+    else
+      localhost.setText(Data.localhost);
+    if (Data.localdomain != null) {
+      localdomain.setText(Data.localdomain);
+    }
   }
 
   /**
@@ -204,7 +216,7 @@ public class GetUserDetails extends IPanel {
     Data.passwd = new String(passwd1.getPassword());
     Data.localhost = localhost.getText();
     Data.localdomain = localdomain.getText();
-    return new InstallTypes();
+    return new TimeZone();
   }
   public IPanel prev() { return new Welcome(); }
   public IPanel getThis() {return this;}

@@ -128,9 +128,11 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
           loadMappings();  //can take a while
         }
       }.start();
+      initDockDND();
       getWAPList();
-    } catch (Exception e) {
-      JFLog.log(e);
+      JFLog.log("Dock init complete");
+    } catch (Throwable t) {
+      JFLog.log(t);
     }
   }
 
@@ -610,7 +612,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         }
         if (ok) continue;
         //add new button
-        JButton button = addButton(x11window.file, false);
+        JButton button = addButton(x11window.file, false, -1);
         Group group = (Group)button.getClientProperty("group");
         group.addWindow(x11window.xid, x11window.title);
         buts = buttons.getComponents();
@@ -887,7 +889,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     return button;
   }
 
-  public JButton addButton(String file, boolean pinned) {
+  public JButton addButton(String file, boolean pinned, int idx) {
     String name = null, icon = null;
     try {
       FileInputStream fis = new FileInputStream(file);
@@ -914,7 +916,8 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         JF.showError("Error", "Unable to add app:" + file);
         return null;
       }
-      return addButton(icon, name, file, appIdx++, pinned);
+      if (idx == -1) idx = appIdx++; else appIdx++;
+      return addButton(icon, name, file, idx, pinned);
     } catch (Exception e) {
       JFLog.log(e);
       return null;
@@ -924,7 +927,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   public void loadButtons() {
     //load buttons for config.app[]
     for(int a=0;a<config.dock.length;) {
-      if (addButton(config.dock[a].file, true) == null) {
+      if (addButton(config.dock[a].file, true, -1) == null) {
         removeApp(a);
       } else {
         a++;
@@ -1153,6 +1156,12 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     return menu.getComponentCount() * 18 + 9;
   }
 
+  private AddAppWindow appsDialog;
+
+  public void addAppDialogClosed() {
+    appsDialog = null;
+  }
+
   public void actionPerformed(ActionEvent ae) {
     try {
       if (dragged) {
@@ -1171,34 +1180,11 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         return;
       }
       if (action.equals("#apps")) {
-        AddAppDialog dialog = new AddAppDialog(null, true);
-        dialog.setVisible(true);
-        if (dialog.accepted) {
-          for(int a=0;a<config.dock.length;a++) {
-            if (config.dock[a].file.equals(dialog.file)) return;  //already added
-          }
-          //check if button already shown and make it pinned
-          Component buts[] = buttons.getComponents();
-          boolean found = false;
-          for(int b=0;b<buts.length;b++) {
-            if (!(buts[b] instanceof JButton)) continue;
-            JButton button = (JButton)buts[b];
-            String file = (String)button.getClientProperty("file");
-            if (file == null) continue;
-            if (file.equals(dialog.file)) {
-              if (!((Boolean)button.getClientProperty("pinned"))) {
-                togglePinned(button);
-              }
-              found = true;
-              break;
-            }
-          }
-          if (!found) {
-            addButton(dialog.icon, dialog.name, dialog.file, appIdx++, true);
-            addApp(dialog.file);
-          }
-          saveConfig();
-          validate();
+        if (appsDialog != null) {
+          appsDialog.toFront();
+        } else {
+          appsDialog = new AddAppWindow();
+          appsDialog.setVisible(true);
         }
         return;
       }
@@ -1512,9 +1498,18 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   }
 
   private void emptyTrash() {
+    JFLog.log("empty trash");
     File file = new File(System.getenv("HOME") + "/.local/share/Trash");
+    //glob files
+    ArrayList<String> cmd = new ArrayList<String>();
+    cmd.add("jrm");
+    File files[] = file.listFiles();
+    if (files == null) return;
+    for(int a=0;a<files.length;a++) {
+      cmd.add(files[a].getAbsolutePath());
+    }
     try {
-      Runtime.getRuntime().exec("rm -rf " + file.getAbsolutePath() + "/*");
+      Runtime.getRuntime().exec(cmd.toArray(new String[0]));
     } catch (Exception e) {
       JFLog.log(e);
     }
@@ -2362,6 +2357,75 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         }
         cmd.add(folder);
         JFileBrowser.runCmd(cmd.toArray(new String[0]), cmd.size() - 4);
+        return true;
+      }
+
+      public int getSourceActions(JComponent c) {
+        return COPY_OR_MOVE;
+      }
+
+      protected Transferable createTransferable(JComponent c) {
+        //can not transfer out of trash from this icon
+        return null;
+      }
+
+      protected void exportDone(JComponent source, Transferable data, int action) {
+      }
+    });
+  }
+
+  private void initDockDND() {
+    this.setTransferHandler(new TransferHandler() {
+      public boolean canImport(TransferHandler.TransferSupport info) {
+        // we only import Files
+        if (!info.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+          return false;
+        }
+
+        TransferHandler.DropLocation dl = (TransferHandler.DropLocation) info.getDropLocation();
+        Point pt = dl.getDropPoint();
+//        JFLog.log("drag to:" + pt.x + "," + pt.y);
+        return true;
+      }
+
+      public boolean importData(TransferHandler.TransferSupport info) {
+        if (!info.isDrop()) {
+          return false;
+        }
+
+        // Check for file flavor
+        if (!info.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+          return false;
+        }
+
+//        TransferHandler.DropLocation dl = info.getDropLocation();
+//        Point pt = dl.getDropPoint();
+        String folder = JF.getUserPath() + "/.local/share/Trash";
+
+        // Get the file(s) that are being dropped.
+        Transferable t = info.getTransferable();
+        java.util.List<File> data;
+        try {
+          data = (java.util.List<File>) t.getTransferData(DataFlavor.javaFileListFlavor);
+        } catch (Exception e) {
+          return false;
+        }
+
+        // Perform the actual import.
+        String file;
+        for(int a=0;a<data.size();a++) {
+          switch (info.getDropAction()) {
+            case COPY:
+            case MOVE:
+              file = ((File)data.get(a)).getAbsolutePath();
+              if (!file.endsWith(".desktop")) continue;
+              addButton(file, true, -1);
+              break;
+            case LINK:
+              //BUG : not supported : ???
+              continue;
+          }
+        }
         return true;
       }
 

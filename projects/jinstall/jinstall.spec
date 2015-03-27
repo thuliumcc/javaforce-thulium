@@ -1,12 +1,12 @@
 Buildroot: /.
 Name: jinstall
-Version: 0.4
+Version: 0.5
 Release: 1
 Summary: Linux OS installer
 License: LGPL
 Distribution: Fedora
 Group: Applications/System
-Requires: javaforce, jparted, rsync, grub2, grub2-tools
+Requires: javaforce, jparted, jconfig, rsync, grub2, grub2-tools
 BuildArch: noarch
 
 %define _rpmdir ../

@@ -1875,4 +1875,15 @@ public class Linux {
 
     return res == 0;
   }
+
+  public static final int SIGKILL = 9;
+  public static final int SIGTERM = 15;
+
+  public static void kill(int pid, int signal) {
+    try {
+      Runtime.getRuntime().exec(new String[] {"kill", "-" + signal, "" + pid});
+    } catch (Exception e) {
+      JFLog.log(e);
+    }
+  }
 }

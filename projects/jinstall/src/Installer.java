@@ -17,7 +17,7 @@ import javaforce.linux.*;
 
 public class Installer extends javax.swing.JFrame {
 
-  public static String version = "0.4";
+  public static String version = "0.5";
 
   /**
    * Creates new form Installer

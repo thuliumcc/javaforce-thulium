@@ -184,6 +184,7 @@ public class MainPanel extends javax.swing.JPanel {
     {
       {"Archive Manager", "Manipulate Archive files (zip, tar)", "jarchive", "jarchive"},
       {"Calculator", "Perform calculations", "jcalc", "jcalc"},
+      {"FTP Manager", "Manage files thru FTP", "jftp", "jftp"},
       {"Help System", "Integrated help system", "jhelp", "jhelp"},
       {"nVidia Drivers", "Improved 3D Graphics support for nVidia hardware", "nvidia-current", null},
       {"nVidia Settings", "Configure nVidia hardware", "nvidia-settings", null},

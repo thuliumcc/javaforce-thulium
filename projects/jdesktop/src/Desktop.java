@@ -51,6 +51,7 @@ public class Desktop extends javax.swing.JWindow {
       } catch (Throwable t) {
         JFLog.log(t);
       }
+      JFLog.log("Desktop init complete");
     } catch (Exception e) {
       JFLog.log(e);
     }

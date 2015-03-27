@@ -62,11 +62,12 @@ public class Logon extends javax.swing.JFrame implements ActionListener {
       network.setText("");
       network.setIcon(icon);
       pack();
-      getScreenSize();
-      setPosition();
+      JF.centerWindow(this);
       //connect to JBus
-      jbusClient = new JBusClient("org.jflinux.jlogon", new JBusMethods());
-      jbusClient.start();
+      if (jbusClient == null) {
+        jbusClient = new JBusClient("org.jflinux.jlogon", new JBusMethods());
+        jbusClient.start();
+      }
       getWAPList();
     } catch (Exception e) {
       JFLog.log(e);
@@ -229,8 +230,6 @@ public class Logon extends javax.swing.JFrame implements ActionListener {
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
-
-  private int loginAttempts = 1;
 
   private void logonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_logonActionPerformed
     doLogon();
@@ -399,7 +398,7 @@ public class Logon extends javax.swing.JFrame implements ActionListener {
     pass = new String(password.getPassword());
     domain = (String)computer.getSelectedItem();
     if (!authUser()) {
-      showError("Logon Failed : " + errmsg + " : " + loginAttempts++);
+      showError("Logon Failed : " + errmsg);
       return;
     }
     //save lastUser/lastDomain
@@ -454,16 +453,20 @@ public class Logon extends javax.swing.JFrame implements ActionListener {
   }
 
   private void runSession() {
-    try {
-      this.setVisible(false);
-      Startup.runSession(user, "/usr/bin/jdesktop", env_names, env_values, domainLogon);
-      password.setText("");
-      password.grabFocus();
-      this.setVisible(true);
-      Linux.x11_rr_reset("800x600");
-    } catch (Exception e) {
-      showError("Session Failed : " + loginAttempts++);
-    }
+    dispose();
+    new Thread() {
+      public void run() {
+        try {
+          Startup.runSession(user, "/usr/bin/jdesktop", env_names, env_values, domainLogon);
+        } catch (Exception e) {
+          JF.showError("Session Failed", e.toString());
+        }
+        Linux.x11_rr_reset("800x600");
+        java.awt.EventQueue.invokeLater(new Runnable() {public void run() {
+          new Logon().setVisible(true);
+        }});
+      }
+    }.start();
   }
 
   private void showError(String msg) {
@@ -664,20 +667,6 @@ public class Logon extends javax.swing.JFrame implements ActionListener {
 
   private void showNetworkFailed() {
     JF.showError("Error", "Connection failed!");
-  }
-
-  private int sx,sy;
-
-  private void getScreenSize() {
-    Rectangle r = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
-    sx = r.width;
-    sy = r.height;
-  }
-
-  private void setPosition() {
-    Dimension d = getPreferredSize();
-    setSize(d.width, d.height);
-    setLocation(sx/2 - d.width/2, sy/2 - d.height/2);
   }
 
   private void disconnectVPN(String name) {

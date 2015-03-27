@@ -20,7 +20,7 @@ public class Data {
   public static ArrayList<String> ops1, ops2;  //guided parted operations
   public static Partition swap, root;
   public static ArrayList<String> fstab; //filesys table /etc/fstab
-  public static String fullName, loginName, passwd, localhost, localdomain;
+  public static String fullName, loginName, passwd, localhost, localdomain, timezone;
 
   public static class Device implements Cloneable {
     //parted fields

@@ -96,6 +96,7 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
     }
     processMovement();
     scene.render(gl);
+    gl.swap();
   }
   public void resize(GL gl, int width, int height) {
     scene.resize(width, height);

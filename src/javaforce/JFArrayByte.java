@@ -12,9 +12,11 @@ import java.util.*;
 public class JFArrayByte {
   private byte buf[];
   private int count;
+  private int minSize;
 
   public JFArrayByte() {
     count = 0;
+    minSize = 0;
     buf = new byte[0];
   }
 
@@ -24,7 +26,14 @@ public class JFArrayByte {
 
   public void clear() {
     count = 0;
-    buf = new byte[0];
+    buf = new byte[minSize];
+  }
+
+  public void setMinSize(int minSize) {
+    this.minSize = minSize;
+    if (buf.length < minSize) {
+      buf = Arrays.copyOf(buf, minSize);
+    }
   }
 
   public void append(byte s) {

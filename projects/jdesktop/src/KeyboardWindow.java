@@ -20,10 +20,12 @@ public class KeyboardWindow extends javax.swing.JWindow implements ActionListene
     initComponents();
     setLayout(this);
     x11id = Linux.x11_get_id(this);
-    JFLog.log("Keyboard.window=0x" + x11id);
+    JFLog.log("Keyboard.window=0x" + Integer.toString(JF.atoi(x11id.toString()), 16));
     Linux.x11_set_dock(x11id);
     initTable();
     hide.setIcon(IconCache.loadIcon("jdesktop-keyboard-down"));
+    setAlwaysOnTop(true);
+    toFront();
   }
 
   /**

@@ -16,8 +16,7 @@ import javaforce.linux.Linux;
 import javaforce.utils.monitordir;
 
 public class Startup implements ShellProcessListener{
-  private static Logon logon;
-  private static ShellProcess sp;
+  private static ShellProcess x11process;
   private static boolean rebootFlag, shutdownFlag;
 
   public static JBusServer jbusServer;
@@ -92,20 +91,40 @@ public class Startup implements ShellProcessListener{
   private static void startx() throws Exception {
     new Thread() {
       public void run() {
-        sp = new ShellProcess();
-        sp.keepOutput(false);
-        sp.addListener(new Startup());
+        x11process = new ShellProcess();
+        x11process.keepOutput(false);
+        x11process.addListener(new Startup());
         JFLog.log("Starting X Server...");
-        sp.run(new String[] {"/usr/bin/X"}, true);
+        x11process.run(new String[] {"/usr/bin/X"}, true);
+        //some options lightdm uses
+        // -core :0
+        // -seat seat0
+        // -nolisten tcp
+        // vt7
+        // -novtswitch
+        // -auth /var/run/lightdm/root/:0
       }
     }.start();
   }
 
   public static void stopx() throws Exception {
-    if (sp != null) {
+    if (x11process != null) {
       JFLog.log("Stopping X Server...");
-      sp.destroy();
-      sp = null;
+//      x11process.destroy();  //doesn't work
+      int pid = x11process.getpid();
+      JFLog.log("X11 pid=" + pid);
+      Linux.kill(pid, Linux.SIGTERM);
+      JF.sleep(500);
+      for(int a=0;a<3;a++) {
+        if (!x11process.isAlive()) break;
+        JF.sleep(1000);
+      }
+      if (x11process.isAlive()) {
+        Linux.kill(pid, Linux.SIGKILL);
+        JF.sleep(500);
+      }
+      x11process = null;
+      JFLog.log("X Server stopped...");
     }
   }
 
@@ -333,8 +352,9 @@ public class Startup implements ShellProcessListener{
 
   public static void createLogon() {
     Linux.x11_rr_reset("800x600");
-    logon = new Logon();
-    logon.setVisible(true);
+    java.awt.EventQueue.invokeLater(new Runnable() {public void run() {
+      new Logon().setVisible(true);
+    }});
   }
 
   private static void hidePlymouth() {

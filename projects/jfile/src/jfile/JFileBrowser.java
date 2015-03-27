@@ -63,6 +63,12 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     this.autoArrange = autoArrange;
     this.jbusClient = jbusClient;
     this.desktopMode = desktopMode;
+    filterRegex = ".*";
+    filter = new FilenameFilter() {
+      public boolean accept(File dir, String name) {
+        return name.matches(filterRegex);
+      }
+    };
     loadWallPaper();
     setLayout(null);
     setFocusable(true);
@@ -93,6 +99,8 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
   private boolean desktopMode;
   private JFileBrowserListener listener;
   private JBusClient jbusClient;
+  private FilenameFilter filter;
+  private String filterRegex;
 
   private JFImage wallPaper;
 
@@ -213,8 +221,9 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
 
   private void listFiles() {
 //    JFLog.log("path=" + path);
+//    JFLog.log("JFileBrowser:listFiles():size=" + getWidth() + "," + getHeight());
     File file = new File(path);
-    File files[] = file.listFiles();
+    File files[] = file.listFiles(filter);
     if (files == null) return;
     Arrays.sort(files);
     if (view != VIEW_ICONS) {
@@ -668,6 +677,11 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     } catch (Exception e) {
       JFLog.log(e);
     }
+  }
+
+  public void setFilter(String regex) {
+    filterRegex = regex;
+    refresh();
   }
 
   private void clearSelection() {
@@ -1258,6 +1272,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
         mx = me.getX();
         my = me.getY();
         desktopMenu.show(panel, me.getX(), me.getY());
+        //TODO : make desktopMenu on top - how ???
       }
       clearSelection();
       return;
@@ -1374,7 +1389,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
         setSelectedTransparent(true);
         dragicon = false;
         repaint();
-//        jbusClient.call("org.jflinux.jdesktop." + System.getenv("JID"), "show", "");
+        jbusClient.call("org.jflinux.jdesktop." + System.getenv("JID"), "show", "");
 /*        if (dragOverlay != null) {
           panel.remove(dragOverlay);
           dragOverlay = null;

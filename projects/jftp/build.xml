@@ -131,6 +131,30 @@
     <move file="jftp-src-${JFTPVERSION}.zip" todir="/home/pquiring/zips"/>
   </target>
 
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="jftp.jar" todir="/usr/share/java"/>
+    <copy file="jftp" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jftp" perm="+x"/>
+    <copy file="jftp.desktop" todir="/usr/share/applications"/>
+    <copy file="jftp.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jftp.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="deb" description="create deb package">
+    <exec executable="jdeb">
+      <arg value="jftp-${JFTPVERSION}_all.deb"/>
+    </exec>
+    <copy file="jftp-${JFTPVERSION}_all.deb" todir="../../repo/ubuntu"/>
+  </target>
+
+  <target name="rpm" description="create rpm package">
+    <exec executable="jrpm">
+      <arg value="jftp.spec"/>
+    </exec>
+    <copy file="jftp-${JFTPVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+  </target>
+
   <target name="javadoc" description="generate java documentation">
     <javadoc sourcefiles="src/*.java" destdir="javadoc" classpath="${classpath}"/>
   </target>

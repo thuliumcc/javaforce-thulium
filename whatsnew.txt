@@ -1,5 +1,28 @@
 What's new...
 
+Oct 24/2014 : JF 7.36.0 released!
+  - GLMatrix
+    - added addRotate3() and addRotate4() to add rotation that is not affected by previous rotations.
+    - needed for JFCraft/0.2
+  - jLogin/0.15
+    - fixed X11 termination (shutdown and reboot works again)
+    - fixed repaint issue after logoff
+  - jDesktop/0.24
+    - can now drag apps to the dock (*.desktop files)
+    - AddAppDialog window now uses JFileBrowser which you can drag icons to the dock
+  - jFile/0.10
+    - added setFilter(String regex) to show only certain files
+  - jConfig/0.10
+    - added TimeZone to date/time panel
+  - jParted/0.4
+    - added timezone info (for jInstall)
+  - jInstall/0.5
+    - added timezone selection during install
+  - jRepo/0.2
+    - new smaller map
+  - jfLinux : still one bug remains : sometimes network interfaces fail to init (jnetworkmgr)
+    - I see why Mint stays with older version of Ubuntu, updates seem to brake everything
+
 Oct 13/2014 : JF 7.35.0 released!
   - jfLinux
     - fix more Ubuntu 14.10 issues (boots now)

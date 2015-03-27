@@ -58,7 +58,13 @@ public class Welcome extends IPanel {
   private javax.swing.JTextArea jTextArea1;
   // End of variables declaration//GEN-END:variables
 
-  public IPanel next() {return new GetUserDetails();}
-  public IPanel prev() {return null;}
-  public IPanel getThis() {return this;}
+  public IPanel next() {
+    return new GetUserDetails();
+  }
+  public IPanel prev() {
+    return null;
+  }
+  public IPanel getThis() {
+    return this;
+  }
 }

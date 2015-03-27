@@ -1,2 +1,2 @@
 #!/bin/bash
-javaw -cp /usr/share/java/javaforce.jar:/usr/share/java/jweb.jar WebApp "$1"
+java -cp /usr/share/java/javaforce.jar:/usr/share/java/jweb.jar WebApp "$1"

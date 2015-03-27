@@ -18,6 +18,8 @@ public class JFLog {
     private boolean enabled = true;
   }
   private static Hashtable<Integer, LogInstance> list = new Hashtable<Integer, LogInstance>();
+  private static boolean useTimestamp = false;
+  private static long timestampBase;
 
   private static class TraceException extends Exception {
     public TraceException(String msg) {
@@ -82,6 +84,12 @@ public class JFLog {
     return close(0);
   }
 
+  /** Uses a timestamp instead of date/time for each message logged. */
+  public static void enableTimestamp(boolean state) {
+    timestampBase = System.nanoTime() / 1000000;
+    useTimestamp = state;
+  }
+
   public static boolean log(String msg) {
     return log(0, msg);
   }
@@ -95,10 +103,14 @@ public class JFLog {
     if (!log.enabled) {
       return true;
     }
-    Calendar cal = Calendar.getInstance();
-    msg = String.format("[%1$04d/%2$02d/%3$02d %4$02d:%5$02d:%6$02d] %7$s\r\n",
-            cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.HOUR_OF_DAY),
-            cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND), msg);
+    if (!useTimestamp) {
+      Calendar cal = Calendar.getInstance();
+      msg = String.format("[%1$04d/%2$02d/%3$02d %4$02d:%5$02d:%6$02d] %7$s\r\n",
+              cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.HOUR_OF_DAY),
+              cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND), msg);
+    } else {
+      msg = String.format("[%1$d] %2$s\r\n", (System.nanoTime() / 1000000) - timestampBase, msg);
+    }
     synchronized (log.lock) {
       if (log.stdout != null) {
         log.stdout.print(msg);
@@ -115,6 +127,7 @@ public class JFLog {
       if (log.filesize > 1024 * 1024) {
         log.filesize = 0;
         //start new log file
+        Calendar cal = Calendar.getInstance();
         String tmp = String.format(".%1$04d-%2$02d-%3$02d-%4$02d-%5$02d-%6$02d",
                 cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH), cal.get(Calendar.HOUR_OF_DAY),
                 cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
