@@ -52,4 +52,9 @@ public interface SIPClientInterface {
    * Server send notify command. (event="message-summary" or "presence")
    */
   public void onNotify(SIPClient client, String callid, String event, String content);
+
+  /**
+   * Ack message (may contain SDP data)
+   */
+  public void onAck(SIPClient client, String callid, SDP sdp);
 }

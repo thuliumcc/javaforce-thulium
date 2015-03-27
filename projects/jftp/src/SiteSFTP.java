@@ -12,7 +12,7 @@ import com.jcraft.jsch.*;
 
 import javaforce.*;
 
-public class SiteSFTP extends SiteFTP {
+public class SiteSFTP extends SiteFTP implements SftpProgressMonitor {
   private ChannelSftp channel;
   private Session jschsession;
   private JSch jsch;
@@ -132,7 +132,8 @@ public class SiteSFTP extends SiteFTP {
   public void download_file(File remote, File local) {
     try {
       FileOutputStream fos = new FileOutputStream(local);
-      channel.get(remote.getName(), fos);
+      //BUG : no progress!
+      channel.get(remote.getName(), fos, this);
     } catch (Exception e) {
       setStatus("Error:" + e);
       JFLog.log(e);
@@ -144,7 +145,8 @@ public class SiteSFTP extends SiteFTP {
   public void upload_file(File local, File remote) {
     try {
       FileInputStream fis = new FileInputStream(local);
-      channel.put(fis, remote.getName());
+      //BUG : no progress!
+      channel.put(fis, remote.getName(), this);
     } catch (Exception e) {
       setStatus("Error:" + e);
       JFLog.log(e);
@@ -222,5 +224,21 @@ public class SiteSFTP extends SiteFTP {
       JFLog.log(e);
       addLog("Error:" + e);
     }
+  }
+
+  private int total;
+
+  //SftpProgressMonitor
+  public void init(int op, String src, String dest, long max) {
+    total = 0;
+  }
+
+  public boolean count(long l) {
+    total += l;
+    setProgress(total);
+    return true;  //continue operation
+  }
+
+  public void end() {
   }
 }

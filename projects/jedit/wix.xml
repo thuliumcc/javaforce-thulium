@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" UpgradeCode="{C7D9918C-24BF-4826-913F-4C6BCE70746D}" Version="0.7" Language="1033" Name="jfEdit" Manufacturer="Peter Quiring">
+  <Product Id="*" UpgradeCode="{C7D9918C-24BF-4826-913F-4C6BCE70746D}" Version="0.8" Language="1033" Name="jfEdit" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
 
@@ -32,6 +32,7 @@
           </Extension>
         </ProgId>
         <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\jfEdit.txt\shell\open" Name="FriendlyAppName" Value="jfEdit" Type="string" />
+        <RegistryValue Root="HKLM" Key="SOFTWARE\Classes\.txt\jfEdit.txt\ShellNew" Name="data" Value="" Type="string" />
 
         <ProgId Id="jfEdit.ini" Description="Configuration Settings" Advertise="yes" Icon="icon.ico">
           <Extension Id="ini" ContentType="text/plain">

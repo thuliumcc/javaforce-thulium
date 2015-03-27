@@ -461,13 +461,16 @@
         <Component class="javax.swing.JComboBox" name="zoom">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-              <StringArray count="4">
-                <StringItem index="0" value="100%"/>
-                <StringItem index="1" value="200%"/>
-                <StringItem index="2" value="400%"/>
-                <StringItem index="3" value="800%"/>
+              <StringArray count="6">
+                <StringItem index="0" value="25%"/>
+                <StringItem index="1" value="50%"/>
+                <StringItem index="2" value="100%"/>
+                <StringItem index="3" value="200%"/>
+                <StringItem index="4" value="400%"/>
+                <StringItem index="5" value="800%"/>
               </StringArray>
             </Property>
+            <Property name="selectedIndex" type="int" value="2"/>
             <Property name="toolTipText" type="java.lang.String" value="Zoom Level"/>
             <Property name="maximumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[75, 28]"/>
@@ -531,7 +534,7 @@
             </Property>
           </Properties>
         </Component>
-        <Component class="javax.swing.JComboBox" name="layer">
+        <Component class="javax.swing.JComboBox" name="colorLayer">
           <Properties>
             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
               <StringArray count="5">
@@ -549,7 +552,21 @@
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="layerActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="colorLayerActionPerformed"/>
+          </Events>
+        </Component>
+        <Component class="javax.swing.JButton" name="layersButton">
+          <Properties>
+            <Property name="icon" type="javax.swing.Icon" editor="org.netbeans.modules.form.editors2.IconEditor">
+              <Image iconType="3" name="/layers.png"/>
+            </Property>
+            <Property name="toolTipText" type="java.lang.String" value="Show Image Layers Window"/>
+            <Property name="focusable" type="boolean" value="false"/>
+            <Property name="horizontalTextPosition" type="int" value="0"/>
+            <Property name="verticalTextPosition" type="int" value="3"/>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="layersButtonActionPerformed"/>
           </Events>
         </Component>
       </SubComponents>

@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jtxtedit
-Version: 0.7
+Version: 0.8
 Release: 1
 Summary: Multi-tabbed text editor
 License: LGPL

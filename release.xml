@@ -1,7 +1,7 @@
 <project name="javaforce-release" default="zip" basedir=".">
   <description>JavaForce release script</description>
 
-  <property name="VERSION" value="7.41.0"/>
+  <property name="VERSION" value="7.42.0"/>
   <property name="URL" value="http://javaforce.sourceforge.net"/>
   <property name="EMAIL" value="pquiring@gmail.com"/>
 
@@ -63,6 +63,8 @@
         <include name="jf/keys/build.xml"/>
 
 <!--        <exclude name="jf/projects/jpar**/**/*"/>  -->
+
+        <exclude name="jf/src/javaforce/installer/**/*"/>  <!-- testing -->
 
         <exclude name="**/sf/*"/>
         <exclude name="**/crx/*"/>

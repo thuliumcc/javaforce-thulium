@@ -1,11 +1,11 @@
 <project name="jlogon" default="jar" basedir=".">
   <description>jlogon</description>
   <!-- set global properties for this build -->
-  <property name="app" location="jlogon"/>
+  <property name="app" value="jlogon"/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="../../classes"/>
-  <property name="JLOGONVERSION" value="0.16"/>
+  <property name="version" value="0.17"/>
 
   <target name="compile" description="compile the source">
     <!-- Compile the java code from ${src} into ${build} -->
@@ -41,10 +41,7 @@
     <!-- JFL services folder -->
     <mkdir dir="/etc/jinit"/>
     <copy file="jinit.txt" todir="/etc/jinit"/>
-    <!-- ubuntu upstart -->
-    <mkdir dir="/etc/init/"/>
-    <copy file="jlogon.conf" todir="/etc/init"/>
-    <!-- fedora systemd -->
+    <!-- systemd -->
     <mkdir dir="/usr/lib/systemd/system-preset/"/>
     <copy file="82-jlogon.preset" todir="/usr/lib/systemd/system-preset"/>
     <mkdir dir="/usr/lib/systemd/system/"/>
@@ -57,26 +54,25 @@
     <delete file="/usr/sbin/jlogon-rundomain"/>
     <delete file="/usr/sbin/jlogon"/>
     <delete file="/etc/dhcp/dhclient-script"/>
-    <delete file="/etc/init/jlogon.conf"/>
     <delete file="/usr/lib/systemd/system-preset/82-jlogon.preset"/>
     <delete file="/usr/lib/systemd/system/jlogon.service"/>
   </target>
 
   <target name="deb" description="create deb package">
     <exec executable="jdeb">
-      <arg value="jlogon-${JLOGONVERSION}_all.deb"/>
+      <arg value="jlogon-${version}_all.deb"/>
       <arg value="deb"/>
-      <arg value="files-ubuntu.lst"/>
+      <arg value="files.lst"/>
     </exec>
-    <copy file="jlogon-${JLOGONVERSION}_all.deb" todir="../../repo/ubuntu"/>
+    <copy file="jlogon-${version}_all.deb" todir="../../repo/ubuntu"/>
   </target>
 
   <target name="rpm" description="create rpm package">
     <exec executable="jrpm">
       <arg value="jlogon.spec"/>
-      <arg value="files-fedora.lst"/>
+      <arg value="files.lst"/>
     </exec>
-    <copy file="jlogon-${JLOGONVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+    <copy file="jlogon-${version}-1.noarch.rpm" todir="../../repo/fedora"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

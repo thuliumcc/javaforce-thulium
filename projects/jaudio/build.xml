@@ -1,11 +1,12 @@
 <project name="jaudio" default="jar" basedir=".">
   <description>jaudio</description>
   <!-- set global properties for this build -->
-  <property name="app" location="jaudio"/>
+  <property name="app" value="jfaudio"/>
+  <property name="home" location="../.."/>
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
-  <property name="JAUDIOVERSION" value="0.14"/>
+  <property name="version" value="0.14"/>
 
   <target name="depjars">
     <jar destfile="javaforce.jar">
@@ -87,16 +88,16 @@
 
   <target name="deb" description="create deb package">
     <exec executable="jdeb">
-      <arg value="jaudio-${JAUDIOVERSION}_all.deb"/>
+      <arg value="jfaudio-${version}_all.deb"/>
     </exec>
-    <copy file="jaudio-${JAUDIOVERSION}_all.deb" todir="../../repo/ubuntu"/>
+    <copy file="jfaudio-${version}_all.deb" todir="../../repo/ubuntu"/>
   </target>
 
   <target name="rpm" description="create rpm package">
     <exec executable="jrpm">
       <arg value="jaudio.spec"/>
     </exec>
-    <copy file="jaudio-${JAUDIOVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+    <copy file="jfaudio-${version}-1.noarch.rpm" todir="../../repo/fedora"/>
   </target>
 
   <!-- Requires WiX toolset in PATH -->
@@ -106,12 +107,12 @@
     <exec command="x86_64-w64-mingw32-windres -O coff -i jaudio.rc -o jaudio.res"/>
     <exec command="x86_64-w64-mingw32-gcc loader.c -I../../include -Wl,-subsystem,windows jaudio.res -o jaudio64.exe"/>
     <exec command="candle -o wix.obj wix.xml"/>
-    <exec command="light -o jaudio-${JAUDIOVERSION}.msi wix.obj"/>
-    <move file="jaudio-${JAUDIOVERSION}.msi" todir="/home/pquiring/zips"/>
+    <exec command="light -o jfaudio-${version}.msi wix.obj"/>
+    <move file="jfaudio-${version}.msi" todir="/home/pquiring/zips"/>
   </target>
 
   <target name="release-bin" depends="sign-jar" description="create release zip file">
-    <zip destfile="jaudio-${JAUDIOVERSION}.zip">
+    <zip destfile="jfaudio-${version}.zip">
       <fileset dir=".">
         <include name="*.jar"/>
         <include name="*.txt"/>
@@ -119,11 +120,11 @@
       </fileset>
       <fileset dir="../.." includes="license.txt"/>
     </zip>
-    <move file="jaudio-${JAUDIOVERSION}.zip" todir="/home/pquiring/zips"/>
+    <move file="jfaudio-${version}-bin.zip" todir="/home/pquiring/zips"/>
   </target>
 
   <target name="release-src" depends="" description="create release zip file">
-    <zip destfile="jaudio-src-${JAUDIOVERSION}.zip">
+    <zip destfile="jfaudio-${version}-src.zip">
       <fileset dir="../..">
         <include name="license.txt"/>
         <include name="projects/jaudio/src/*.java"/>
@@ -142,7 +143,7 @@
         <include name="include/*.h"/>
       </fileset>
     </zip>
-    <move file="jaudio-src-${JAUDIOVERSION}.zip" todir="/home/pquiring/zips"/>
+    <move file="jfaudio-${version}-src.zip" todir="/home/pquiring/zips"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

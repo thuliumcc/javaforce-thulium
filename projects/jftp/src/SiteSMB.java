@@ -1,4 +1,3 @@
-
 import java.io.*;
 import java.util.*;
 import javax.swing.*;
@@ -47,7 +46,7 @@ public class SiteSMB extends Site {
   public String remote_pwd() {
     return remoteDir.getText();
   }
-  
+
   public String getListing() {
     //attr       node owner    group    filesize mth dy time  filename  //time=year if older than 1 year
     StringBuffer str = new StringBuffer();
@@ -165,9 +164,10 @@ public class SiteSMB extends Site {
             }
             File remoteFile = new File(remoteDir.getText() + "/" + sf[idx].getText());
             File localFile = new File(localDir.getText() + "/" + sf[idx].getText());
-            JFLog.log("download:" + localFile + "->" + remoteFile);
-            addLog("download:" + localFile + "->" + remoteFile);
-            setStatus("download:" + localFile + "->" + remoteFile);
+            JFLog.log("download:" + remoteFile + "->" + localFile);
+            addLog("download:" + remoteFile + "->" + localFile);
+            setStatus("download:" + remoteFile + "->" + localFile);
+            setTotalFileSize(sf[idx].filesize);
             download_file(remoteFile, localFile);
             if (aborted) break;
           }
@@ -189,14 +189,15 @@ public class SiteSMB extends Site {
       int len = (int)file.length();
       byte buf[] = new byte[64 * 1024];
       OutputStream fos = new FileOutputStream(local);
-      int orglen = len;
+      int copied = 0;
       while ((len > 0) && (!aborted)) {
-        setProgress(len * 100 / orglen);
         int read = fis.read(buf);
         if (read == -1) throw new Exception("file i/o error");
         if (read > 0) {
           fos.write(buf, 0, read);
           len -= read;
+          copied += read;
+          setProgress(copied);
         }
       }
       fos.close();
@@ -205,7 +206,7 @@ public class SiteSMB extends Site {
       setStatus("Error:" + e);
       JFLog.log(e);
       addLog("" + e);
-    }    
+    }
   }
 
   @Override
@@ -262,6 +263,7 @@ public class SiteSMB extends Site {
             JFLog.log("upload:" + localFile + "->" + remoteFile);
             addLog("upload:" + localFile + "->" + remoteFile);
             setStatus("upload:" + localFile + "->" + remoteFile);
+            setTotalFileSize((int)localFile.length());
             upload_file(localFile, remoteFile);
             if (aborted) break;
           }
@@ -287,14 +289,15 @@ public class SiteSMB extends Site {
       byte buf[] = new byte[64 * 1024];
       InputStream fis = new FileInputStream(local);
       int len = fis.available();
-      int orglen = len;
+      int copied = 0;
       while ((len > 0) && (!aborted)) {
-        setProgress(len * 100 / orglen);
         int read = fis.read(buf);
         if (read == -1) throw new Exception("file i/o error");
         if (read > 0) {
           fos.write(buf, 0, read);
           len -= read;
+          copied += read;
+          setProgress(copied);
         }
       }
       fos.close();
@@ -303,7 +306,7 @@ public class SiteSMB extends Site {
       setStatus("Error:" + e);
       JFLog.log(e);
       addLog("" + e);
-    }    
+    }
   }
 
   public void abort() {
@@ -412,7 +415,7 @@ public class SiteSMB extends Site {
     try {
       if (!file.endsWith("/"))
         remote_delete_file(file + "/");
-      else  
+      else
         remote_delete_file(file);
       //update remoteTree
       int idx = file.lastIndexOf("/");
@@ -513,15 +516,9 @@ public class SiteSMB extends Site {
     }
   }
 
-  @Override
-  public void setProgress(int value) {
-    progress.setValue(value);
-  }
-
   public void closeSite() {
     JPanel panel = (JPanel)this.getClientProperty("panel");
     JTabbedPane tabs = (JTabbedPane)this.getClientProperty("tabs");
     tabs.remove(panel);
   }
 }
-

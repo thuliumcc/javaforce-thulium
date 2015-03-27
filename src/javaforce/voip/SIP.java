@@ -9,6 +9,8 @@ import javaforce.*;
  * packets thru the SIPInterface.
  * Direct Known subclasses : SIPClient, SIPServer.
  * RFC 3261 (2543) - SIP
+ * See also:
+ * http://www.iana.org/assignments/sip-parameters/sip-parameters.xhtml#sip-parameters-2
  */
 
 public abstract class SIP {
@@ -494,7 +496,9 @@ public abstract class SIP {
    * Parses the SDP content.
    */
   public static SDP getSDP(String msg[]) {
-    //id 96-127 = dynamic
+    String type = getHeader("Content-Type:", msg);
+    if (type == null) type = getHeader("c:", msg);  //short form
+    if (type == null || type.indexOf("application/sdp") == -1) return null;
     SDP sdp = new SDP();
     SDP.Stream stream = null;
     int idx;

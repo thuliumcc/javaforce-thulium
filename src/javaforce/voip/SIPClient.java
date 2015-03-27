@@ -677,12 +677,10 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
       }
       String tmp, req = null, epass;
       String callid = getHeader("Call-ID:", msg);
+      if (callid == null) callid = getHeader("i:", msg);
       if (callid == null) {
-        callid = getHeader("i:", msg);
-        if (callid == null) {
-          JFLog.log("Bad packet (no Call-ID) from:" + remoteip + ":" + remoteport);
-          return;
-        }
+        JFLog.log("Bad packet (no Call-ID) from:" + remoteip + ":" + remoteport);
+        return;
       }
       CallDetails cd = getCallDetails(callid);
       cd.dst.host = remoteip;
@@ -815,10 +813,20 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
                   content += msg[b];
                   content += "\r\n";
                 }
-                iface.onNotify(this, callid, getHeader("Event:", msg), content);
+                String event = getHeader("Event:", msg);
+                if (event == null) event = getHeader("o:", msg);
+                iface.onNotify(this, callid, event, content);
                 break;
               }
             }
+            break;
+          }
+          if (req.equals("ACK")) {
+            SDP sdp = getSDP(msg);
+            if (cd.dst.sdp == null) {
+              cd.dst.sdp = sdp;
+            }
+            iface.onAck(this, callid, sdp);
             break;
           }
           break;

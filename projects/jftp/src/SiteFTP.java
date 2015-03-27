@@ -145,9 +145,10 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
             }
             File remoteFile = new File(remoteDir.getText() + "/" + sf[idx].getText());
             File localFile = new File(localDir.getText() + "/" + sf[idx].getText());
-            JFLog.log("download:" + localFile + "->" + remoteFile);
-            addLog("download:" + localFile + "->" + remoteFile);
-            setStatus("download:" + localFile + "->" + remoteFile);
+            JFLog.log("download:" + remoteFile + "->" + localFile);
+            addLog("download:" + remoteFile + "->" + localFile);
+            setStatus("download:" + remoteFile + "->" + localFile);
+            setTotalFileSize(sf[idx].filesize);
             download_file(remoteFile, localFile);
             if (aborted) break;
           }
@@ -219,6 +220,7 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
             JFLog.log("upload:" + localFile + "->" + remoteFile);
             addLog("upload:" + localFile + "->" + remoteFile);
             setStatus("upload:" + localFile + "->" + remoteFile);
+            setTotalFileSize((int)localFile.length());
             upload_file(localFile, remoteFile);
             if (aborted) break;
           }
@@ -424,11 +426,6 @@ public class SiteFTP extends Site implements FTP.ProgressListener {
       JFLog.log(e);
       addLog("Error:" + e);
     }
-  }
-
-  @Override
-  public void setProgress(int value) {
-    progress.setValue(value);
   }
 
   public void closeSite() {

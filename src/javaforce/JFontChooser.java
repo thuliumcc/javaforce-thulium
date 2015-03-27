@@ -18,7 +18,11 @@ public class JFontChooser extends JDialog {
   private JCheckBox cbBold, cbItalic;
   private JTextArea txtSample;
   private int OPTION;
-  private String[] sizes = new String[]{"2", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "30", "36", "48", "72"};
+  private String[] sizes = new String[]
+    {
+      "2", "4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "30"
+      , "36", "48", "72", "84", "96", "108", "144", "192", "216", "288"
+    };
 
   public int showDialog(Font font) {
     setFont(font);

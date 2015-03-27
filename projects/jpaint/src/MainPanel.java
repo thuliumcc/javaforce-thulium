@@ -20,7 +20,7 @@ import javaforce.*;
 
 public class MainPanel extends javax.swing.JPanel implements MouseListener, MouseMotionListener, KeyListener, KeyEventDispatcher, ActionListener {
 
-  public static String version = "0.16";
+  public static String version = "0.17";
 
   /**
    * Creates new form PaintPanel
@@ -28,7 +28,8 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   public MainPanel(JFrame frame, JApplet applet) {
     this.frame = frame;
     this.applet = applet;
-    PaintCanvas.panel = this;
+    PaintCanvas.mainPanel = this;
+    Border.panel = this;
     initComponents();
     setLayout(new PanelLayout());  //can't make netbeans work properly
     addTab("untitled");
@@ -86,7 +87,8 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     width = new javax.swing.JComboBox();
     paintMode = new javax.swing.JComboBox();
     alphaLevel = new javax.swing.JSpinner();
-    layer = new javax.swing.JComboBox();
+    colorLayer = new javax.swing.JComboBox();
+    layersButton = new javax.swing.JButton();
     status = new javax.swing.JTextField();
 
     toolbar1.setFloatable(false);
@@ -409,7 +411,8 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     });
     toolbar2.add(backColor);
 
-    zoom.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "100%", "200%", "400%", "800%" }));
+    zoom.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "25%", "50%", "100%", "200%", "400%", "800%" }));
+    zoom.setSelectedIndex(2);
     zoom.setToolTipText("Zoom Level");
     zoom.setMaximumSize(new java.awt.Dimension(75, 28));
     zoom.addItemListener(new java.awt.event.ItemListener() {
@@ -441,16 +444,28 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     alphaLevel.setMaximumSize(new java.awt.Dimension(60, 28));
     toolbar2.add(alphaLevel);
 
-    layer.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "ARGB", "A---", "-R--", "--G-", "---B" }));
-    layer.setToolTipText("Color Layer");
-    layer.setLightWeightPopupEnabled(false);
-    layer.setMaximumSize(new java.awt.Dimension(70, 28));
-    layer.addActionListener(new java.awt.event.ActionListener() {
+    colorLayer.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "ARGB", "A---", "-R--", "--G-", "---B" }));
+    colorLayer.setToolTipText("Color Layer");
+    colorLayer.setLightWeightPopupEnabled(false);
+    colorLayer.setMaximumSize(new java.awt.Dimension(70, 28));
+    colorLayer.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        layerActionPerformed(evt);
+        colorLayerActionPerformed(evt);
       }
     });
-    toolbar2.add(layer);
+    toolbar2.add(colorLayer);
+
+    layersButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/layers.png"))); // NOI18N
+    layersButton.setToolTipText("Show Image Layers Window");
+    layersButton.setFocusable(false);
+    layersButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    layersButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    layersButton.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        layersButtonActionPerformed(evt);
+      }
+    });
+    toolbar2.add(layersButton);
 
     status.setText("status");
 
@@ -483,13 +498,18 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     curIdx = idx;
     if (idx == -1) return;
     PaintCanvas pc = imageTabs.get(idx).pc;
-    switch (pc.scale) {
-      case 100: zoom.setSelectedIndex(0); break;
-      case 200: zoom.setSelectedIndex(1); break;
-      case 400: zoom.setSelectedIndex(2); break;
-      case 800: zoom.setSelectedIndex(3); break;
+    switch ((int)pc.scale) {
+      case 25: zoom.setSelectedIndex(0); break;
+      case 50: zoom.setSelectedIndex(1); break;
+      case 100: zoom.setSelectedIndex(2); break;
+      case 200: zoom.setSelectedIndex(3); break;
+      case 400: zoom.setSelectedIndex(4); break;
+      case 800: zoom.setSelectedIndex(5); break;
     }
-    layer.setSelectedIndex(pc.layer);
+    colorLayer.setSelectedIndex(pc.getColorLayer());
+    if (layers != null) {
+      layers.setup(pc);
+    }
   }//GEN-LAST:event_tabsStateChanged
 
   private void selBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selBoxActionPerformed
@@ -593,14 +613,14 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     dialog.setVisible(true);
     if (dialog.w <= 0) return;
     PaintCanvas pc = imageTabs.get(getidx()).pc;
-    int orgLayer = pc.layer;
+    int orgLayer = pc.getColorLayer();
     if (orgLayer != 0) {
-      pc.changeLayer(0);
+      pc.changeColorLayer(0);
     }
     pc.scaleImage(dialog.w, dialog.h);
     pc.resizeBorder();
     if (orgLayer != 0) {
-      pc.changeLayer(orgLayer);
+      pc.changeColorLayer(orgLayer);
     }
     pc.parentPanel.revalidate();
     pc.repaint();
@@ -637,9 +657,9 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     }
   }//GEN-LAST:event_roundActionPerformed
 
-  private void layerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layerActionPerformed
+  private void colorLayerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_colorLayerActionPerformed
     layerChanged();
-  }//GEN-LAST:event_layerActionPerformed
+  }//GEN-LAST:event_colorLayerActionPerformed
 
   private void paintModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_paintModeActionPerformed
     paintModeChanged();
@@ -655,6 +675,23 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     pc.repaint();
   }//GEN-LAST:event_backswapActionPerformed
 
+  private void layersButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layersButtonActionPerformed
+    if (layers != null) {
+      layers.dispose();
+    } else {
+      int idx = getidx();
+      if (idx == -1) return;
+      PaintCanvas pc = imageTabs.get(idx).pc;
+      if (pc == null) return;
+      layers = new LayersWindow(this);
+      layers.setup(pc);
+      layers.setVisible(true);
+      Point pt = layersButton.getLocationOnScreen();
+      pt.y += layersButton.getHeight();
+      layers.setLocation(pt);
+    }
+  }//GEN-LAST:event_layersButtonActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JSpinner alphaLevel;
   private javax.swing.JButton backColor;
@@ -662,6 +699,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   private javax.swing.JToggleButton box;
   private javax.swing.JButton changeSize;
   private javax.swing.JToggleButton circle;
+  private javax.swing.JComboBox colorLayer;
   private javax.swing.JToggleButton curve;
   private javax.swing.JToggleButton fill;
   private javax.swing.JToggleButton fillAlpha;
@@ -671,7 +709,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   private javax.swing.JButton flipVert;
   private javax.swing.JButton foreColor;
   private javax.swing.ButtonGroup group;
-  private javax.swing.JComboBox layer;
+  private javax.swing.JButton layersButton;
   private javax.swing.JToggleButton line;
   private javax.swing.JComboBox paintMode;
   private javax.swing.JToggleButton pencil;
@@ -722,6 +760,8 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   public int curIdx = -1;
   public int arcX = 25, arcY = 25;
   public Config config;
+  public LayersWindow layers;
+
   private String configFolder = JF.getUserPath();
   private String configFile = "/.jpaint.xml";
   private String currentPath;
@@ -847,6 +887,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   public void openTab() {
     JFileChooser chooser = new JFileChooser();
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    chooser.addChoosableFileFilter(new FileNameExtensionFilter("JFPAINT", "jfpaint"));
     chooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG", "jpg", "jpeg"));
     chooser.addChoosableFileFilter(new FileNameExtensionFilter("PNG", "png"));
     chooser.addChoosableFileFilter(new FileNameExtensionFilter("BMP", "bmp"));
@@ -903,22 +944,25 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   private ImageTab addTab(String title) {
     ImageTab tab = new ImageTab();
     tab.panel = new JPanel(new ImageLayout());
-    tab.pc = new PaintCanvas(tab.panel);
+    tab.scroll = new JScrollPane(tab.panel);
+    tab.pc = new PaintCanvas(tab.panel, tab.scroll);
     tab.pc.setImageSize(init_x, init_y);
-    tab.pc.img.fill(0,0,init_x,init_y,backClr);
+    tab.pc.img[0].fill(0,0,init_x,init_y,backClr);
     tab.pc.createBorders();
     tab.panel.add(tab.pc, "CENTER");
     tab.panel.add(tab.pc.border_east, "EAST");
     tab.panel.add(tab.pc.border_south, "SOUTH");
     tab.panel.add(tab.pc.border_corner, "CORNER");
     tab.pc.resizeBorder();
-    tab.scroll = new JScrollPane(tab.panel);
     tab.filename = new File(title);
     tab.pc.dirty = false;
     imageTabs.add(tab);
     tabs.addTab(title, tab.scroll);
     tabs.setSelectedComponent(tab.scroll);
     tab.pc.grabFocus();
+    if (layers != null) {
+      layers.setup(tab.pc);
+    }
     return tab;
   }
 
@@ -929,8 +973,41 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     JFImage img = new JFImage();
     String format = getFormat(filename);
     if (format == null) return false;
-    boolean result;
-    if (format.equals("bmp"))
+    boolean result, multi = false;
+    if (format.equals("jfpaint")) {
+      multi = true;
+      try {
+        JFPaint imgs;
+        FileInputStream fis = new FileInputStream(filename);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        imgs = (JFPaint)ois.readObject();
+        ois.close();
+        fis.close();
+        int w = 0,h = 0;
+        for(int a=0;a<imgs.images.length;a++) {
+          img = new JFImage();
+          ByteArrayInputStream bais = new ByteArrayInputStream(imgs.images[a].png);
+          if (!img.loadPNG(bais)) throw new Exception("jfpaint sub-png load failed");
+          if (a == 0) {
+            w = img.getWidth();
+            h = img.getHeight();
+            pc.setImageSize(w, h);
+          } else {
+            pc.addImageLayer();
+          }
+          pc.setImageLayer(a);
+          int px[] = img.getPixels();
+          pc.img[a].putPixels(px, 0, 0, w, h, 0);
+          pc.name[a] = imgs.images[a].name;
+        }
+        pc.setImageLayer(0);
+        result = true;
+      } catch (Exception e) {
+        JF.showError("Error", e.toString());
+        result = false;
+      }
+    }
+    else if (format.equals("bmp"))
       result = img.loadBMP(filename);
     else if (format.equals("svg"))
       result = img.loadSVG(filename);
@@ -940,12 +1017,12 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       result = img.loadXPM(filename);
     else
       result = img.load(filename);
-    if (result) {
+    if (result && !multi) {
       int w = img.getWidth();
       int h = img.getHeight();
       pc.setImageSize(w, h);
       int px[] = img.getPixels();
-      pc.img.putPixels(px, 0, 0, w, h, 0);
+      pc.img[pc.getImageLayer()].putPixels(px, 0, 0, w, h, 0);
     }
     pc.disableScale = false;
     return result;
@@ -994,7 +1071,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       tab = imageTabs.get(idx);
     }
     tab.pc.setImageSize(dialog.w, dialog.h);
-    tab.pc.img.fill(0,0,dialog.w,dialog.h,backClr);
+    tab.pc.img[tab.pc.getImageLayer()].fill(0,0,dialog.w,dialog.h,backClr);
     repaint();
   }
 
@@ -1021,27 +1098,56 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     String filename = imageTabs.get(idx).filename.toString();
     String format = getFormat(filename);
     if (format == null) return false;
-    boolean state;
+    boolean saved = false;
     pc.disableScale = true;
     pc.clearUndo();
-    pc.applyLayer();
-    if (format.equals("bmp"))
-      state = imageTabs.get(idx).pc.img.saveBMP(filename);
-    else if (format.equals("svg"))
-      state = imageTabs.get(idx).pc.img.saveSVG(filename);
-    else if (format.equals("jpg"))
-      state = imageTabs.get(idx).pc.img.saveJPG(filename);
-    else
-      state = imageTabs.get(idx).pc.img.save(filename, format);
+    pc.applyColorLayer();
+    if (format.equals("jfpaint")) {
+      int cnt = pc.getImageLayers();
+      JFPaint imgs = new JFPaint();
+      imgs.images = new JFPaintImage[cnt];
+      try {
+        for(int a=0;a<cnt;a++) {
+          ByteArrayOutputStream baos = new ByteArrayOutputStream();
+          if (!pc.img[a].savePNG(baos)) throw new Exception("jfpaint sub-png save failed");
+          imgs.images[a] = new JFPaintImage();
+          imgs.images[a].png = baos.toByteArray();
+          imgs.images[a].name = pc.name[a];
+        }
+        FileOutputStream fos = new FileOutputStream(filename);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(imgs);
+        oos.close();
+        fos.close();
+        return true;
+      } catch (Exception e) {
+        JF.showError("Error", e.toString());
+        return false;
+      }
+    } else {
+      if (pc.getImageLayers() > 1) {
+        if (!JF.showConfirm("Combine Layers?", "Saving in this format will combine all layers, are you sure?")) return false;
+      }
+      JFImage img = pc.combineImageLayers();
+      if (format.equals("bmp"))
+        saved = img.saveBMP(filename);
+      else if (format.equals("svg"))
+        saved = img.saveSVG(filename);
+      else if (format.equals("jpg"))
+        saved = img.saveJPG(filename);
+      else
+        saved = img.save(filename, format);
+    }
     pc.disableScale = false;
-    if (state) pc.dirty = false;
-    return state;
+    if (saved) pc.dirty = false;
+    return saved;
   }
 
   public boolean saveAs() {
     int idx = getidx();
     JFileChooser chooser = new JFileChooser();
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+    chooser.addChoosableFileFilter(new FileNameExtensionFilter("JFPAINT", "jfpaint"));
     chooser.addChoosableFileFilter(new FileNameExtensionFilter("JPEG", "jpg", "jpeg"));
     chooser.addChoosableFileFilter(new FileNameExtensionFilter("PNG", "png"));
     chooser.addChoosableFileFilter(new FileNameExtensionFilter("BMP", "bmp"));
@@ -1055,7 +1161,12 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       String format = getFormat(tab.filename.toString());
       if (format == null) {
         String ext = chooser.getFileFilter().getDescription().toLowerCase();
-        if (ext.equals("all files")) ext = "png";  //defaults to PNG
+        if (ext.equals("all files")) {
+          if (tab.pc.getImageLayers() == 1)
+            ext = "png"; //default if one image layer
+          else
+            ext = "jfpaint";  //default if > 1 image layer
+        }
         if (ext.equals("jpeg")) ext = "jpg";
         tab.filename = new File(tab.filename.toString() + "." + ext);
       }
@@ -1077,8 +1188,8 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     selectedTool = tools.selBox;
     PaintCanvas pc = imageTabs.get(idx).pc;
     selX1 = selY1 = 0;
-    selX2 = pc.img.getWidth()-1;
-    selY2 = pc.img.getHeight()-1;
+    selX2 = pc.img[pc.getImageLayer()].getWidth()-1;
+    selY2 = pc.img[pc.getImageLayer()].getHeight()-1;
     cutSel();
     pasteSel(selX1, selY1);
     pc.drag = true;
@@ -1088,6 +1199,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     int idx = filename.lastIndexOf(".");
     if (idx == -1) return null;
     String format = filename.substring(idx+1).toLowerCase();
+    if (format.equals("jfpaint")) return "jfpaint";
     if (format.equals("png")) return "png";
     if (format.equals("bmp")) return "bmp";
     if (format.equals("jpg")) return "jpg";
@@ -1132,7 +1244,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     int w = selX2-selX1+1;
     int h = selY2-selY1+1;
     PaintCanvas pc = imageTabs.get(idx).pc;
-    pc.img.fill(selX1,selY1,w,h,backClr);
+    pc.img[pc.getImageLayer()].fill(selX1,selY1,w,h,backClr);
     clearSel(pc);
     pc.drag = false;
   }
@@ -1149,10 +1261,10 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     PaintCanvas pc = imageTabs.get(idx).pc;
     pc.disableScale = true;
     JFImage clip = new JFImage(cbX,cbY);
-    clipBoard = pc.img.getPixels(selX1,selY1,cbX,cbY);
+    clipBoard = pc.img[pc.getImageLayer()].getPixels(selX1,selY1,cbX,cbY);
     clip.putPixels(clipBoard,0,0,cbX,cbY,0);
     JFClipboard.writeImage(clip.getImage());
-    pc.img.fill(selX1,selY1,cbX,cbY,backClr);
+    pc.img[pc.getImageLayer()].fill(selX1,selY1,cbX,cbY,backClr);
     pc.disableScale = false;
   }
 
@@ -1167,14 +1279,14 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     cbY = selY2-selY1+1;
     PaintCanvas pc = imageTabs.get(idx).pc;
     JFImage clip = new JFImage(cbX,cbY);
-    clipBoard = pc.img.getPixels(selX1,selY1,cbX,cbY);
+    clipBoard = pc.img[pc.getImageLayer()].getPixels(selX1,selY1,cbX,cbY);
     clip.putPixels(clipBoard,0,0,cbX,cbY,0);
     JFClipboard.writeImage(clip.getImage());
   }
 
   public void pasteSel(int x, int y) {
-    if (layer.getSelectedIndex() != 0) return;
-    Image img = JFClipboard.readImage();
+    if (colorLayer.getSelectedIndex() != 0) return;
+    java.awt.Image img = JFClipboard.readImage();
     if (img == null) return;
     JFImage image = JFClipboard.convertImage(img);
     cbX = image.getWidth();
@@ -1202,10 +1314,10 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   private void drawSel(PaintCanvas pc) {
     if (cbX == 0 || cbY == 0) return;  //shouldn't happen ???
     if (selkeyclr.isSelected())
-      pc.img.putPixelsBlendKeyClr(clipBoard, selX1, selY1, cbX, cbY, 0, false, backClr);
+      pc.img[pc.getImageLayer()].putPixelsBlendKeyClr(clipBoard, selX1, selY1, cbX, cbY, 0, false, backClr);
     else
-      pc.img.putPixelsBlend(clipBoard, selX1, selY1, cbX, cbY, 0, false);
-    pc.img.repaint();
+      pc.img[pc.getImageLayer()].putPixelsBlend(clipBoard, selX1, selY1, cbX, cbY, 0, false);
+    pc.img[pc.getImageLayer()].repaint();
   }
 
   private void foreDrawSel(PaintCanvas pc) {
@@ -1222,7 +1334,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     String lns[] = textText.split("\n");
     int x=selX1;
     int y=selY1;
-    Rectangle2D rect = textFont.getMaxCharBounds(pc.img.getGraphics2D().getFontRenderContext());
+    Rectangle2D rect = textFont.getMaxCharBounds(pc.img[pc.getImageLayer()].getGraphics2D().getFontRenderContext());
     int fy = (int)rect.getHeight();
     for(int a=0;a<lns.length;a++) {
       y += fy;
@@ -1232,8 +1344,8 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   }
 
   private void foreDrawText(PaintCanvas pc) {
-    FontRenderContext frc = pc.img.getGraphics2D().getFontRenderContext();
-    Rectangle2D rect = textFont.getMaxCharBounds(pc.img.getGraphics2D().getFontRenderContext());
+    FontRenderContext frc = pc.img[pc.getImageLayer()].getGraphics2D().getFontRenderContext();
+    Rectangle2D rect = textFont.getMaxCharBounds(pc.img[pc.getImageLayer()].getGraphics2D().getFontRenderContext());
     int fx = (int)rect.getWidth();
     int fy = (int)rect.getHeight();
     int mx = 1;
@@ -1315,8 +1427,8 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   }
 
   private void changeSize(PaintCanvas pc, int dx, int dy, boolean scaled) {
-    int orgScale = pc.scale;
-    int orgLayer = pc.layer;
+    float orgScale = pc.scale;
+    int orgLayer = pc.getColorLayer();
     int x = pc.getUnscaledWidth();
     int y = pc.getUnscaledHeight();
     if (x + dx < 1) {
@@ -1326,28 +1438,43 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       dy = -y + 1;
     }
     if (scaled) {
-      dx /= (pc.scale / 100);
-      dy /= (pc.scale / 100);
+      dx /= (pc.scale / 100f);
+      dy /= (pc.scale / 100f);
     }
     if (orgLayer != 0) {
-      pc.changeLayer(0);
+      pc.changeColorLayer(0);
     }
     if (orgScale != 100) pc.setScale(100);
-    int px[] = pc.img.getPixels();
+    int cnt = pc.getImageLayers();
+    int px[][] = new int[cnt][];
+    for (int a=0;a<cnt;a++) {
+      px[a] = pc.img[a].getPixels();
+    }
     pc.setImageSize(x + dx,y + dy);
-    pc.img.putPixels(px, 0,0, x,y, 0);
-    if (dx > 0) {
-      pc.img.fill(x,0,dx,y + dy,backClr);
-    }
-    if (dy > 0) {
-      pc.img.fill(0,y,x + dx,dy,backClr);
-    }
-    if ((dx > 0) && (dy > 0)) {
-      pc.img.fill(x,y,dx,dy,backClr);
+    for(int a=0;a<cnt;a++) {
+      pc.img[a].putPixels(px[a], 0,0, x,y, 0);
+      if (dx > 0) {
+        if (a == 0)
+          pc.img[a].fill(x,0,dx,y + dy,backClr);
+        else
+          pc.img[a].fill(x,0,dx,y + dy,backClr, true);
+      }
+      if (dy > 0) {
+        if (a == 0)
+          pc.img[a].fill(0,y,x + dx,dy,backClr);
+        else
+          pc.img[a].fill(0,y,x + dx,dy,backClr, true);
+      }
+      if ((dx > 0) && (dy > 0)) {
+        if (a == 0)
+          pc.img[a].fill(x,y,dx,dy,backClr);
+        else
+          pc.img[a].fill(x,y,dx,dy,backClr, true);
+      }
     }
     if (orgScale != 100) pc.setScale(orgScale);
     if (orgLayer != 0) {
-      pc.changeLayer(orgLayer);
+      pc.changeColorLayer(orgLayer);
     }
     pc.resizeBorder();
     repaintTool(pc);
@@ -1452,7 +1579,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     switch (paintMode.getSelectedIndex()) {
       case 0:  //normal
         if (button1) clr = foreClr; else clr = backClr;
-        switch (layer.getSelectedIndex()) {
+        switch (colorLayer.getSelectedIndex()) {
           case 0:  //ARGB
             paint = new Color(clr);
             break;
@@ -1510,10 +1637,12 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     PaintCanvas pc = imageTabs.get(getidx()).pc;
     int newScale = -1;
     switch (zoom.getSelectedIndex()) {
-      case 0: newScale = 100; break;
-      case 1: newScale = 200; break;
-      case 2: newScale = 400; break;
-      case 3: newScale = 800; break;
+      case 0: newScale = 25; break;
+      case 1: newScale = 50; break;
+      case 2: newScale = 100; break;
+      case 3: newScale = 200; break;
+      case 4: newScale = 400; break;
+      case 5: newScale = 800; break;
     }
     pc.setScale(newScale);
     pc.parentPanel.revalidate();
@@ -1605,10 +1734,11 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   //the following mouse events are from PaintCanvas, not this Panel
 
   public void mouseClicked(MouseEvent e) {
-    PaintCanvas pc = (PaintCanvas)e.getComponent();
-    if (pc.border) return;
-    int x = e.getX() / (pc.scale / 100);
-    int y = e.getY() / (pc.scale / 100);
+    JComponent c = (JComponent)e.getComponent();
+    if (c instanceof Border) return;
+    PaintCanvas pc = (PaintCanvas)c;
+    int x = (int)(e.getX() / (pc.scale / 100f));
+    int y = (int)(e.getY() / (pc.scale / 100f));
 //    JFLog.log("clicked:" + x + "," + y);
     if (getGradFocus) {
       gfx = x;
@@ -1635,17 +1765,26 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   public void mouseEntered(MouseEvent e) {}
   public void mouseExited(MouseEvent e) {}
   public void mousePressed(MouseEvent e) {
-    PaintCanvas pc = (PaintCanvas)e.getComponent();
+    JComponent c = (JComponent)e.getComponent();
+    PaintCanvas pc;
+    boolean border = false;
+    if (c instanceof Border) {
+      Border b = (Border)c;
+      pc = b.pc;
+      border = true;
+    } else {
+      pc = (PaintCanvas)c;
+    }
     pc.grabFocus();
     pc.button = e.getButton();
-    int x = e.getX() / (pc.scale / 100);
-    int y = e.getY() / (pc.scale / 100);
+    int x = (int)(e.getX() / (pc.scale / 100f));
+    int y = (int)(e.getY() / (pc.scale / 100f));
 //    JFLog.log("press:" + x + "," + y);
-    if (pc.border) {
+    if (border) {
       //start to drag size
       pc.sx = x;
       pc.sy = y;
-      pc.parentImage.createUndo();
+      pc.createUndo();
       return;
     }
     if (getGradPoints) {
@@ -1708,7 +1847,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       case fill:
         int clr = foreClr;
         if (e.getButton() == MouseEvent.BUTTON3) clr = backClr;
-        switch (layer.getSelectedIndex()) {
+        switch (colorLayer.getSelectedIndex()) {
           case 0:  //ARGB
             break;
           case 1:  //A
@@ -1744,11 +1883,11 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
         break;
       case pickColor:
         if (e.getButton() == MouseEvent.BUTTON1) {
-          foreClr = pc.img.getPixel(x, y);
+          foreClr = pc.img[pc.getImageLayer()].getPixel(x, y);
           updateClr(foreColor, foreClr);
         }
         if (e.getButton() == MouseEvent.BUTTON3) {
-          backClr = pc.img.getPixel(x, y);
+          backClr = pc.img[pc.getImageLayer()].getPixel(x, y);
           updateClr(backColor, backClr);
         }
         pc.disableScale = false;
@@ -1759,12 +1898,13 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     pc.repaint();
   }
   public void mouseReleased(MouseEvent e) {
-    PaintCanvas pc = (PaintCanvas)e.getComponent();
+    JComponent c = (JComponent)e.getComponent();
+    if (c instanceof Border) return;
+    PaintCanvas pc = (PaintCanvas)c;
     pc.button = -1;
-    if (pc.border) return;
     int tmp;
-    int x = e.getX() / (pc.scale / 100);
-    int y = e.getY() / (pc.scale / 100);
+    int x = (int)(e.getX() / (pc.scale / 100f));
+    int y = (int)(e.getY() / (pc.scale / 100f));
 //    JFLog.log("release:" + x + "," + y);
     if (getGradPoints) {
       gx[1] = x;
@@ -1864,24 +2004,28 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     pc.repaint();
   }
   public void mouseDragged(MouseEvent e) {
-    PaintCanvas pc = (PaintCanvas)e.getComponent();
-    int x = e.getX() / (pc.scale / 100);
-    int y = e.getY() / (pc.scale / 100);
-    if (pc.border) {
+    JComponent c = (JComponent)e.getComponent();
+    if (c instanceof Border) {
+      Border b = (Border)c;
+      int x = (int)(e.getX() / (b.pc.scale / 100f));
+      int y = (int)(e.getY() / (b.pc.scale / 100f));
       //changing size
-      if (pc.borderType == PaintCanvas.BorderTypes.east) {
-        changeSize(pc.parentImage, x - pc.sx, 0, true);
+      if (b.borderType == Border.Types.east) {
+        changeSize(b.pc, x - b.pc.sx, 0, true);
       }
-      if (pc.borderType == PaintCanvas.BorderTypes.south) {
-        changeSize(pc.parentImage, 0, y - pc.sy, true);
+      if (b.borderType == Border.Types.south) {
+        changeSize(b.pc, 0, y - b.pc.sy, true);
       }
-      if (pc.borderType == PaintCanvas.BorderTypes.corner) {
-        changeSize(pc.parentImage, x - pc.sx, y - pc.sy, true);
+      if (b.borderType == Border.Types.corner) {
+        changeSize(b.pc, x - b.pc.sx, y - b.pc.sy, true);
       }
       imageTabs.get(getidx()).scroll.doLayout();
       doLayout();
       return;
     }
+    PaintCanvas pc = (PaintCanvas)c;
+    int x = (int)(e.getX() / (pc.scale / 100f));
+    int y = (int)(e.getY() / (pc.scale / 100f));
     pc.disableScale = true;
     if (getGradPoints) {
       pc.foreClear();
@@ -2011,7 +2155,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     pc.repaint();
   }
   public int getLayer() {
-    return layer.getSelectedIndex();
+    return colorLayer.getSelectedIndex();
   }
   public void layerChanged() {
     int idx = getidx();
@@ -2022,8 +2166,8 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
         pencil.doClick();
     }
     PaintCanvas pc = imageTabs.get(idx).pc;
-    pc.changeLayer(layer.getSelectedIndex());
-    if (layer.getSelectedIndex() > 0) {
+    pc.changeColorLayer(colorLayer.getSelectedIndex());
+    if (colorLayer.getSelectedIndex() > 0) {
       paintMode.setSelectedIndex(0);
       paintMode.setEnabled(false);
       selBox.setEnabled(false);
@@ -2058,5 +2202,77 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     while (tabs.getTabCount() > 0) {
       closeTab(true);
     }
+  }
+  public void addLayer() {
+    int idx = getidx();
+    if (idx == -1) return;
+    PaintCanvas pc = imageTabs.get(idx).pc;
+    if (pc == null) return;
+    pc.addImageLayer();
+    pc.repaint();
+  }
+  public void delLayer() {
+    int idx = getidx();
+    if (idx == -1) return;
+    PaintCanvas pc = imageTabs.get(idx).pc;
+    if (pc == null) return;
+    pc.removeImageLayer(pc.getImageLayer());
+    pc.repaint();
+  }
+  public void editLayer() {
+    int idx = getidx();
+    if (idx == -1) return;
+    PaintCanvas pc = imageTabs.get(idx).pc;
+    if (pc == null) return;
+    int layer = pc.getImageLayer();
+    String newName = JF.getString("Edit layer name", pc.name[layer]);
+    if (newName == null) return;
+    pc.name[layer] = newName;
+  }
+  public void dupLayer() {
+    int idx = getidx();
+    if (idx == -1) return;
+    PaintCanvas pc = imageTabs.get(idx).pc;
+    if (pc == null) return;
+    int layer = pc.getImageLayer();
+    int px[] = pc.img[layer].getPixels();
+    pc.addImageLayer();
+    pc.swapLayers(layer+1, pc.getImageLayers()-1);
+    pc.img[layer+1].putPixels(px, 0, 0, pc.getUnscaledWidth(), pc.getUnscaledHeight(), 0);
+    pc.repaint();
+  }
+  public void mergeLayer() {
+    int idx = getidx();
+    if (idx == -1) return;
+    PaintCanvas pc = imageTabs.get(idx).pc;
+    if (pc == null) return;
+    int layer = pc.getImageLayer();
+    if (layer == 0) return;
+    pc.img[layer-1].getGraphics().drawImage(pc.img[layer].getImage(), 0, 0, null);
+    pc.removeImageLayer(layer);
+    pc.setImageLayer(layer-1);
+    pc.repaint();
+  }
+  public void moveLayerUp() {
+    int idx = getidx();
+    if (idx == -1) return;
+    PaintCanvas pc = imageTabs.get(idx).pc;
+    if (pc == null) return;
+    int layer = pc.getImageLayer();
+    if (layer == 0) return;
+    pc.swapLayers(layer, layer-1);
+    pc.setImageLayer(layer-1);
+    pc.repaint();
+  }
+  public void moveLayerDown() {
+    int idx = getidx();
+    if (idx == -1) return;
+    PaintCanvas pc = imageTabs.get(idx).pc;
+    if (pc == null) return;
+    int layer = pc.getImageLayer();
+    if (layer == pc.getImageLayers()-1) return;
+    pc.swapLayers(layer, layer+1);
+    pc.setImageLayer(layer+1);
+    pc.repaint();
   }
 }

@@ -1,5 +1,20 @@
 What's new...
 
+Feb 9/2015 : JF 7.42.0 released!
+  - javaforce.voip.SIPClientInterface now includes onAck()
+  - jPhoneLite/1.9.3 beta 1
+    - now supports INVITE without SDP and ACK with SDP instead (see RFC 3665 sec 3.6)
+    - not released yet (still testing)
+  - jfPaint/0.17
+    - support for image layers (saves to new file *.jfpaint)
+  - jfFTP/0.5
+    - fixed progress bar
+  - jfEdit/0.8
+    - msi package now registers .txt as a new file type (in Explorer -> New -> Text Document)
+       - the one from Notepad disappears?
+  - jLogon/0.17
+    - now uses systemd on Ubuntu (15.04)
+
 Jan 17/2015 : JF 7.41.0 released!
   - jfBroadcast/0.27
     - improved -allowdups performance

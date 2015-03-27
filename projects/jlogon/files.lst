@@ -1,1 +1,8 @@
-#each distro has it's own files - see files-ubuntu.lst files-fedora.lst
+/usr/sbin/jlogon
+/usr/sbin/jlogon.bin
+/usr/sbin/jlogon-runsession
+/usr/sbin/jlogon-rundomain
+/etc/dhcp/dhclient-script
+/usr/share/java/jlogon.jar
+/usr/lib/systemd/system-preset/82-jlogon.preset
+/usr/lib/systemd/system/jlogon.service

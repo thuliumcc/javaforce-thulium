@@ -255,7 +255,7 @@ public abstract class Site extends javax.swing.JPanel implements FTP.ProgressLis
           .addComponent(localDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
           .addComponent(jLabel2))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(split_local, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE))
+        .addComponent(split_local, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE))
     );
 
     split_files.setLeftComponent(localSide);
@@ -328,7 +328,7 @@ public abstract class Site extends javax.swing.JPanel implements FTP.ProgressLis
           .addComponent(remoteDir, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
           .addComponent(jLabel1))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(split_remote, javax.swing.GroupLayout.DEFAULT_SIZE, 299, Short.MAX_VALUE))
+        .addComponent(split_remote, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE))
     );
 
     split_files.setRightComponent(remoteSide);
@@ -361,11 +361,11 @@ public abstract class Site extends javax.swing.JPanel implements FTP.ProgressLis
       .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
         .addContainerGap()
         .addComponent(status)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        .addComponent(abort)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(progress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-        .addContainerGap())
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(abort)
+        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
 
     status_pane.addTab("File Transfer", jPanel1);
@@ -388,7 +388,7 @@ public abstract class Site extends javax.swing.JPanel implements FTP.ProgressLis
       jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
         .addContainerGap()
-        .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+        .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 79, Short.MAX_VALUE)
         .addContainerGap())
     );
 
@@ -404,7 +404,7 @@ public abstract class Site extends javax.swing.JPanel implements FTP.ProgressLis
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(split_main, javax.swing.GroupLayout.DEFAULT_SIZE, 484, Short.MAX_VALUE)
+      .addComponent(split_main)
     );
   }// </editor-fold>//GEN-END:initComponents
 
@@ -439,10 +439,6 @@ public abstract class Site extends javax.swing.JPanel implements FTP.ProgressLis
     private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
       resize();
     }//GEN-LAST:event_formComponentShown
-
-    private void abortActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_abortActionPerformed
-      abort();
-    }//GEN-LAST:event_abortActionPerformed
 
     private void local_uploadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_local_uploadActionPerformed
       upload();
@@ -549,6 +545,10 @@ public abstract class Site extends javax.swing.JPanel implements FTP.ProgressLis
       }
     }
   }//GEN-LAST:event_remoteFilesKeyPressed
+
+  private void abortActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_abortActionPerformed
+    abort();
+  }//GEN-LAST:event_abortActionPerformed
 
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1114,10 +1114,26 @@ public abstract class Site extends javax.swing.JPanel implements FTP.ProgressLis
     progress.setValue(0);
   }
 
+  public void setTotalFileSize(int value) {
+//    System.out.println("setTotalFileSize:" + value);
+    totalFileSize = value;
+    setProgress(0);
+  }
+
+  private int progressPercent = 0;
+
   public void setProgress(int value) {
+//    System.out.println("setProgress:" + value);
     float x = value;
     float y = totalFileSize;
-    progress.setValue((int) (x / y * 100.0));
+    int newPercent = (int) (x / y * 100.0f);
+    if (newPercent == progressPercent) return;
+    progressPercent = newPercent;
+    java.awt.EventQueue.invokeLater(new Runnable() {
+      public void run() {
+        progress.setValue(progressPercent);
+      }
+    });
   }
 
   public void resize() {

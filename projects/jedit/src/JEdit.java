@@ -21,7 +21,7 @@ import javax.swing.text.*;
 
 public class JEdit extends javax.swing.JFrame implements FindEvent, ReplaceEvent, DocumentListener {
 
-  private String getVersion() { return "0.7"; }
+  private String getVersion() { return "0.8"; }
 
   /** Creates new form jedit */
   public JEdit() {

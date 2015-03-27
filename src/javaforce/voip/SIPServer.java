@@ -260,12 +260,10 @@ public class SIPServer extends SIP implements SIPInterface {
     try {
       String tmp, req = null, epass;
       String callid = getHeader("Call-ID:", msg);
+      if (callid == null) callid = getHeader("i:", msg);
       if (callid == null) {
-        callid = getHeader("i:", msg);  //callcentric.com
-        if (callid == null) {
-          JFLog.log("Bad packet (no Call-ID) from:" + remoteip + ":" + remoteport);
-          return;
-        }
+        JFLog.log("Bad packet (no Call-ID) from:" + remoteip + ":" + remoteport);
+        return;
       }
       CallDetailsServer cd = getCallDetailsServer(callid);
       cd.lastPacket = System.currentTimeMillis();

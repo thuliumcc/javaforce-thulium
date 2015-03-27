@@ -1,5 +1,8 @@
 Whatsnew ...
 
+Feb 9, 2015 - v0.17 released!
+  - new : support for image layers added (layered images are saved to *.jfpaint files)
+
 Nov 7, 2014 - v0.16 released!
   - new : added xpm support (read only)
   - fix : bmp support added in Linux

@@ -11,29 +11,31 @@ import com.jhlabs.image.*;
 
 public class PaintCanvas extends JComponent implements MouseListener, MouseMotionListener, KeyListener {
 
-  public static MainPanel panel;
+  public static MainPanel mainPanel;
   public int mx=0, my=0;  //current mouse pos
   public int sx=0, sy=0;  //starting draw pos
   public boolean drag = false;  //a draggable selection/text box is visible
-  public JFImage img, bimg, fimg;  //the "real" image / background / foreground images
+  public JFImage img[], bimg, fimg;  //the "real" image / background / foreground images
   public JFImage limg;  //alpha, color layers
-  public JFImage cimg;   //current layer
+  public JFImage cimg;  //current color layer
   public boolean dirty = false, undoDirty = false;
-  public Vector<PaintCanvas> undos = new Vector<PaintCanvas>();
+  public Vector<JFImage> undos = new Vector<JFImage>();
   public int undoPos = -1;
   public static int MAX_UNDO_SIZE = 7;
-  public boolean border = false;
-  public enum BorderTypes {east, south, corner};
-  public BorderTypes borderType;
-  public PaintCanvas border_east, border_south, border_corner;
+  public Border border_east, border_south, border_corner;
   public JPanel parentPanel;
+  public JScrollPane scroll;
   public int button = -1;
   public boolean textCursor;
   public int selBoxIdx = 0;  //dashed line
-  public int scale = 100;
-  public int layer = 0;
+  public float scale = 100;
   public boolean disableScale = false;  //for file operations
-  public PaintCanvas parentImage;
+  public boolean show[];
+  public String name[];
+
+  private int colorLayer = 0;
+  private int imageLayer = 0;
+  private int imageLayers = 1;
 
   private void init() {
     addMouseListener(this);
@@ -42,31 +44,30 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     setFocusable(true);
   }
 
-  public PaintCanvas(JPanel parent) {
+  public PaintCanvas(JPanel parent, JScrollPane scroll) {
     init();
     parentPanel = parent;
-    img = new JFImage();
+    this.scroll = scroll;
+    img = new JFImage[1];
+    img[imageLayer] = new JFImage();
+    show = new boolean[1];
+    show[imageLayer] = true;
+    name = new String[1];
+    name[imageLayer] = "Background";
     bimg = new JFImage();
     fimg = new JFImage();
     limg = new JFImage();
-    cimg = img;
+    cimg = img[imageLayer];
     setName("image");
-  }
-
-  public PaintCanvas(PaintCanvas parent, BorderTypes bt) {
-    this.borderType = bt;
-    init();
-    img = new JFImage();
-    setName("border");
-    parentImage = parent;
-    border = true;
   }
 
   public void setImageSize(int x,int y) {
     if (x <= 0) x = 1;
     if (y <= 0) y = 1;
 
-    img.setImageSize(x, y);
+    for(int a=0;a<imageLayers;a++) {
+      img[a].setImageSize(x, y);
+    }
     limg.setImageSize(x, y);
 
     bimg.setImageSize(x, y);
@@ -78,26 +79,82 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     setPreferredSize(new Dimension(x,y));
     backClear();
     foreClear();
-    clearUndo();
   }
 
   public void paint(Graphics g) {
-    if (img.getImage() == null) return;
-    if (border) {
-      g.drawImage(img.getImage(), 0, 0, null);
-      return;
+    if (img == null) return;
+    if (img[imageLayer].getImage() == null) return;
+//    JFLog.log("PaintCanvas:paint():layers=" + imageLayers);
+//    JFLog.log("\nscale=" + scale);
+    Rectangle clip = g.getClipBounds();
+//    JFLog.log("clipA=" + clip);
+    //align clip to max scaled pixel size
+    int t;
+    t = clip.x & 0x7;
+    if (t > 0) {
+      clip.x &= 0xfffffff8;
+      clip.width += t;
     }
-    if (scale == 100) {
-      if (layer == 0) g.drawImage(bimg.getImage(), 0, 0, null);
-      g.drawImage(cimg.getImage(), 0, 0, null);
-      g.drawImage(fimg.getImage(), 0, 0, null);
+    t = clip.width & 0x7;
+    if (t > 0) {
+      clip.width &= 0xfffffff8;
+      clip.width += 8;
+    }
+    t = clip.y & 0x7;
+    if (t > 0) {
+      clip.y &= 0xfffffff8;
+      clip.height += t;
+    }
+    t = clip.height & 0x7;
+    if (t > 0) {
+      clip.height &= 0xfffffff8;
+      clip.height += 8;
+    }
+//    JFLog.log("clipB=" + clip);
+    int dx1 = clip.x;
+    int dy1 = clip.y;
+    int dx2 = dx1 + clip.width;
+    int dy2 = dy1 + clip.height;
+    int sx1 = clip.x;
+    int sy1 = clip.y;
+    int sx2 = sx1 + clip.width;
+    int sy2 = sy1 + clip.height;
+    float div = 100f / scale;
+    sx1 *= div;
+    sy1 *= div;
+    sx2 *= div;
+    sy2 *= div;
+//    JFLog.log("src=" + sx1 + "," + sy1 + "," + sx2 + "," + sy2);
+//    JFLog.log("dst=" + dx1 + "," + dy1 + "," + dx2 + "," + dy2);
+    if (colorLayer == 0) {
+      g.drawImage(bimg.getImage()
+        , dx1, dy1, dx2, dy2
+        , sx1, sy1, sx2, sy2
+        , null);
+      for(int a=0;a<imageLayers;a++) {
+//        JFLog.log("layer=" + name[a]);
+        if (a == imageLayer) {
+          g.drawImage(cimg.getImage()
+            , dx1, dy1, dx2, dy2
+            , sx1, sy1, sx2, sy2
+            , null);
+        } else {
+          if (show[a]) g.drawImage(img[a].getImage()
+            , dx1, dy1, dx2, dy2
+            , sx1, sy1, sx2, sy2
+            , null);
+        }
+      }
     } else {
-      int w = getUnscaledWidth();
-      int h = getUnscaledHeight();
-      if (layer == 0) g.drawImage(bimg.getImage(), 0, 0, w * scale / 100, h * scale / 100, 0, 0, w, h, null);
-      g.drawImage(cimg.getImage(), 0, 0, w * scale / 100, h * scale / 100, 0, 0, w, h, null);
-      g.drawImage(fimg.getImage(), 0, 0, w * scale / 100, h * scale / 100, 0, 0, w, h, null);
+      g.drawImage(cimg.getImage()
+        , dx1, dy1, dx2, dy2
+        , sx1, sy1, sx2, sy2
+        , null);
     }
+    g.drawImage(fimg.getImage()
+      , dx1, dy1, dx2, dy2
+      , sx1, sy1, sx2, sy2
+      , null);
   }
 
   public void setSize(int x, int y) {
@@ -113,33 +170,30 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
   public void setBounds(int x,int y,int w,int h) {
 //    System.out.println("PaintCanvas.setBounds:" + x + "," + y + "," + w + "," + h + ":" + getName());
     super.setBounds(x,y,w,h);
-    if (border) {
-      img.setImageSize(w,h);
-    }
   }
 
   public void createBorders() {
-    border_east = new PaintCanvas(this, BorderTypes.east) {
+    border_east = new Border(this, Border.Types.east) {
       public void paint(Graphics g) {
-        int x = getUnscaledWidth();
-        int y = getUnscaledHeight();
+        int x = getScaledWidth();
+        int y = getScaledHeight();
         g.setColor(new Color(0x888888));
         g.fillRect(0,0, 10,y);
         g.setColor(new Color(0x000000));
         g.fillRect(0,y/2-5, 10,10);
       }
     };
-    border_south = new PaintCanvas(this, BorderTypes.south) {
+    border_south = new Border(this, Border.Types.south) {
       public void paint(Graphics g) {
-        int x = getUnscaledWidth();
-        int y = getUnscaledHeight();
+        int x = getScaledWidth();
+        int y = getScaledHeight();
         g.setColor(new Color(0x888888));
         g.fillRect(0,0, x,10);
         g.setColor(new Color(0x000000));
         g.fillRect(x/2-5,0, 10,10);
       }
     };
-    border_corner = new PaintCanvas(this, BorderTypes.corner) {
+    border_corner = new Border(this, Border.Types.corner) {
       public void paint(Graphics g) {
         g.setColor(new Color(0x000000));
         g.fillRect(0,0, 10,10);
@@ -168,10 +222,10 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     return getPreferredSize();
   }
 
-  public void setScale(int newScale) {
+  public void setScale(float newScale) {
 //    System.out.println("     setScale:" + newScale);
-    int x = img.getWidth() * newScale / 100;
-    int y = img.getHeight() * newScale / 100;
+    int x = (int)(img[imageLayer].getWidth() * newScale / 100f);
+    int y = (int)(img[imageLayer].getHeight() * newScale / 100f);
     setPreferredSize(new Dimension(x,y));
     scale = newScale;
   }
@@ -190,20 +244,20 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
 
   public int getScaledWidth() {
 //    System.out.println("getScaledWidth=" + super.getWidth());
-    return img.getWidth() * scale / 100;
+    return (int)(img[imageLayer].getWidth() * scale / 100f);
   }
 
   public int getScaledHeight() {
 //    System.out.println("getScaledHeight=" + super.getHeight());
-    return img.getHeight() * scale / 100;
+    return (int)(img[imageLayer].getHeight() * scale / 100f);
   }
 
   public int getUnscaledWidth() {
-    return img.getWidth();
+    return img[imageLayer].getWidth();
   }
 
   public int getUnscaledHeight() {
-    return img.getHeight();
+    return img[imageLayer].getHeight();
   }
 
   public void setLineWidth(int w) {
@@ -344,8 +398,8 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
   public void fillSlow(int x1,int y1, boolean edge) {
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
-    Graphics2D g = img.getGraphics2D();
-    int target = img.getPixel(x1,y1) & JFImage.RGB_MASK;
+    Graphics2D g = img[imageLayer].getGraphics2D();
+    int target = img[imageLayer].getPixel(x1,y1) & JFImage.RGB_MASK;
     int px[] = cimg.getBuffer();
     byte done[] = new byte[w * h];  //to keep track of what has been filled in already
     Vector<Point> pts = new Vector<Point>();
@@ -422,7 +476,7 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     int clr = clr1 & JFImage.RGB_MASK;
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
-    int px[] = img.getBuffer();
+    int px[] = img[imageLayer].getBuffer();
     int x,y,p,diff,c1,c2;
     //do clipping
     int tmp;
@@ -464,8 +518,8 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     int clr = clr1 & JFImage.RGB_MASK;
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
-    int px[] = img.getPixels();
-    Graphics2D g = img.getGraphics2D();
+    int px[] = img[imageLayer].getPixels();
+    Graphics2D g = img[imageLayer].getGraphics2D();
     int x,y,p,diff,c1,c2;
     //do clipping
     int tmp;
@@ -531,7 +585,7 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     g2d.fillRect(0,0,x,y);
   }
   public void foreClear() {
-    fimg.fillAlpha(0,0,img.getWidth(),img.getHeight(),0x00);  //transparent
+    fimg.fillAlpha(0,0,img[imageLayer].getWidth(),img[imageLayer].getHeight(),0x00);  //transparent
     repaint();
   }
   public void foreDrawLine(int x1,int y1,int x2,int y2) {
@@ -608,7 +662,7 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
   public void rotateCW() {
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
-    int px1[] = img.getPixels();
+    int px1[] = img[imageLayer].getPixels();
     int p1;
     int px2[] = new int[w*h];
     int p2;
@@ -621,12 +675,12 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
       }
     }
     setImageSize(h,w);
-    img.putPixels(px2,0,0,h,w,0);
+    img[imageLayer].putPixels(px2,0,0,h,w,0);
   }
   public void rotateCCW() {
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
-    int px1[] = img.getPixels();
+    int px1[] = img[imageLayer].getPixels();
     int p1;
     int px2[] = new int[w*h];
     int p2;
@@ -639,12 +693,12 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
       }
     }
     setImageSize(h,w);
-    img.putPixels(px2,0,0,h,w,0);
+    img[imageLayer].putPixels(px2,0,0,h,w,0);
   }
   public void flipVert() {
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
-    int px1[] = img.getPixels();
+    int px1[] = img[imageLayer].getPixels();
     int p1;
     int px2[] = new int[w*h];
     int p2;
@@ -655,12 +709,12 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
         px2[p2--] = px1[p1++];
       }
     }
-    img.putPixels(px2,0,0,w,h,0);
+    img[imageLayer].putPixels(px2,0,0,w,h,0);
   }
   public void flipHorz() {
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
-    int px1[] = img.getPixels();
+    int px1[] = img[imageLayer].getPixels();
     int p1 = 0;
     int px2[] = new int[w*h];
     int p2 = w * (h-1);
@@ -669,7 +723,7 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
       p1 += w;
       p2 -= w;
     }
-    img.putPixels(px2,0,0,w,h,0);
+    img[imageLayer].putPixels(px2,0,0,w,h,0);
   }
   public void scaleImage(int ws, int hs) {
     int w = getUnscaledWidth();
@@ -679,21 +733,26 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     int newh = h * hs / 100;
     if (neww < 1) neww = 1;
     if (newh < 1) newh = 1;
-    JFImage tmp = new JFImage();
-    tmp.setImageSize(neww, newh);
-    tmp.getGraphics().drawImage(img.getImage(),0, 0, neww, newh, 0, 0, w, h, null);
+    JFImage tmp[] = new JFImage[imageLayers];
+    for(int a=0;a<imageLayers;a++) {
+      tmp[a] = new JFImage();
+      tmp[a].setImageSize(neww, newh);
+      tmp[a].getGraphics().drawImage(img[imageLayer].getImage(),0, 0, neww, newh, 0, 0, w, h, null);
+    }
     setImageSize(neww, newh);
-    img.getGraphics().drawImage(tmp.getImage(), 0, 0, null);
+    for(int a=0;a<imageLayers;a++) {
+      img[a].getGraphics().drawImage(tmp[a].getImage(), 0, 0, null);
+    }
   }
   public void createUndo() {
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
     try {
-      PaintCanvas undo = new PaintCanvas(parentPanel);
+      JFImage undo = new JFImage();
       undo.setImageSize(w, h);
-      applyLayer();
-      int px[] = img.getPixels();
-      undo.img.putPixels(px, 0, 0, w, h, 0);
+      applyColorLayer();
+      int px[] = img[imageLayer].getPixels();
+      undo.putPixels(px, 0, 0, w, h, 0);
       while (undoPos != undos.size()-1) {
         undos.remove(undos.size()-1);  //remove redos
       }
@@ -718,20 +777,18 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
         undoDirty = false;
       }
       undoPos--;
-      PaintCanvas undo = undos.get(undoPos);
-      int orgLayer = layer;
-      changeLayer(0);
-      int w = getUnscaledWidth();
-      int h = getUnscaledHeight();
-      img.setImageSize(w, h);
-      bimg.setImageSize(w, h);
+      JFImage undo = undos.get(undoPos);
+      int orgLayer = colorLayer;
+      changeColorLayer(0);
+      int w = undo.getWidth();
+      int h = undo.getHeight();
+      setImageSize(w, h);
       backClear();
-      fimg.setImageSize(w, h);
       foreClear();
-      int px[] = undo.img.getPixels();
-      img.putPixels(px, 0, 0, w, h, 0);
+      int px[] = undo.getPixels();
+      img[imageLayer].putPixels(px, 0, 0, w, h, 0);
       resizeBorder();
-      if (orgLayer != 0) changeLayer(orgLayer);
+      changeColorLayer(orgLayer);
       repaint();
     } catch (Exception e) {
       System.out.println("undo:" + e);  //most likely out of memory
@@ -742,16 +799,14 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     if (undoPos == undos.size()-1) return;
     try {
       undoPos++;
-      PaintCanvas undo = undos.get(undoPos);
+      JFImage undo = undos.get(undoPos);
       int w = undo.getWidth();
       int h = undo.getHeight();
-      img.setImageSize(w, h);
-      bimg.setImageSize(w, h);
+      setImageSize(w, h);
       backClear();
-      fimg.setImageSize(w, h);
       foreClear();
-      int px[] = undo.img.getPixels();
-      img.putPixels(px, 0, 0, w, h, 0);
+      int px[] = undo.getPixels();
+      img[imageLayer].putPixels(px, 0, 0, w, h, 0);
       resizeBorder();
       repaint();
     } catch (Exception e) {
@@ -763,67 +818,71 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     undoDirty = true;
   }
 
-  public void changeLayer(int newLayer) {
+  public int getColorLayer() {
+    return colorLayer;
+  }
+
+  public void changeColorLayer(int newLayer) {
     //merge current layer back to img
-    applyLayer();
-    layer = newLayer;
+    applyColorLayer();
+    colorLayer = newLayer;
     int px[];
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
-    switch (layer) {
+    switch (colorLayer) {
       case 0:  //ARGB
-        cimg = img;
+        cimg = img[imageLayer];
         break;
       case 1:  //A---
-        px = img.getAlphaLayer();
+        px = img[imageLayer].getAlphaLayer();
         limg.putPixels(px, 0, 0, w, h, 0);
         cimg = limg;
         break;
       case 2:  //-R--
-        px = img.getLayer(0x00ff0000);
+        px = img[imageLayer].getLayer(0x00ff0000);
         limg.putPixels(px, 0, 0, w, h, 0);
         cimg = limg;
         break;
       case 3:  //--G-
-        px = img.getLayer(0x0000ff00);
+        px = img[imageLayer].getLayer(0x0000ff00);
         limg.putPixels(px, 0, 0, w, h, 0);
         cimg = limg;
         break;
       case 4:  //---B
-        px = img.getLayer(0x000000ff);
+        px = img[imageLayer].getLayer(0x000000ff);
         limg.putPixels(px, 0, 0, w, h, 0);
         cimg = limg;
         break;
     }
   }
 
-  public void applyLayer() {
+  public void applyColorLayer() {
     int px[];
-    switch (layer) {
+    switch (colorLayer) {
       case 0:  //ARGB : nothing to do
         break;
       case 1:  //A---
         px = limg.getBuffer();
-        img.putAlphaLayer(px);
+        img[imageLayer].putAlphaLayer(px);
         break;
       case 2:  //-R--
         px = limg.getBuffer();
-        img.putLayer(px, 0x00ff0000);
+        img[imageLayer].putLayer(px, 0x00ff0000);
         break;
       case 3:  //--G-
         px = limg.getBuffer();
-        img.putLayer(px, 0x0000ff00);
+        img[imageLayer].putLayer(px, 0x0000ff00);
         break;
       case 4:  //---B
         px = limg.getBuffer();
-        img.putLayer(px, 0x000000ff);
+        img[imageLayer].putLayer(px, 0x000000ff);
         break;
     }
   }
 
   public void blur(int x1,int y1,int x2,int y2,int radius) {
     int tmp;
-    int width = img.getWidth(), height = img.getHeight();
+    int width = img[imageLayer].getWidth(), height = img[imageLayer].getHeight();
     if (x1 < 0) x1 = 0;
     if (x2 < 0) x2 = 0;
     if (y1 < 0) y1 = 0;
@@ -846,26 +905,116 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     height = y2-y1+1;
     Kernel kernel = GaussianFilter.makeKernel(radius);
     int dst[] = new int[width * height];
-    int inPixels[] = img.getPixels(x1,y1,width,height);
+    int inPixels[] = img[imageLayer].getPixels(x1,y1,width,height);
     int outPixels[] = dst;
     boolean alpha = false, premultiplyAlpha = false;
     if (radius > 0) {
       GaussianFilter.convolveAndTranspose(kernel, inPixels, outPixels, width, height, alpha, alpha && premultiplyAlpha, false, GaussianFilter.CLAMP_EDGES);
       GaussianFilter.convolveAndTranspose(kernel, outPixels, inPixels, height, width, alpha, false, alpha && premultiplyAlpha, GaussianFilter.CLAMP_EDGES);
     }
-    img.putPixels(inPixels, x1, y1, width, height, 0);
+    img[imageLayer].putPixels(inPixels, x1, y1, width, height, 0);
   }
 
-  public void mouseClicked(MouseEvent e) { panel.mouseClicked(e); }
-  public void mouseEntered(MouseEvent e) { panel.mouseEntered(e); }
-  public void mouseExited(MouseEvent e) { panel.mouseExited(e); }
-  public void mousePressed(MouseEvent e) { panel.mousePressed(e); }
-  public void mouseReleased(MouseEvent e) { panel.mouseReleased(e); }
+  public int getImageLayers() {
+    return imageLayers;
+  }
 
-  public void mouseDragged(MouseEvent e) { mx = e.getX() / (scale / 100); my = e.getY() / (scale / 100); panel.mouseDragged(e); }
-  public void mouseMoved(MouseEvent e) { mx = e.getX() / (scale / 100); my = e.getY() / (scale / 100); panel.mouseMoved(e); }
+  private String uniqueName() {
+    int n = imageLayers;
+    do {
+      String str = "Layer " + n;
+      boolean dup = false;
+      for(int a=0;a<imageLayers;a++) {
+        if (name[a].equals(str)) {
+          dup = true;
+          break;
+        }
+      }
+      if (dup) {
+        n++;
+        continue;
+      } else {
+        return str;
+      }
+    } while (true);
+  }
+
+  public void addImageLayer() {
+    img = Arrays.copyOf(img, imageLayers+1);
+    img[imageLayers] = new JFImage(getUnscaledWidth(), getUnscaledHeight());
+    //fills with back color but 100% transparent
+    img[imageLayers].fill(0, 0, getUnscaledWidth(), getUnscaledHeight(), mainPanel.backClr, true);
+    show = Arrays.copyOf(show, imageLayers+1);
+    show[imageLayers] = true;
+    name = Arrays.copyOf(name, imageLayers+1);
+    name[imageLayers] = uniqueName();
+    imageLayers++;
+  }
+
+  public void swapLayers(int i1, int i2) {
+    if (i1 == i2) return;
+    JFImage tmp = img[i2];
+    img[i2] = img[i1];
+    img[i1] = tmp;
+    boolean tmp2 = show[i2];
+    show[i2] = show[i1];
+    show[i1] = tmp2;
+    String tmp3 = name[i2];
+    name[i2] = name[i1];
+    name[i1] = tmp3;
+  }
+
+  public void removeImageLayer(int layer) {
+    if (layer >= imageLayers) return;
+    if (layer == 0 && imageLayers == 1) {
+      //fills with back color (0% transparent)
+      img[0].fill(0, 0, getUnscaledWidth(), getUnscaledHeight(), mainPanel.backClr);
+      return;
+    }
+    img = (JFImage[])JF.copyOfExcluding(img, layer);
+    show = JF.copyOfExcluding(show, layer);
+    name = (String[])JF.copyOfExcluding(name, layer);
+    imageLayers--;
+    if (imageLayer >= imageLayers) imageLayer--;
+    if (!show[imageLayer]) show[imageLayer] = true;
+    changeColorLayer(colorLayer);
+  }
+
+  public void setImageLayer(int layer) {
+    clearUndo();
+    int orgColorLayer = colorLayer;
+    if (orgColorLayer != 0) {
+      changeColorLayer(0);
+    }
+    imageLayer = layer;
+    changeColorLayer(orgColorLayer);
+  }
+
+  public int getImageLayer() {
+    return imageLayer;
+  }
+
+  public JFImage combineImageLayers() {
+    if (img.length == 1) return img[0];
+    JFImage c = new JFImage();
+    c.setSize(img[0].getWidth(), img[0].getHeight());
+    Graphics g = c.getGraphics();
+    for(int a=0;a<img.length;a++) {
+      g.drawImage(img[a].getImage(), 0, 0, null);
+    }
+    return c;
+  }
+
+  public void mouseClicked(MouseEvent e) { mainPanel.mouseClicked(e); }
+  public void mouseEntered(MouseEvent e) { mainPanel.mouseEntered(e); }
+  public void mouseExited(MouseEvent e) { mainPanel.mouseExited(e); }
+  public void mousePressed(MouseEvent e) { mainPanel.mousePressed(e); }
+  public void mouseReleased(MouseEvent e) { mainPanel.mouseReleased(e); }
+
+  public void mouseDragged(MouseEvent e) { mx = (int)(e.getX() / (scale / 100f)); my = (int)(e.getY() / (scale / 100f)); mainPanel.mouseDragged(e); }
+  public void mouseMoved(MouseEvent e) { mx = (int)(e.getX() / (scale / 100f)); my = (int)(e.getY() / (scale / 100f)); mainPanel.mouseMoved(e); }
 
   public void keyPressed(KeyEvent e) {}
   public void keyReleased(KeyEvent e) {}
-  public void keyTyped(KeyEvent e) { panel.keyTypedOnImage(e.getKeyChar()); }
+  public void keyTyped(KeyEvent e) { mainPanel.keyTypedOnImage(e.getKeyChar()); }
 }
