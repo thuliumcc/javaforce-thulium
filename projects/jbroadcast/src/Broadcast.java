@@ -24,7 +24,7 @@ import javaforce.voip.*;
 
 public class Broadcast extends javax.swing.JFrame implements SIPClientInterface, RTPInterface, ActionListener {
 
-  public final String version = "0.25";
+  public final String version = "0.26";
 
   public String startList = null;
   public String cfgSuffix = "";
@@ -1546,7 +1546,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
           this.setLabel("Database create failed : Create Table failed (already created?)");
           return false;
         }
-        if (!sql.execute("create table listdata (id int not null, number varchar(32) not null, status varchar(32) default 'new' not null, attempts int default 0 not null, survey varchar(64)" + (allowdups ? "" : ", unique(number, id)") + ")")) {
+        if (!sql.execute("create table listdata (id int not null, number varchar(32) not null, status varchar(32) default 'new' not null, attempts int default 0 not null, survey varchar(64), unique(number, id))")) {
           this.setLabel("Database create failed : Create Table failed (already created?)");
           return false;
         }
@@ -1713,6 +1713,14 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     int line = 1;
     int errcnt = 0;
     int okcnt = 0;
+    ArrayList<String> numbers = null;
+    if (allowdups) {
+      numbers = new ArrayList<String>();
+      int cnt = listView.getRowCount();
+      for(int a=0;a<cnt;a++) {
+        numbers.add((String)listView.getValueAt(a, 0));
+      }
+    }
     try {
       String id = getid(sql, sel);
       if (id == null) throw new Exception("unable to find list");
@@ -1724,7 +1732,24 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
         if (idx2 != -1) {
           num = num.substring(0, idx2);
         }
-        if (!sql.execute("insert into listdata (id, number) values (" + id + ",'" + num.trim() + "')")) {
+        num = num.trim();
+        if (allowdups) {
+          //check if this number already exists and add a tag to it
+          String dup = num;
+          int cnt = numbers.size();
+          int i = 2;
+          for(int a=0;a<cnt;) {
+            if (numbers.get(a).equals(dup)) {
+              dup = num + "," + i++;
+              a = 0;  //start over
+            } else {
+              a++;
+            }
+          }
+          numbers.add(dup);
+          num = dup;
+        }
+        if (!sql.execute("insert into listdata (id, number) values (" + id + ",'" + num + "')")) {
           errcnt++;
         } else {
           okcnt++;
@@ -1867,7 +1892,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     String sql_host, sql_user, sql_pass;  //obsolete (do not delete or old cfg will not load)
     String sip_user, sip_auth, sip_host, sip_pass;
     String wav_filename;  //obsolete
-    int numberLines = 16;
+    int numberLines = 8;
     String xfer;
     boolean disable_g729a;  //obsolete
     int delay = 100;
@@ -1919,7 +1944,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       xfer_digit.setText("" + settings.xfer_digit);
       if (settings.maxRingTime == 0) settings.maxRingTime = 60;
       maxRingTime.setValue(new Integer(settings.maxRingTime));
-      if (settings.maxAttempts == 0) settings.maxAttempts = 16;
+      if (settings.maxAttempts == 0) settings.maxAttempts = 3;
       maxAttempts.setValue(new Integer(settings.maxAttempts));
 
       enable_g729a.setSelected(settings.enable_g729a);
@@ -1986,10 +2011,10 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     settings = new Settings();
     sip_start.setText("6000");
     sip_end.setText("9000");
-    number_lines.setValue(new Integer(16));
+    number_lines.setValue(new Integer(8));
     delay.setValue(new Integer(100));
     maxRingTime.setValue(new Integer(60));
-    maxAttempts.setValue(new Integer(16));
+    maxAttempts.setValue(new Integer(3));
     greeting_threshold.setText("1000");
     silence_threshold.setText("1000");
     silence_duration.setText("1000");
@@ -2390,7 +2415,11 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     enable_g711u.setEnabled(state);
     enable_g711a.setEnabled(state);
     enable_reinvites.setEnabled(state);
+    check_update.setEnabled(state);
     disable_detect.setEnabled(state);
+    greeting_threshold.setEnabled(state);
+    silence_threshold.setEnabled(state);
+    silence_duration.setEnabled(state);
     export_list.setEnabled(state);
     delay.setEnabled(state);
     enable_xfer.setEnabled(state);
@@ -2399,8 +2428,6 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     enable.setEnabled(state);
     wav_filename.setEnabled(state);
     select_file.setEnabled(state);
-    prev_msg.setEnabled(state);
-    next_msg.setEnabled(state);
     single.setEnabled(state);
     multi.setEnabled(state);
     count.setEnabled(state);
@@ -2474,6 +2501,12 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     SDP.Stream astream = sdp.addStream(SDP.Type.audio);
     astream.port = line.rtp.getlocalrtpport();
     astream.codecs = getCodecs();
+//    if (allowdups) {
+      int idx = number.indexOf(",");
+      if (idx != -1) {
+        number = number.substring(0, idx);
+      }
+//    }
     return sip.invite(number, sdp);
   }
 

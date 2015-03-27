@@ -1,5 +1,11 @@
 What's new...
 
+Oct 8/2014 : JF 7.34.0 released!
+  - jfBroadcast/0.26
+    - fix -allowdups option
+  - jfLinux
+    - fix some Ubuntu 14.10 issues
+
 Oct 7/2014 : JF 7.33.0 released!
   - jfBroadcast/0.25
     - added -allowdups option (user requested feature)

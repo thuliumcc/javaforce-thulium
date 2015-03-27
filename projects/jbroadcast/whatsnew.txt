@@ -1,6 +1,13 @@
 ChangeLog
 =========
 
+10-8-2014 : version 0.26
+ - fix : -allowdups now uses a suffix added to each number to make them unique in the list.
+     The suffix (comma and a number) are removed just before dialing the number.
+     If you used v0.25 you should delete the database created with it.
+     This option no longer alters how the database is created and should be used anytime you need to add duplicates.
+ - new : SIP response code 480 is now treated as 'busy' which will allow the number to be retried.
+
 10-7-2014 : version 0.25
  - new : added -allowdups command line option to allow duplicate numbers in lists (user requested feature)
    - this option MUST be used when the database is created or it will not work and will be in effect anytime after that

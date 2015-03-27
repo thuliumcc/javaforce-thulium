@@ -1,9 +1,9 @@
 Package: javaforce
-Version: 7.33.0
+Version: 7.34.0
 Architecture: all
 Maintainer: Peter Quiring <pquiring@jflinux.org>
 Installed-Size: 290
-Depends: default-jre, libjsch-java (>= 0.1.42), libjzlib-java, libjcifs-java, fuse, libfuse2, fuseiso, libcdio13
+Depends: openjdk-8-jre, libjsch-java (>= 0.1.42), libjzlib-java, libjcifs-java, fuse, libfuse2, fuseiso, libcdio13
 Components: main
 Provides:
 Section: java

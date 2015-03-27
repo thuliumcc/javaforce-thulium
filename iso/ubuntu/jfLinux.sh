@@ -108,6 +108,7 @@ for file in chroot/boot/vmlinuz-*; do sudo cp $file image/casper/vmlinuz; done
 for file in chroot/boot/initrd.img-*; do sudo cp $file image/casper/initrd.gz; done
 
 cp /usr/lib/ISOLINUX/isolinux.bin image/isolinux/
+cp /usr/lib/syslinux/modules/bios/ldlinux.c32 image/isolinux/
 
 cp /boot/memtest86+.bin image/install/memtest
 cp /boot/sbm.img image/install/

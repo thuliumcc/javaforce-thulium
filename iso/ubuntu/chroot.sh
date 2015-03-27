@@ -50,6 +50,7 @@ if [ ! -f javaforce.gpg ]; then
   echo Download javaforce.gpg
   wget http://javaforce.sf.net/ubuntu/javaforce.gpg
 fi
+cd /
 
 #this is needed for add-apt-repository
 apt-get install --yes software-properties-common
@@ -72,7 +73,7 @@ apt-get install --yes libav-tools
 apt-get install --yes wine1.7
 
 #install kernel
-apt-get install --yes linux-generic-pae
+apt-get install --yes linux-generic
 
 #install network tools
 apt-get install --yes --no-install-recommends wireless-tools
@@ -109,6 +110,10 @@ echo casper=true >> /etc/.live
 #create motd for terminals
 echo Welcome to jfLinux > /etc/motd
 echo Please visit http://jflinux.org >> /etc/motd
+
+#run bash for inspection
+echo Running bash in chroot for final inspection, exit when done.
+bash
 
 #cleanup chroot
 
