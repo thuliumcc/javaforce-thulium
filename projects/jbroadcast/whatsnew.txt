@@ -1,6 +1,13 @@
 ChangeLog
 =========
 
+10-7-2014 : version 0.25
+ - new : added -allowdups command line option to allow duplicate numbers in lists (user requested feature)
+   - this option MUST be used when the database is created or it will not work and will be in effect anytime after that
+     even if not specified again (the option modifies how the database tables are created)
+     If your database already exists you must delete it and then use this option
+ - fix : how options are parsed
+
 10-6-2014 : version 0.24
  - new : added -dbpath and -cfgsuffix command line options
  - new : added sip port range

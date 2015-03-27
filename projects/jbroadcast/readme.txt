@@ -62,6 +62,10 @@ Command Line Options
 -cfgsuffix SUFFIX
   Adds SUFFIX (a simple name) to the config files used. (Default = broadcast.cfg and broadcast-msgs.cfg)
   Example : -cfgsuffix i1    (will force broadcasti1.cfg and broadcast-msgsi1.cfg to be used)
+-allowdups
+  Allows duplicate numbers in lists when database is created.
+  This option MUST be used when the database is created or it will not work and will be in effect anytime after that
+  even if not specified again (the option modifies how the database tables are created)
 
 Note : With -dbpath and -cfgsuffix it is possible to run multiple copies on the same system as long as you
        configure each instance to use different SIP Port ranges that do not overlap.

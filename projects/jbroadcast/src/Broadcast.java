@@ -24,10 +24,11 @@ import javaforce.voip.*;
 
 public class Broadcast extends javax.swing.JFrame implements SIPClientInterface, RTPInterface, ActionListener {
 
-  public final String version = "0.24";
+  public final String version = "0.25";
 
   public String startList = null;
   public String cfgSuffix = "";
+  public boolean allowdups = false;
 
   /** Creates new form Broadcast */
   public Broadcast() {
@@ -1545,7 +1546,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
           this.setLabel("Database create failed : Create Table failed (already created?)");
           return false;
         }
-        if (!sql.execute("create table listdata (id int not null, number varchar(32) not null, status varchar(32) default 'new' not null, attempts int default 0 not null, survey varchar(64), unique(number, id))")) {
+        if (!sql.execute("create table listdata (id int not null, number varchar(32) not null, status varchar(32) default 'new' not null, attempts int default 0 not null, survey varchar(64)" + (allowdups ? "" : ", unique(number, id)") + ")")) {
           this.setLabel("Database create failed : Create Table failed (already created?)");
           return false;
         }
@@ -3016,23 +3017,26 @@ JFLog.log("connected : number=" + lines[a].number);
           JFLog.log("Error:Must include list with -start option");
           return;
         }
-        startList = args[a++];
+        startList = args[a];
       }
-      if (args[a].equals("-dbpath")) {
+      else if (args[a].equals("-dbpath")) {
         a++;
         if (a == args.length) {
           JFLog.log("Error:Must include path with -dbpath option");
           return;
         }
-        SQL.path = args[a++];
+        SQL.path = args[a];
       }
-      if (args[a].equals("-cfgsuffix")) {
+      else if (args[a].equals("-cfgsuffix")) {
         a++;
         if (a == args.length) {
           JFLog.log("Error:Must include string with -cfgsuffix option");
           return;
         }
-        cfgSuffix = args[a++];
+        cfgSuffix = args[a];
+      }
+      else if (args[a].equals("-allowdups")) {
+        allowdups = true;
       }
     }
   }

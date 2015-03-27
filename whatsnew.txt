@@ -1,5 +1,9 @@
 What's new...
 
+Oct 7/2014 : JF 7.33.0 released!
+  - jfBroadcast/0.25
+    - added -allowdups option (user requested feature)
+
 Oct 6/2014 : JF 7.32.0 released!
   - jfBroadcast/0.24
     - added -dbpath and -cfgsuffix and sip port ranges to allow multiple copies to run (user requested feature)
