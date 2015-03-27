@@ -27,7 +27,7 @@ public class Element implements FFMPEGIO {
   public int alphaLevel;
   public int clrAlpha;
   public int audioDelay;  //0-999 ms
-  public boolean use3d;
+  public boolean use3d, mute;
   public float tx, ty, tz;
   public float rx, ry, rz;
   public int clr;
@@ -400,13 +400,15 @@ public class Element implements FFMPEGIO {
       int toCopy = renderSize;
       if (toCopy > audioSize) toCopy = audioSize;
       if (toCopy == 0) break;
-      if (db != 0) {
-        if (db > 0)
-          audioCopyGain(audio, audioPos, render, renderPos, toCopy);
-        else
-          audioCopyAttn(audio, audioPos, render, renderPos, toCopy);
-      } else {
-        audioCopy(audio, audioPos, render, renderPos, toCopy);
+      if (!mute) {
+        if (db != 0) {
+          if (db > 0)
+            audioCopyGain(audio, audioPos, render, renderPos, toCopy);
+          else
+            audioCopyAttn(audio, audioPos, render, renderPos, toCopy);
+        } else {
+          audioCopy(audio, audioPos, render, renderPos, toCopy);
+        }
       }
       audioPos += toCopy;
       audioSize -= toCopy;

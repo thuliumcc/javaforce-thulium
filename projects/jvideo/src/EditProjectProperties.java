@@ -39,7 +39,7 @@ public class EditProjectProperties extends javax.swing.JDialog {
     }
  }
 
-  int videoBitRates[] = {1600000, 1200000, 800000, 400000, 200000};
+  int videoBitRates[] = {8000000, 6400000, 4000000, 3200000, 2000000, 1600000, 1200000, 800000, 400000, 200000};
   int audioBitRates[] = {256000, 192000, 128000, 64000, 32000};
 
   /**
@@ -79,7 +79,8 @@ public class EditProjectProperties extends javax.swing.JDialog {
 
     jLabel2.setText("Audio Rate:");
 
-    audioRate.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "44100", "22050", "11025", "64000", "32000", "16000", "8000", "96000", " " }));
+    audioRate.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "48000", "44100", "22050", "11025", "64000", "32000", "16000", "8000", "96000", " " }));
+    audioRate.setSelectedIndex(1);
 
     jLabel3.setText("Audio Channels:");
 
@@ -112,8 +113,8 @@ public class EditProjectProperties extends javax.swing.JDialog {
 
     jLabel6.setText("Video BitRate:");
 
-    videoBitRate.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "1600000", "1200000", "800000", "400000", "200000" }));
-    videoBitRate.setSelectedIndex(3);
+    videoBitRate.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "8000000", "6400000", "4000000", "3200000", "2000000", "1600000", "1200000", "800000", "400000", "200000" }));
+    videoBitRate.setSelectedIndex(5);
     videoBitRate.setToolTipText("");
 
     jLabel7.setText("Audio BitRate:");

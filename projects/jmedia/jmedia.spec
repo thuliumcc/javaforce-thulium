@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jmedia
-Version: 0.8
+Version: 0.9
 Release: 1
 Summary: Java Media Player
 License: LGPL

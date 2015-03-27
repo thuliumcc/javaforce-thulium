@@ -16,6 +16,7 @@ public class SoundProps extends javax.swing.JPanel {
     initComponents();
     db.setValue(element.db);
     audioDelay.setText("" + element.audioDelay);
+    mute.setSelected(element.mute);
   }
 
   /**
@@ -32,6 +33,7 @@ public class SoundProps extends javax.swing.JPanel {
     jLabel2 = new javax.swing.JLabel();
     audioDelay = new javax.swing.JTextField();
     jLabel3 = new javax.swing.JLabel();
+    mute = new javax.swing.JCheckBox();
 
     jLabel1.setText("Sound Gain (dB):");
 
@@ -49,6 +51,8 @@ public class SoundProps extends javax.swing.JPanel {
 
     jLabel3.setText("(0-999 ms)");
 
+    mute.setText("Mute");
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
@@ -59,6 +63,7 @@ public class SoundProps extends javax.swing.JPanel {
           .addComponent(db, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
           .addGroup(layout.createSequentialGroup()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+              .addComponent(mute)
               .addComponent(jLabel1)
               .addGroup(layout.createSequentialGroup()
                 .addComponent(jLabel2)
@@ -81,7 +86,9 @@ public class SoundProps extends javax.swing.JPanel {
           .addComponent(jLabel2)
           .addComponent(audioDelay, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
           .addComponent(jLabel3))
-        .addContainerGap(199, Short.MAX_VALUE))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addComponent(mute)
+        .addContainerGap(169, Short.MAX_VALUE))
     );
   }// </editor-fold>//GEN-END:initComponents
   // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -90,6 +97,7 @@ public class SoundProps extends javax.swing.JPanel {
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
+  private javax.swing.JCheckBox mute;
   // End of variables declaration//GEN-END:variables
 
   public void save(Element element) {
@@ -97,6 +105,7 @@ public class SoundProps extends javax.swing.JPanel {
     element.audioDelay = JF.atoi(audioDelay.getText());
     if (element.audioDelay < 0) element.audioDelay = 0;
     if (element.audioDelay > 999) element.audioDelay = 999;
+    element.mute = mute.isSelected();
   }
 
 }

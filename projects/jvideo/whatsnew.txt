@@ -1,5 +1,11 @@
 Whatsnew...
 
+Aug 8, 2014 : v0.17 released!
+  - cleaned up some element properties
+  - added mute to audio props
+  - added some higher quality bit rates and sample rates
+  - fixed audio resampling bug (no more audio ticks if input/output sample rates differ)
+
 Aug 1, 2014 : v0.16 released
   - fix : WMV and other media type files work now
 

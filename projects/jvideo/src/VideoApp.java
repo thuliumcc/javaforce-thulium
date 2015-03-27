@@ -11,7 +11,7 @@ import javaforce.jna.*;
  */
 public class VideoApp extends javax.swing.JFrame {
 
-  public static String version = "0.16";
+  public static String version = "0.17";
 
   /**
    * Creates new form VideoApp

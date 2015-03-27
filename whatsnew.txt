@@ -1,5 +1,15 @@
 What's new...
 
+Aug 8/2014 : JF 7.29.0 released!
+  - ffmpeg
+    - fixed audio resampling (no more audio ticks if input/output sample rates differ)
+  - jfVideo/0.17
+    - cleaned up some element properties
+    - added mute to audio props
+    - added some higher quality bit rates and sample rates
+  - jfMedia/0.9
+    - ffmpeg fixes
+
 Aug 1/2014 : JF 7.28.0 released!
   - ffmpeg codecpack
     - fixed method to determine FPS which now works on WMV type files.

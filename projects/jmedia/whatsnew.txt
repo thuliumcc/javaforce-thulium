@@ -1,5 +1,8 @@
 ChangeLog
 ---------
 
+Aug 8, 2014 : v0.9 released!
+  - fix : audio resampling (no more audio ticks if input/output sample rates differ)
+
 Aug 1, 2014 : v0.8 released!
   - new : first version released on sourceforge.net independent of JavaForce.

@@ -1035,14 +1035,19 @@ public class FFMPEG {
         }
         if ((avutil.av_samples_alloc(audio_dst_data, audio_dst_linesize, dst_nb_channels
           , dst_nb_samples, dst_sample_fmt, 1)) < 0) return NULL_FRAME;
+        int converted_nb_samples = 0;
         if (libav_org) {
-          avresample.avresample_convert(swr_ctx, audio_dst_data, 0, dst_nb_samples
+          converted_nb_samples = avresample.avresample_convert(swr_ctx, audio_dst_data, 0, dst_nb_samples
             , frame.extended_data.getPointerArray(0,8), 0, frame.nb_samples);
         } else {
-          swresample.swr_convert(swr_ctx, audio_dst_data, dst_nb_samples
+          converted_nb_samples = swresample.swr_convert(swr_ctx, audio_dst_data, dst_nb_samples
             , frame.extended_data.getPointerArray(0,8), frame.nb_samples);
         }
-        int count = dst_nb_samples * dst_nb_channels;
+        if (converted_nb_samples < 0) {
+          JFLog.log("FFMPEG:Resample failed");
+          return NULL_FRAME;
+        }
+        int count = converted_nb_samples * dst_nb_channels;
         if (audio == null || audio.length != count) {
           audio = new short[count];
         }
@@ -1590,6 +1595,7 @@ public class FFMPEG {
 
       if (swr_ctx != null) {
         //convert S16 -> FLTP (some codecs do not support S16)
+        //sample rate is not changed
         if ((avutil.av_samples_alloc(audio_dst_data, audio_dst_linesize, chs
           , nb_samples, AV_SAMPLE_FMT_FLTP, 1)) < 0) return false;
         audio_src_data[0] = samples_data;
@@ -1858,7 +1864,6 @@ public class FFMPEG {
     }
   }
 
-  //TODO : support MacOSX : java.library.path = /Library/Java/Extensions (only folder with write access)
   public static boolean download() {
     if (!Platform.isWindows()) {
       JF.showError("Notice", "This application requires the codecpack which was not detected.\n"

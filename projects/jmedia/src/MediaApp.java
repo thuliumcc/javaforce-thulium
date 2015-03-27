@@ -14,6 +14,8 @@ import javaforce.*;
 
 public class MediaApp extends javax.swing.JFrame {
 
+  public static String version = "0.9";
+
   /**
    * Creates new form MediaApp
    */
@@ -33,6 +35,7 @@ public class MediaApp extends javax.swing.JFrame {
         panel.play(file);
       }
     }
+    setTitle("jfMedia/" + version);
   }
 
   /**

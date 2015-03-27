@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jvideo
-Version: 0.16
+Version: 0.17
 Release: 1
 Summary: Video Creator
 License: LGPL

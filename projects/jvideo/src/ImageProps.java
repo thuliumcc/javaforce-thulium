@@ -14,13 +14,6 @@ public class ImageProps extends javax.swing.JPanel {
     alphaFadeIn.setSelected(element.alphaFadeIn);
     alphaFadeInDuration.setValue(new Integer(element.alphaFadeInDuration));
     alphaLevel.setValue(255 - element.alphaLevel);
-    if (element.type == Element.TYPE_IMAGE && element.path.length == 1) {
-      length.setValue(new Integer(element.length));
-    } else {
-      remove(length1);
-      remove(length);
-      remove(length2);
-    }
     int lvl = 128;
     if ((element.clrAlpha & 0xff0000) > 0) {
       transparentClr.setSelectedIndex(1);
@@ -51,9 +44,6 @@ public class ImageProps extends javax.swing.JPanel {
     alphaLevel = new javax.swing.JSlider();
     alphaFadeInDuration = new javax.swing.JSpinner();
     jLabel2 = new javax.swing.JLabel();
-    length1 = new javax.swing.JLabel();
-    length = new javax.swing.JSpinner();
-    length2 = new javax.swing.JLabel();
     jLabel3 = new javax.swing.JLabel();
     transparentClr = new javax.swing.JComboBox();
     clrThreshold = new javax.swing.JSlider();
@@ -70,12 +60,6 @@ public class ImageProps extends javax.swing.JPanel {
     alphaFadeInDuration.setModel(new javax.swing.SpinnerNumberModel(5, 1, 60, 1));
 
     jLabel2.setText("Seconds");
-
-    length1.setText("Still Image Duration");
-
-    length.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(5), Integer.valueOf(1), null, Integer.valueOf(1)));
-
-    length2.setText("Seconds");
 
     jLabel3.setText("Transparent Color");
 
@@ -95,12 +79,6 @@ public class ImageProps extends javax.swing.JPanel {
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addGroup(layout.createSequentialGroup()
-            .addComponent(length1)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(length, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(length2))
           .addGroup(layout.createSequentialGroup()
             .addComponent(alphaFadeIn)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -139,11 +117,6 @@ public class ImageProps extends javax.swing.JPanel {
           .addComponent(alphaLevel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-          .addComponent(length1)
-          .addComponent(length, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addComponent(length2))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel3)
           .addComponent(transparentClr, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -152,7 +125,7 @@ public class ImageProps extends javax.swing.JPanel {
           .addComponent(clrThreshold, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(jLabel5)
-        .addContainerGap(89, Short.MAX_VALUE))
+        .addContainerGap(120, Short.MAX_VALUE))
     );
   }// </editor-fold>//GEN-END:initComponents
   // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -165,9 +138,6 @@ public class ImageProps extends javax.swing.JPanel {
   private javax.swing.JLabel jLabel3;
   private javax.swing.JLabel jLabel4;
   private javax.swing.JLabel jLabel5;
-  private javax.swing.JSpinner length;
-  private javax.swing.JLabel length1;
-  private javax.swing.JLabel length2;
   private javax.swing.JComboBox transparentClr;
   // End of variables declaration//GEN-END:variables
 
@@ -175,9 +145,6 @@ public class ImageProps extends javax.swing.JPanel {
     element.alphaFadeIn = alphaFadeIn.isSelected();
     element.alphaFadeInDuration = (Integer)alphaFadeInDuration.getValue();
     element.alphaLevel = 255 - alphaLevel.getValue();
-    if (element.type == Element.TYPE_IMAGE && element.path.length == 1) {
-      element.length = (Integer)length.getValue();
-    }
     int idx = transparentClr.getSelectedIndex();
     int lvl = clrThreshold.getValue();
     switch (idx) {

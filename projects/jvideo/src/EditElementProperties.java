@@ -19,6 +19,9 @@ public class EditElementProperties extends javax.swing.JDialog {
       case Element.TYPE_IMAGE:
         addPos();
         addImage();
+        if (element.path.length == 1) {
+          addDuration();
+        }
         addGL(fov);
         break;
       case Element.TYPE_AUDIO:
