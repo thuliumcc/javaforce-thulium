@@ -424,70 +424,72 @@ public class TrackPanel extends javax.swing.JPanel {
           boolean first = showChunks;
           if (pos == length) break;
           ChunkHeader chunk = list.get(lidx);
-          if (chunk.length <= skip) {
-            skip -= chunk.length;
-            continue;
-          }
-          rateScaleCnt = 0.0;
-//          JFLog.log("chunk.length=" + chunk.length);
-          FileInputStream fis = new FileInputStream(project.path + "/" + tid + "/c" + chunk.cid + "-" + channel + ".dat");
-          fis.skip(chunkHeaderLength);
-          long chunkLength = chunk.length;
-          if (skip > 0) {
-            chunkLength -= skip;
-            fis.skip(skip * bytes);
-            skip = 0;
-          }
-          int extraSample;
-          while (chunkLength > 0) {
-            rateScaleCnt += rateScaleDec;
-            if (rateScaleCnt >= 1.0) {
-              rateScaleCnt -= 1.0;
-              extraSample = 1;
-            } else {
-              extraSample = 0;
+          synchronized(chunk.lock) {
+            if (chunk.length <= skip) {
+              skip -= chunk.length;
+              continue;
             }
-            int samplesToRead = (intRateScale + extraSample);
-            if (samplesToRead > 0) {
-              if (samplesToRead > chunkLength) samplesToRead = (int)chunkLength;
-              byte samples[] = new byte[samplesToRead * bytes];
-              JF.readAll(fis, samples, 0, samples.length);
-              int max = 0;
-              switch (bits) {
-                case 16:
-                  short samples16[] = LE.byteArray2shortArray(samples, null);
-                  for(int a=0;a<samples16.length;a++) {
-                    int val = Math.abs(samples16[a]);
-                    if (val > max) max = val;
-                  }
-                  max >>= 8;
-                  break;
-                case 32:
-                  int samples32[] = LE.byteArray2intArray(samples, null);
-                  for(int a=0;a<samples32.length;a++) {
-                    int val = Math.abs(samples32[a]);
-                    if (val > max) max = val;
-                  }
-                  max >>= 24;
-                  break;
+            rateScaleCnt = 0.0;
+  //          JFLog.log("chunk.length=" + chunk.length);
+            FileInputStream fis = new FileInputStream(project.path + "/" + tid + "/c" + chunk.cid + "-" + channel + ".dat");
+            fis.skip(chunkHeaderLength);
+            long chunkLength = chunk.length;
+            if (skip > 0) {
+              chunkLength -= skip;
+              fis.skip(skip * bytes);
+              skip = 0;
+            }
+            int extraSample;
+            while (chunkLength > 0) {
+              rateScaleCnt += rateScaleDec;
+              if (rateScaleCnt >= 1.0) {
+                rateScaleCnt -= 1.0;
+                extraSample = 1;
+              } else {
+                extraSample = 0;
               }
-              px = (byte)(max >> 1);
+              int samplesToRead = (intRateScale + extraSample);
+              if (samplesToRead > 0) {
+                if (samplesToRead > chunkLength) samplesToRead = (int)chunkLength;
+                byte samples[] = new byte[samplesToRead * bytes];
+                JF.readAll(fis, samples, 0, samples.length);
+                int max = 0;
+                switch (bits) {
+                  case 16:
+                    short samples16[] = LE.byteArray2shortArray(samples, null);
+                    for(int a=0;a<samples16.length;a++) {
+                      int val = Math.abs(samples16[a]);
+                      if (val > max) max = val;
+                    }
+                    max >>= 8;
+                    break;
+                  case 32:
+                    int samples32[] = LE.byteArray2intArray(samples, null);
+                    for(int a=0;a<samples32.length;a++) {
+                      int val = Math.abs(samples32[a]);
+                      if (val > max) max = val;
+                    }
+                    max >>= 24;
+                    break;
+                }
+                px = (byte)(max >> 1);
+              }
+              if (first) {
+                g.setColor(Color.RED);
+                px = 63;
+              }
+              g.drawLine(pos, 64 - px, pos, 64 + px);
+              if (first) {
+                g.setColor(Color.BLUE);
+                first = false;
+              }
+              pos++;
+              if (pos == length) break;
+              chunkLength -= samplesToRead;
             }
-            if (first) {
-              g.setColor(Color.RED);
-              px = 63;
-            }
-            g.drawLine(pos, 64 - px, pos, 64 + px);
-            if (first) {
-              g.setColor(Color.BLUE);
-              first = false;
-            }
-            pos++;
-            if (pos == length) break;
-            chunkLength -= samplesToRead;
+  //          JFLog.log("last.pos=" + pos);
+            fis.close();
           }
-//          JFLog.log("last.pos=" + pos);
-          fis.close();
         }
       } catch (Exception e) {
         JFLog.log(e);
@@ -514,56 +516,58 @@ public class TrackPanel extends javax.swing.JPanel {
           boolean first = showChunks;
           if (pos == length) break;
           ChunkHeader chunk = list.get(lidx);
-          if (chunk.length / lowRes <= skip) {
-            skip -= chunk.length / lowRes;
-            continue;
+          synchronized(chunk.lock) {
+            if (chunk.length / lowRes <= skip) {
+              skip -= chunk.length / lowRes;
+              continue;
+            }
+            lowResRateScaleCnt = 0.0;
+            FileInputStream fis = new FileInputStream(project.path + "/" + tid + "/a" + chunk.cid + "-" + channel + ".dat");
+            fis.skip(chunkHeaderLength);
+            long chunkLength = chunk.length / lowRes;
+            if (skip > 0) {
+              chunkLength -= skip;
+              fis.skip(skip);
+              skip = 0;
+            }
+            int extraSample;
+            while (chunkLength > 0) {
+              lowResRateScaleCnt += lowResRateScaleDec;
+              if (lowResRateScaleCnt >= 1.0) {
+                lowResRateScaleCnt -= 1.0;
+                extraSample = 1;
+              } else {
+                extraSample = 0;
+              }
+              int samplesToRead = intLowResRateScale + extraSample;
+              if (samplesToRead > chunkLength) samplesToRead = (int)chunkLength;
+              byte samples[] = new byte[samplesToRead];
+              JF.readAll(fis, samples, 0, samplesToRead);
+              int px;
+              int max = 0;
+              for(int a=0;a<samples.length;a++) {
+                int val = samples[a];
+                if (val > max) max = val;
+              }
+              px = (byte)(max >> 1);
+              if (first) {
+                g.setColor(Color.RED);
+                px = 63;
+              }
+              g.drawLine(pos, 64 - px, pos, 64 + px);
+              if (first) {
+                g.setColor(Color.BLUE);
+                first = false;
+              }
+              pos++;
+              if (pos == length) break;
+              chunkLength -= samplesToRead;
+            }
+            fis.close();
           }
-          lowResRateScaleCnt = 0.0;
-          FileInputStream fis = new FileInputStream(project.path + "/" + tid + "/a" + chunk.cid + "-" + channel + ".dat");
-          fis.skip(chunkHeaderLength);
-          long chunkLength = chunk.length / lowRes;
-          if (skip > 0) {
-            chunkLength -= skip;
-            fis.skip(skip);
-            skip = 0;
-          }
-          int extraSample;
-          while (chunkLength > 0) {
-            lowResRateScaleCnt += lowResRateScaleDec;
-            if (lowResRateScaleCnt >= 1.0) {
-              lowResRateScaleCnt -= 1.0;
-              extraSample = 1;
-            } else {
-              extraSample = 0;
-            }
-            int samplesToRead = intLowResRateScale + extraSample;
-            if (samplesToRead > chunkLength) samplesToRead = (int)chunkLength;
-            byte samples[] = new byte[samplesToRead];
-            JF.readAll(fis, samples, 0, samplesToRead);
-            int px;
-            int max = 0;
-            for(int a=0;a<samples.length;a++) {
-              int val = samples[a];
-              if (val > max) max = val;
-            }
-            px = (byte)(max >> 1);
-            if (first) {
-              g.setColor(Color.RED);
-              px = 63;
-            }
-            g.drawLine(pos, 64 - px, pos, 64 + px);
-            if (first) {
-              g.setColor(Color.BLUE);
-              first = false;
-            }
-            pos++;
-            if (pos == length) break;
-            chunkLength -= samplesToRead;
-          }
-          fis.close();
         }
       } catch (Exception e) {
-//        JFLog.log(e);
+        JFLog.log(e);
       }
     }
     //height = 63+1+63 = 127
@@ -624,8 +628,61 @@ public class TrackPanel extends javax.swing.JPanel {
   public Dimension getMaximumSize() {
     return getPreferredSize();
   }
+  public void swapEndian(int bits, byte samples[]) {
+    byte tmp;
+    int len = samples.length;
+    switch (bits) {
+      case 16:
+        for(int a=0;a<len;a+=2) {
+          tmp = samples[a];
+          samples[a] = samples[a+1];
+          samples[a+1] = tmp;
+        }
+        break;
+      case 32:
+        for(int a=0;a<len;a+=4) {
+          tmp = samples[a];
+          samples[a] = samples[a+3];
+          samples[a+3] = tmp;
+          tmp = samples[a+1];
+          samples[a+1] = samples[a+2];
+          samples[a+2] = tmp;
+        }
+        break;
+    }
+  }
+  private void scaleBufferVolume(byte buf[], int bits, int scale) {
+    int len = buf.length;
+    short s16;
+    int s32;
+    if (scale == 0) {
+      for (int a = 0; a < len; a++) {
+        buf[a] = 0;
+      }
+    } else {
+      switch (bits) {
+        case 16:
+          float fscale = (float)scale / 100f;
+          for (int a = 0; a < len; a+=2) {
+            s16 = (short)LE.getuint16(buf, a);
+            s16 *= fscale;
+            LE.setuint16(buf, a, s16);
+          }
+          break;
+        case 32:
+          double dscale = (double)scale / 100d;
+          for (int a = 0; a < len; a+=4) {
+            s32 = LE.getuint32(buf, a);
+            s32 *= dscale;
+            LE.setuint32(buf, a, s32);
+          }
+          break;
+      }
+    }
+  }
   public volatile boolean recording = false;
   public volatile boolean playing = false;
+  private static final int recBufSize = 256;  //in bytes (not samples)
   public void record() {
     selectTrack(true);
     this.rate = Settings.current.freq;
@@ -634,36 +691,43 @@ public class TrackPanel extends javax.swing.JPanel {
       public void run() {
         long length = 0;
         Sound.Input input = Sound.getInput(Settings.current.useNative);
-        if (!input.start(Settings.current.channels, Settings.current.freq, 16, 1024, Settings.getInput())) {
+        input.listDevices();
+        if (!input.start(Settings.current.channels, Settings.current.freq, bits, recBufSize, Settings.getInput())) {
           MainPanel.main.stop();
           JF.showError("Error", "Failed to open recording device.");
           return;
         }
-        byte samples[] = new byte[1024];
+        byte samples[] = new byte[recBufSize];
         while (recording) {
           if (!input.read(samples)) {
             JF.sleep(10);
             continue;
           }
-          if ( (samples != null) && (samples.length > 0)) {
-            addSamples(samples);
-            length += samples.length / channels / bytes;
-            project.calcMaxLength();
-            project.showOffset(length / rate);
+          if (input.getEndian() == Sound.BIG_ENDIAN) {
+            swapEndian(bits, samples);
           }
+          int lvl = MainPanel.main.getRecordLevel();
+          if (lvl < 100) {
+            scaleBufferVolume(samples, bits, lvl);
+          }
+          addSamples(samples);
+          length += samples.length / channels / bytes;
+          project.calcMaxLength();
+          project.showOffset(length / rate);
           repaint();
         }
         input.stop();
       }
     }.start();
   }
-  public final int playBufferSize = 16 * 1024;  //keep small for better response (in samples)
+  public final int playBufferSize = 4 * 1024;  //keep small for better response (in samples)
   public void play() {
     playing = true;
     new Thread() {
       public void run() {
         int bufferSize = playBufferSize * bytes * channels;
         Sound.Output output = Sound.getOutput(Settings.current.useNative);
+        output.listDevices();
         long offset = selectStart;
         boolean first = true;
         int firstNumSamples = 0;
@@ -682,6 +746,13 @@ public class TrackPanel extends javax.swing.JPanel {
             Arrays.fill(samples, (byte)0);
           }
           numSamples = samples.length / channels / bytes;
+          int lvl = MainPanel.main.getPlayLevel();
+          if (lvl != 100) {
+            scaleBufferVolume(samples, bits, lvl);
+          }
+          if (output.getEndian() == Sound.BIG_ENDIAN) {
+            swapEndian(bits, samples);
+          }
           output.write(samples);
           offset += playBufferSize;
           if (first) {first = false; firstNumSamples = numSamples; continue;}
@@ -715,31 +786,33 @@ public class TrackPanel extends javax.swing.JPanel {
       lastChunk = list.get(list.size() - 1);
       if (lastChunk.length + samplesLength <= maxChunkSize) {
         //add to last chunk
-        lastChunk.length += samplesLength;
-        try {
-          cid = list.size() - 1;  //last chunk
-          ByteArrayOutputStream baos = new ByteArrayOutputStream();
-          lastChunk.write(baos);
-          for(int ch=0;ch<channels;ch++) {
-            byte samples[] = sliceSamples(data, ch);
-            RandomAccessFile file = new RandomAccessFile(project.path + "/" + tid + "/c" + cid + "-" + ch + ".dat", "rw");
-            int fileLength = (int)file.length();
-            byte header[] = baos.toByteArray();
-            file.seek(0);
-            file.write(header);
-            file.seek(fileLength);
-            file.write(samples);
-            int allLength = fileLength - header.length + samples.length;
-            byte allSamples[] = new byte[allLength];
-            file.seek(header.length);
-            JF.readAll(file, allSamples, 0, fileLength - header.length);
-            System.arraycopy(samples, 0, allSamples, fileLength - header.length, samples.length);
-            file.close();
-            genLowResChunk(allSamples, lastChunk, ch);
+        synchronized(lastChunk.lock) {
+          lastChunk.length += samplesLength;
+          try {
+            cid = list.size() - 1;  //last chunk
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            lastChunk.write(baos);
+            for(int ch=0;ch<channels;ch++) {
+              byte samples[] = sliceSamples(data, ch);
+              RandomAccessFile file = new RandomAccessFile(project.path + "/" + tid + "/c" + cid + "-" + ch + ".dat", "rw");
+              int fileLength = (int)file.length();
+              byte header[] = baos.toByteArray();
+              file.seek(0);
+              file.write(header);
+              file.seek(fileLength);
+              file.write(samples);
+              int allLength = fileLength - header.length + samples.length;
+              byte allSamples[] = new byte[allLength];
+              file.seek(header.length);
+              JF.readAll(file, allSamples, 0, fileLength - header.length);
+              System.arraycopy(samples, 0, allSamples, fileLength - header.length, samples.length);
+              file.close();
+              genLowResChunk(allSamples, lastChunk, ch);
+            }
+            repaint();
+          } catch (Exception e) {
+            JFLog.log(e);
           }
-          repaint();
-        } catch (Exception e) {
-          JFLog.log(e);
         }
         return;
       }

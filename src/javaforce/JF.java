@@ -21,7 +21,7 @@ import javax.swing.*;
 public class JF {
 
   public static String getVersion() {
-    return "7.40.0";
+    return "7.41.0";
   }
 
   public static void sleep(int milli) {

@@ -20,8 +20,8 @@ public class LE {
 
   public static int getuint16(byte[] data, int offset) {
     int ret;
-    ret  = (int)data[offset] & 0xff;
-    ret += ((int)data[offset+1] & 0xff) << 8;
+    ret  = data[offset] & 0xff;
+    ret += (data[offset+1] & 0xff) << 8;
     return ret;
   }
 
@@ -62,26 +62,37 @@ public class LE {
   }
 
   public static void setuint16(byte[] data, int offset, int num) {
-    data[offset] = (byte)(num & 0xff);
-    data[offset+1] = (byte)((num & 0xff00) >> 8);
+    data[offset+0] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+1] = (byte)(num & 0xff);
   }
 
   public static void setuint32(byte[] data, int offset, int num) {
-    data[offset] = (byte)(num & 0xff);
-    data[offset+1] = (byte)((num & 0xff00) >> 8);
-    data[offset+2] = (byte)((num & 0xff0000) >> 16);
-    data[offset+3] = (byte)((num & 0xff000000) >> 24);
+    data[offset+0] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+1] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+2] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+3] = (byte)(num & 0xff);
   }
 
   public static void setuint64(byte[] data, int offset, long num) {
-    data[offset] = (byte)(num & 0xff);
-    data[offset+1] = (byte)((num & 0xff00) >> 8);
-    data[offset+2] = (byte)((num & 0xff0000) >> 16);
-    data[offset+3] = (byte)((num & 0xff000000) >> 24);
-    data[offset+4] = (byte)((num & 0xff00000000L) >> 32);
-    data[offset+5] = (byte)((num & 0xff0000000000L) >> 40);
-    data[offset+6] = (byte)((num & 0xff000000000000L) >> 48);
-    data[offset+7] = (byte)((num & 0xff00000000000000L) >> 56);
+    data[offset+0] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+1] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+2] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+3] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+4] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+5] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+6] = (byte)(num & 0xff);
+    num >>= 8;
+    data[offset+7] = (byte)(num & 0xff);
   }
 
   public static void setString(byte[] data, int offset, int len, String str) {
@@ -104,8 +115,8 @@ public class LE {
     int p = 0;
     short val;
     for (int a = 0; a < len; a++) {
-      val  = (short)(((short)in[p++]) & 0xff);
-      val += (((short)in[p++]) & 0xff) << 8;
+      val  = (short)(in[p++] & 0xff);
+      val += (in[p++] & 0xff) << 8;
       out[a] = val;
     }
     return out;
@@ -116,10 +127,10 @@ public class LE {
     int p = 0;
     int val;
     for (int a = 0; a < len; a++) {
-      val  = (((int)in[p++]) & 0xff);
-      val += (((int)in[p++]) & 0xff) << 8;
-      val += (((int)in[p++]) & 0xff) << 16;
-      val += (((int)in[p++]) & 0xff) << 24;
+      val  = (in[p++] & 0xff);
+      val += (in[p++] & 0xff) << 8;
+      val += (in[p++] & 0xff) << 16;
+      val += (in[p++] & 0xff) << 24;
       out[a] = val;
     }
     return out;
@@ -152,5 +163,4 @@ public class LE {
     }
     return out;
   }
-
 }

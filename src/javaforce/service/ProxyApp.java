@@ -23,6 +23,7 @@ public class ProxyApp extends javax.swing.JFrame implements ActionListener {
     //create tray icon to open app
     JFImage img = new JFImage();
     img.setSize(16, 16);
+    img.fill(0, 0, 16, 16, 0, true);
     img.getGraphics().drawString("Pr", 0,16);  //TODO : need an icon
     PopupMenu popup = new PopupMenu();
     show = new MenuItem("Show");

@@ -53,8 +53,12 @@ public class MainPanel extends javax.swing.JPanel {
     jSeparator3 = new javax.swing.JToolBar.Separator();
     deleteTrack = new javax.swing.JButton();
     jSeparator4 = new javax.swing.JToolBar.Separator();
-    filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
+    spk = new javax.swing.JLabel();
+    playVol = new javax.swing.JSlider();
+    mic = new javax.swing.JLabel();
+    recVol = new javax.swing.JSlider();
     jSeparator5 = new javax.swing.JToolBar.Separator();
+    filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
 
     jToolBar1.setFloatable(false);
     jToolBar1.setRollover(true);
@@ -189,16 +193,42 @@ public class MainPanel extends javax.swing.JPanel {
     });
     jToolBar2.add(deleteTrack);
     jToolBar2.add(jSeparator4);
-    jToolBar2.add(filler1);
+
+    spk.setIcon(new javax.swing.ImageIcon(getClass().getResource("/spk.png"))); // NOI18N
+    jToolBar2.add(spk);
+
+    playVol.setValue(100);
+    playVol.setMaximumSize(new java.awt.Dimension(100, 23));
+    playVol.setMinimumSize(new java.awt.Dimension(100, 23));
+    playVol.addChangeListener(new javax.swing.event.ChangeListener() {
+      public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        playVolStateChanged(evt);
+      }
+    });
+    jToolBar2.add(playVol);
+
+    mic.setIcon(new javax.swing.ImageIcon(getClass().getResource("/mic.png"))); // NOI18N
+    jToolBar2.add(mic);
+
+    recVol.setValue(100);
+    recVol.setMaximumSize(new java.awt.Dimension(100, 23));
+    recVol.setMinimumSize(new java.awt.Dimension(100, 23));
+    recVol.addChangeListener(new javax.swing.event.ChangeListener() {
+      public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        recVolStateChanged(evt);
+      }
+    });
+    jToolBar2.add(recVol);
     jToolBar2.add(jSeparator5);
+    jToolBar2.add(filler1);
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-      .addComponent(tabs, javax.swing.GroupLayout.DEFAULT_SIZE, 559, Short.MAX_VALUE)
-      .addComponent(jToolBar2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+      .addComponent(jToolBar2, javax.swing.GroupLayout.DEFAULT_SIZE, 636, Short.MAX_VALUE)
+      .addComponent(tabs)
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -280,6 +310,12 @@ public class MainPanel extends javax.swing.JPanel {
     mute.setSelected(false);
   }//GEN-LAST:event_soloActionPerformed
 
+  private void playVolStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_playVolStateChanged
+  }//GEN-LAST:event_playVolStateChanged
+
+  private void recVolStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_recVolStateChanged
+  }//GEN-LAST:event_recVolStateChanged
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton deleteTrack;
   private javax.swing.JButton end;
@@ -293,11 +329,15 @@ public class MainPanel extends javax.swing.JPanel {
   private javax.swing.JToolBar.Separator jSeparator5;
   private javax.swing.JToolBar jToolBar1;
   private javax.swing.JToolBar jToolBar2;
+  private javax.swing.JLabel mic;
   private javax.swing.JToggleButton mute;
   private javax.swing.JButton pause;
   private javax.swing.JButton play;
+  private javax.swing.JSlider playVol;
+  private javax.swing.JSlider recVol;
   private javax.swing.JButton record;
   private javax.swing.JToggleButton solo;
+  private javax.swing.JLabel spk;
   private javax.swing.JButton stop;
   private javax.swing.JTabbedPane tabs;
   private javax.swing.JButton zoomIn;
@@ -626,5 +666,11 @@ public class MainPanel extends javax.swing.JPanel {
   public void genSilence() {
     ProjectPanel project = (ProjectPanel)tabs.getSelectedComponent();
     project.getSelectedTrack().genSilence();
+  }
+  public int getPlayLevel() {
+    return playVol.getValue();
+  }
+  public int getRecordLevel() {
+    return recVol.getValue();
   }
 }

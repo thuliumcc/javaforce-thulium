@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jaudio
-Version: 0.13
+Version: 0.14
 Release: 1
 Summary: Audio Editor
 License: LGPL

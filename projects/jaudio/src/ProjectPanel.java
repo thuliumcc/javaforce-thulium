@@ -408,6 +408,7 @@ public class ProjectPanel extends javax.swing.JPanel {
     tracks.add(track);
     resizeTracks();
     tracksScroll.setValue(totalTracksHeight());
+//    setRecVol();
     track.record();
     validate();
   }
@@ -428,6 +429,7 @@ public class ProjectPanel extends javax.swing.JPanel {
   }
   public void play() {
     paused = false;
+//    setPlayVol();
     for(int a=0;a<list.size();a++) {
       list.get(a).play();
     }

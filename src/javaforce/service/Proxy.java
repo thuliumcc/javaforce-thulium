@@ -11,9 +11,14 @@ package javaforce.service;
  *   allow=0.0.0.0/0
  *   [blockdomain]
  *   .*youtube[.]com
+ *   [urlchange]
+ *   url = newURL
  *
  * Domains are in Regular Expression format
  * see : http://docs.oracle.com/javase/7/docs/api/java/util/regex/Pattern.html
+ *
+ * Note : in [urlchange] section the url is a regular expression
+ *   and the = MUST have a space before and after it.
  *
  * @author pquiring
  *
@@ -33,9 +38,14 @@ public class Proxy extends Thread {
   private final static String UserConfigFile = JF.getUserPath() + "/.jproxy.cfg";
   private final static String SystemConfigFile = "/etc/jproxy.cfg";
 
+  private static class URLChange {
+    public String url, newurl;
+  }
+
   private ServerSocket ss;
   private Vector<Session> list = new Vector<Session>();
   private ArrayList<String> blockedDomain = new ArrayList<String>();
+  private ArrayList<URLChange> urlChanges = new ArrayList<URLChange>();
   private ArrayList<Integer> allow_net = new ArrayList<Integer>();
   private ArrayList<Integer> allow_mask = new ArrayList<Integer>();
   private int port = 3128;
@@ -84,7 +94,7 @@ public class Proxy extends Thread {
     }
   }
 
-  private static enum Section {None, Global, BlockDomain};
+  private static enum Section {None, Global, BlockDomain, URLChange};
 
   private final static String defaultConfig
     = "[global]\r\n"
@@ -94,7 +104,9 @@ public class Proxy extends Thread {
     + "#allow=10.1.2.3/32 #allow single ip\r\n"
     + "\r\n"
     + "[blockdomain]\r\n"
-    + ".*youtube[.]com\r\n";
+    + ".*youtube[.]com\r\n"
+    + "[urlchange]\r\n"
+    + "#www.example.com/test = www.google.com\r\n";
 
   private void loadConfig() {
     Section section = Section.None;
@@ -115,6 +127,10 @@ public class Proxy extends Thread {
           section = Section.BlockDomain;
           continue;
         }
+        if (ln.equals("[urlchange]")) {
+          section = Section.URLChange;
+          continue;
+        }
         switch (section) {
           case Global:
             if (ln.startsWith("port=")) {
@@ -133,6 +149,17 @@ public class Proxy extends Thread {
             break;
           case BlockDomain:
             blockedDomain.add(ln);
+            break;
+          case URLChange:
+            int eq = ln.indexOf(" = ");
+            if (eq == -1) {
+              JFLog.log("Bad URLChange:" + ln);
+              break;
+            }
+            URLChange uc = new URLChange();
+            uc.url = ln.substring(0, eq);
+            uc.newurl = ln.substring(eq+3);
+            urlChanges.add(uc);
             break;
         }
       }
@@ -294,28 +321,61 @@ public class Proxy extends Thread {
             return;
           }
         }
-        if (ln[0].regionMatches(true, 0, "POST ", 0, 5)) {
-          connect(host, port);
-          sendRequest(ln);
-          sendPost(ln);
-          String fn = ln[0].substring(5);
-          int idx = fn.indexOf(" ");
-          relayReply(fn.substring(0, idx));
-          return;
-        }
-        if (ln[0].regionMatches(true, 0, "GET ", 0, 4)) {
-          connect(host, port);
-          sendRequest(ln);
-          String fn = ln[0].substring(4);
-          int idx = fn.indexOf(" ");
-          relayReply(fn.substring(0, idx));
-          return;
-        }
         if (ln[0].regionMatches(true, 0, "CONNECT ", 0, 8)) {
           connectCommand(host, ln[0]);
           return;
         }
-        replyError(505, "Unknown request");
+        String method = null, proto = null, url = null, http = null;
+        if (ln[0].regionMatches(true, 0, "POST ", 0, 5)) {
+          method = "POST";
+          String fn = ln[0].substring(5);
+          int idx = fn.indexOf(" ");
+          url = fn.substring(0, idx);
+          http = fn.substring(idx+1);
+        }
+        else if (ln[0].regionMatches(true, 0, "GET ", 0, 4)) {
+          method = "GET";
+          String fn = ln[0].substring(4);
+          int idx = fn.indexOf(" ");
+          url = fn.substring(0, idx);
+          http = fn.substring(idx+1);
+        }
+        else {
+          replyError(505, "Unknown request");
+          return;
+        }
+        if (url.startsWith("http://")) {
+          proto = "http://";
+          url = url.substring(7);
+        } else {
+          proto = "";
+        }
+        //check if url is changed
+        for(int a=0;a<urlChanges.size();a++) {
+          URLChange uc = urlChanges.get(a);
+          if (url.matches(uc.url)) {
+            url = uc.newurl;
+            ln[0] = method + " " + proto + url + " " + http;
+            int iport = url.indexOf(":");
+            int iurl = url.indexOf("/");
+            if (iurl == -1) iurl = url.length();
+            if (iport == -1) {
+              port = 80;
+              host = url.substring(0, iurl);
+              ln[hostidx] = "Host: " + host;
+            } else {
+              port = JF.atoi(url.substring(iport+1, iurl));
+              host = url.substring(0, iport);
+              ln[hostidx] = "Host: " + host + ":" + port;
+            }
+            break;
+          }
+        }
+        connect(host, port);
+        sendRequest(ln);
+        if (method.equals("POST")) sendPost(ln);
+        relayReply(proto + url);
+        return;
       } catch (UnknownHostException uhe) {
         replyError(404, "Domain not found");
         log(uhe);
@@ -535,8 +595,10 @@ public class Proxy extends Thread {
   private static JBusClient jbusClient;
   public static void main(String args[]) {
     Proxy.SystemService = true;
-    jbusClient = new JBusClient("org.jflinux.service.jproxy", new JBusMethods());
-    jbusClient.start();
+    if (JF.isUnix()) {
+      jbusClient = new JBusClient("org.jflinux.service.jproxy", new JBusMethods());
+      jbusClient.start();
+    }
     new Proxy().start();
   }
   public static class JBusMethods {

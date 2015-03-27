@@ -24,7 +24,7 @@ import javaforce.voip.*;
 
 public class Broadcast extends javax.swing.JFrame implements SIPClientInterface, RTPInterface, ActionListener {
 
-  public final String version = "0.26";
+  public final String version = "0.27";
 
   public String startList = null;
   public String cfgSuffix = "";
@@ -467,14 +467,14 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
 
       },
       new String [] {
-        "Number", "Status", "Attempts", "Survey"
+        "Number", "Status", "Attempts", "Survey", "Call Count"
       }
     ) {
       Class[] types = new Class [] {
-        java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.String.class
+        java.lang.String.class, java.lang.String.class, java.lang.Integer.class, java.lang.Object.class, java.lang.Integer.class
       };
       boolean[] canEdit = new boolean [] {
-        false, false, false, false
+        false, false, false, false, false
       };
 
       public Class getColumnClass(int columnIndex) {
@@ -657,7 +657,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
           .addComponent(enable_g729a)
           .addComponent(check_update)
           .addComponent(enable_reinvites))
-        .addContainerGap())
+        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     jPanel7Layout.setVerticalGroup(
       jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -678,7 +678,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
         .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel24)
           .addComponent(maxAttempts, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addComponent(enable_g729a)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(enable_g711u)
@@ -688,7 +688,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
         .addComponent(enable_reinvites)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(check_update)
-        .addContainerGap())
+        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
 
     jPanel8.setBorder(javax.swing.BorderFactory.createTitledBorder("Transfer Option"));
@@ -748,9 +748,9 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
         .addComponent(jPanel8, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-          .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+          .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addContainerGap(40, Short.MAX_VALUE))
     );
 
     jTabbedPane1.addTab("Options", jPanel4);
@@ -1714,6 +1714,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     int errcnt = 0;
     int okcnt = 0;
     ArrayList<String> numbers = null;
+    int duptag = 1;
     if (allowdups) {
       numbers = new ArrayList<String>();
       int cnt = listView.getRowCount();
@@ -1735,19 +1736,10 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
         num = num.trim();
         if (allowdups) {
           //check if this number already exists and add a tag to it
-          String dup = num;
-          int cnt = numbers.size();
-          int i = 2;
-          for(int a=0;a<cnt;) {
-            if (numbers.get(a).equals(dup)) {
-              dup = num + "," + i++;
-              a = 0;  //start over
-            } else {
-              a++;
-            }
+          if (numbers.contains(num)) {
+            num += "," + duptag++;
           }
-          numbers.add(dup);
-          num = dup;
+          numbers.add(num);
         }
         if (!sql.execute("insert into listdata (id, number) values (" + id + ",'" + num + "')")) {
           errcnt++;

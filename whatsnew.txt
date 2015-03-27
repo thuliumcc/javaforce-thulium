@@ -1,5 +1,13 @@
 What's new...
 
+Jan 17/2015 : JF 7.41.0 released!
+  - jfBroadcast/0.27
+    - improved -allowdups performance
+  - jfAudio/0.14
+    - fixed endian difference between Java and Native sound
+    - fixed paint() issue
+    - added volume levels
+
 Nov 27/2014 : JF 7.40.0 released!
   - javaforce.GL
     - added Stencil functions (untested)

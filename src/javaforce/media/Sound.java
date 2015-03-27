@@ -15,12 +15,15 @@ import javaforce.*;
 import javaforce.jna.*;
 
 public class Sound {
+  public static final int BIG_ENDIAN = 0;
+  public static final int LITTLE_ENDIAN = 1;
   public static interface Output {
     public String[] listDevices();
     public boolean start(int chs, int freq, int bits, int bufsiz, String device);
     public boolean write(byte buf[]);
     public boolean write(short buf[]);
     public boolean stop();
+    public int getEndian();
   }
   public static Output getOutput(boolean useNative) {
     if (useNative) {
@@ -41,6 +44,9 @@ public class Sound {
     private SourceDataLine sdl;
     private AudioFormat af;
     private byte buf8[];
+    public int getEndian() {
+      return BIG_ENDIAN;
+    }
     public String[] listDevices() {
       ArrayList<String> mixers = new ArrayList<String>();
       Mixer.Info mi[] = AudioSystem.getMixerInfo();
@@ -71,6 +77,24 @@ public class Sound {
         } else {
           sdl = AudioSystem.getSourceDataLine(af, mi[idx]);
         }
+/*
+        try {
+          FloatControl vol = (FloatControl)sdl.getControl(FloatControl.Type.VOLUME);
+          if (vol != null) {
+            vol.setValue(100);
+          }
+        } catch (Exception e) {
+          JFLog.log(e);
+        }
+        try {
+          FloatControl vol = (FloatControl)sdl.getControl(FloatControl.Type.MASTER_GAIN);
+          if (vol != null) {
+            vol.setValue(100);
+          }
+        } catch (Exception e) {
+          JFLog.log(e);
+        }
+*/
       } catch (Exception e) {
         JFLog.log(e);
         return false;
@@ -107,6 +131,7 @@ public class Sound {
     public boolean read(byte buf[]);
     public boolean read(short buf[]);
     public boolean stop();
+    public int getEndian();
   }
 
   public static Input getInput(boolean useNative) {
@@ -128,6 +153,9 @@ public class Sound {
     private TargetDataLine tdl;
     private AudioFormat af;
     private byte buf8[];
+    public int getEndian() {
+      return BIG_ENDIAN;
+    }
     public String[] listDevices() {
       ArrayList<String> mixers = new ArrayList<String>();
       Mixer.Info mi[] = AudioSystem.getMixerInfo();

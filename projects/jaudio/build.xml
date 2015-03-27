@@ -5,7 +5,7 @@
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
-  <property name="JAUDIOVERSION" value="0.13"/>
+  <property name="JAUDIOVERSION" value="0.14"/>
 
   <target name="depjars">
     <jar destfile="javaforce.jar">
@@ -41,6 +41,7 @@
     <!-- Build jar file from class files -->
     <jar destfile="jaudio.jar" includes="*.class" basedir="${build}">
       <fileset dir="." includes="*.png"/>
+      <fileset dir="src" includes="*.png"/>
       <fileset dir="." includes="*.crt"/>
       <manifest>
         <attribute name="Main-Class" value="AudioApp"/>
@@ -131,6 +132,7 @@
         <include name="projects/jaudio/*.txt"/>
         <include name="projects/jaudio/*.xml"/>
         <include name="projects/jaudio/*.png"/>
+        <include name="projects/jaudio/src/*.png"/>
         <include name="projects/jaudio/*.ico"/>
         <include name="projects/jaudio/*.rc"/>
         <include name="projects/jaudio/run.bat"/>

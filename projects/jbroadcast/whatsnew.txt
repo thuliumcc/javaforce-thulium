@@ -1,6 +1,9 @@
 ChangeLog
 =========
 
+1-17-2015 : version 0.27
+ - fix : greatly improved -allowdups performance
+
 10-8-2014 : version 0.26
  - fix : -allowdups now uses a suffix added to each number to make them unique in the list.
      The suffix (comma and a number) are removed just before dialing the number.

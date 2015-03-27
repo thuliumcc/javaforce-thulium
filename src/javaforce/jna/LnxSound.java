@@ -15,6 +15,7 @@ import com.sun.jna.ptr.*;
 
 import javaforce.*;
 import javaforce.media.Sound;
+import static javaforce.media.Sound.*;
 
 public class LnxSound {
   private static Pointer malloc(int size) {
@@ -107,6 +108,9 @@ public class LnxSound {
     private Pointer buffer;
     private int bytes, chs;
 
+    public int getEndian() {
+      return LITTLE_ENDIAN;
+    }
     public String[] listDevices() {
       return LnxSound.listDevices();
     }
@@ -205,6 +209,9 @@ public class LnxSound {
     private Pointer buffer;
     private int bytes, chs;
 
+    public int getEndian() {
+      return LITTLE_ENDIAN;
+    }
     public String[] listDevices() {
       return LnxSound.listDevices();
     }

@@ -5,7 +5,7 @@
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
-  <property name="JBROADCASTVERSION" value="0.26"/>
+  <property name="JBROADCASTVERSION" value="0.27"/>
 
   <target name="depjars">
     <jar destfile="javaforce.jar">
@@ -104,6 +104,7 @@
         <include name="projects/jbroadcast/*.c"/>
         <include name="projects/jbroadcast/*.rc"/>
         <include name="projects/jbroadcast/*.ico"/>
+        <include name="projects/jbroadcast/*.png"/>
         <include name="projects/jbroadcast/nbproject/*.xml"/>
         <include name="projects/jbroadcast/run.*"/>
         <include name="projects/jbroadcast/jbroadcast"/>

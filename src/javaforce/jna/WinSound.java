@@ -17,6 +17,7 @@ import com.sun.jna.win32.*;
 
 import javaforce.*;
 import javaforce.media.*;
+import static javaforce.media.Sound.*;
 
 public class WinSound {
   private static Pointer malloc(int size) {
@@ -151,6 +152,9 @@ public class WinSound {
     private WaveHdr bufs[] = new WaveHdr[NUM_BUFFERS];
     private String devices[] = new String[0];
 
+    public int getEndian() {
+      return LITTLE_ENDIAN;
+    }
     public String[] listDevices() {
       ArrayList<String> list = new ArrayList<String>();
       int cnt = winmm.waveOutGetNumDevs();
@@ -277,6 +281,9 @@ public class WinSound {
     private WaveHdr bufs[] = new WaveHdr[NUM_BUFFERS];
     private String devices[] = new String[0];
 
+    public int getEndian() {
+      return LITTLE_ENDIAN;
+    }
     public String[] listDevices() {
       ArrayList<String> list = new ArrayList<String>();
       int cnt = winmm.waveInGetNumDevs();
