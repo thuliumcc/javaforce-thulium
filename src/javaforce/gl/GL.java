@@ -513,48 +513,6 @@ public class GL {
     }
   }
 
-  //taken from JOGL GLCanvas.java
-  //NOTE : should place this in addNotify() and call it before super on X11 and after for Windows.
-  private static boolean disableBackgroundEraseInitialized;
-  private static Method  disableBackgroundEraseMethod;
-  static void disableBackgroundErase(Component comp) {
-    final Component _comp = comp;
-    if (!disableBackgroundEraseInitialized) {
-      try {
-        AccessController.doPrivileged(new PrivilegedAction<Object>() {
-            @Override
-            public Object run() {
-              try {
-                Class<?> clazz = _comp.getToolkit().getClass();
-                while (clazz != null && disableBackgroundEraseMethod == null) {
-                  try {
-                    disableBackgroundEraseMethod =
-                      clazz.getDeclaredMethod("disableBackgroundErase",
-                                              new Class[] { Canvas.class });
-                    disableBackgroundEraseMethod.setAccessible(true);
-                  } catch (Exception e) {
-                    clazz = clazz.getSuperclass();
-                  }
-                }
-              } catch (Exception e) {
-              }
-              return null;
-            }
-          });
-      } catch (Exception e) {
-      }
-      disableBackgroundEraseInitialized = true;
-    }
-    if (disableBackgroundEraseMethod != null) {
-      Throwable t=null;
-      try {
-        disableBackgroundEraseMethod.invoke(comp.getToolkit(), new Object[] { comp });
-      } catch (Exception e) {
-        t = e;
-      }
-    }
-  }
-
   /** Renders to offscreen (just skips calling swap() during render call) */
   public void setRenderOffscreen(boolean state) {
     renderOffscreen = state;

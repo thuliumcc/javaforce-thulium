@@ -9,9 +9,11 @@ import javax.net.ssl.*;
 //remove these for Android
 import java.awt.*;
 import java.awt.event.*;
+import java.lang.reflect.Method;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import javax.swing.*;
 
-//NOTE : Must contain no data (sizeof(JF) == 0)
 /**
  * A collection of static methods. Many methods help reduce try/catch clutter by
  * returning error codes.
@@ -21,7 +23,7 @@ import javax.swing.*;
 public class JF {
 
   public static String getVersion() {
-    return "7.43.0";
+    return "7.44.0";
   }
 
   public static void sleep(int milli) {
@@ -1053,9 +1055,20 @@ public class JF {
       SSLContext sc = SSLContext.getInstance("SSL");
       sc.init(null, trustAllCerts, new java.security.SecureRandom());
       SSLSocketFactory sslsocketfactory = (SSLSocketFactory) sc.getSocketFactory();  //this method will work with untrusted certs
+      HttpsURLConnection.setDefaultSSLSocketFactory(sslsocketfactory);
     } catch (Exception e) {
       JFLog.log(e);
     }
+    //trust any hostname
+    HostnameVerifier hv = new HostnameVerifier() {
+      public boolean verify(String urlHostName, SSLSession session) {
+        if (!urlHostName.equalsIgnoreCase(session.getPeerHost())) {
+          System.out.println("Warning: URL host '" + urlHostName + "' is different to SSLSession host '" + session.getPeerHost() + "'.");
+        }
+        return true;
+      }
+    };
+    HttpsURLConnection.setDefaultHostnameVerifier(hv);
   }
 
   /** Opens a URL in default web browser */
@@ -1192,4 +1205,47 @@ public class JF {
     Rectangle s = GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
     window.setLocation(s.width/2 - d.width/2, s.height/2 - d.height/2);
   }
+
+  //taken from JOGL GLCanvas.java
+  //NOTE : should place this in addNotify() and call it before super on X11 and after for Windows.
+  private static boolean disableBackgroundEraseInitialized;
+  private static Method  disableBackgroundEraseMethod;
+  public static void disableBackgroundErase(Component comp) {
+    final Component _comp = comp;
+    if (!disableBackgroundEraseInitialized) {
+      try {
+        AccessController.doPrivileged(new PrivilegedAction<Object>() {
+            @Override
+            public Object run() {
+              try {
+                Class<?> clazz = _comp.getToolkit().getClass();
+                while (clazz != null && disableBackgroundEraseMethod == null) {
+                  try {
+                    disableBackgroundEraseMethod =
+                      clazz.getDeclaredMethod("disableBackgroundErase",
+                                              new Class[] { Canvas.class });
+                    disableBackgroundEraseMethod.setAccessible(true);
+                  } catch (Exception e) {
+                    clazz = clazz.getSuperclass();
+                  }
+                }
+              } catch (Exception e) {
+              }
+              return null;
+            }
+          });
+      } catch (Exception e) {
+      }
+      disableBackgroundEraseInitialized = true;
+    }
+    if (disableBackgroundEraseMethod != null) {
+      Throwable t=null;
+      try {
+        disableBackgroundEraseMethod.invoke(comp.getToolkit(), new Object[] { comp });
+      } catch (Exception e) {
+        t = e;
+      }
+    }
+  }
+
 }

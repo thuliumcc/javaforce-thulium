@@ -76,7 +76,7 @@ apt-get --yes update
 apt-get --yes upgrade
 
 #install chrome
-apt-get install google-chrome-stable
+apt-get install --yes google-chrome-stable
 
 #install ffmpeg
 apt-get install --yes libav-tools

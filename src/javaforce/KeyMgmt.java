@@ -22,7 +22,6 @@ public class KeyMgmt {
   public static boolean keytool(String args[]) {
     ArrayList<String> cmd = new ArrayList<String>();
     try {
-//      sun.security.tools.KeyTool.main(args);  //no longer available in Java 8
       if (JF.isWindows()) {
         cmd.add(System.getProperty("java.home") + "\\bin\\keytool.exe");
       } else {
@@ -31,7 +30,14 @@ public class KeyMgmt {
       for(int a=0;a<args.length;a++) {
         cmd.add(args[a]);
       }
-      Process p = Runtime.getRuntime().exec(cmd.toArray(new String[0]));
+      String sa[] = cmd.toArray(new String[cmd.size()]);
+/*
+      System.out.print("cmd=");
+      for(int a=0;a<sa.length;a++) {
+        System.out.print(sa[a] + " ");
+      }
+*/
+      Process p = Runtime.getRuntime().exec(sa);
       p.waitFor();
       return true;
     } catch (Exception e) {

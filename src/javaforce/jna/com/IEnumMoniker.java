@@ -15,31 +15,15 @@ public class IEnumMoniker extends IUnknown {
   }
   //4 methods (3-6)
   public int Next(int celt, PointerByReference rgelt, IntByReference pint) {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(3 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this, celt, rgelt, pint });
+    return invokeInt(3, new Object[] { getPointer(), celt, rgelt, pint });
   }
   public int Skip(int celt) {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(4 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this, celt });
+    return invokeInt(4, new Object[] { getPointer(), celt });
   }
   public int Reset() {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(5 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this });
+    return invokeInt(5, new Object[] { getPointer() });
   }
   public int Clone(PointerByReference ienummoniker) {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(6 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this, ienummoniker });
+    return invokeInt(6, new Object[] { getPointer(), ienummoniker });
   }
 }

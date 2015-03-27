@@ -11,9 +11,11 @@ import com.sun.jna.*;
 
 import java.util.*;
 
-public class Variant extends Structure {
-  public short type;
-  public short r2, r3, r4;
+public class VARIANT extends Structure {
+  public static class ByReference extends VARIANT implements Structure.ByReference {}
+  public static class ByValue extends VARIANT implements Structure.ByValue {}
+  public short vt;  //see VARENUM
+  public short r2, r3, r4;  //reserved
   public static class Data extends Union {
     public byte i8;
     public short i16;
@@ -25,6 +27,6 @@ public class Variant extends Structure {
   public Data data;
   @Override
   protected List getFieldOrder() {
-    return Arrays.asList(new String[] {"type", "r2", "r3", "r4", "data"});
+    return Arrays.asList(new String[] {"vt", "r2", "r3", "r4", "data"});
   }
 }

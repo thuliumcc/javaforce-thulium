@@ -10,7 +10,7 @@
   <target name="compile" description="compile the source">
     <!-- Compile the java code from ${src} into ${build} -->
     <mkdir dir="${build}"/>
-    <javac srcdir="${src}" destdir="${build}">
+    <javac srcdir="${src}" destdir="${build}" includeantruntime="false">
       <classpath path="${classpath}"/>
     </javac>
   </target>

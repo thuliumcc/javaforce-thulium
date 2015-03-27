@@ -7,8 +7,10 @@ package javaforce.jna.com;
  *
  * Copied from JNA : Aug 17, 2013
  */
+
 import java.security.SecureRandom;
 import java.util.*;
+import java.lang.reflect.*;
 
 import com.sun.jna.*;
 
@@ -17,7 +19,8 @@ import com.sun.jna.*;
  *
  * @author dblock[at]dblock.org
  */
-public interface Guid {
+
+public class Guid {
 
   public final static CLSID CLSID_SystemDeviceEnum = new CLSID("{62BE5D10-60EB-11d0-BD-3B-00-A0-C9-11-CE-86}");
   public final static CLSID CLSID_VideoInputDeviceCategory = new CLSID("{860BB310-5D01-11d0-BD-3B-00-A0-C9-11-CE-86}");
@@ -25,8 +28,15 @@ public interface Guid {
   public final static CLSID CLSID_FilterGraph = new CLSID("{e436ebb3-524f-11ce-9f-53-00-20-af-0b-a7-70}");
   public final static CLSID CLSID_SampleGrabber = new CLSID("{C1F400A0-3F08-11D3-9F0B-006008039E37}");  //retrieved from my registry
   public final static CLSID CLSID_NullRenderer = new CLSID("{C1F400A4-3F08-11D3-9F0B-006008039E37}");  //retrieved from my registry
+  public final static CLSID CLSID_RDPSession = new CLSID("{9B78F0E6-3E05-4A5B-B2E8-E743A8956B65}");
+  public final static CLSID CLSID_RDPViewer = new CLSID("{32be5ed2-5c86-480f-a914-0ff8885a1b3f}");
+  public final static CLSID CLSID_InternetExplorer = new CLSID("{0002DF01-0000-0000-C000-000000000046}");  //stand alone IE browser
+  public final static CLSID CLSID_WebBrowser = new CLSID("{8856F961-340A-11D0-A96B-00C04FD705A2}");  //embedable IE browser
+  public final static CLSID CLSID_MozillaBrowser = new CLSID("{1339B54C-3453-11D2-93B9-000000000000}");  //embedable Firefox browser
+//  public final static CLSID CLSID_ChromeBrowser = new CLSID("{00000000-0000-0000-0000-000000000000}");  //Google Chrome : ???
 
   public final static IID IID_NULL = new IID();
+  public final static IID IID_IUnknown = new IID("{00000000-0000-0000-C000-000000000046}");
   public final static IID IID_ICreateDevEnum = new IID("{29840822-5b84-11d0-bd-3b-00-a0-c9-11-ce-86}");
   public final static IID IID_IPropertyBag = new IID("{55272a00-42cb-11ce-81-35-00-aa-00-4b-b8-51}");
   public final static IID IID_ICaptureGraphBuilder2 = new IID("{93e5a4e0-2d50-11d2-ab-fa-00-a0-c9-c6-e3-8d}");
@@ -36,6 +46,28 @@ public interface Guid {
   public final static IID IID_IAMStreamConfig = new IID("{c6e13340-30ac-11d0-a1-8c-00-a0-c9-11-89-56}");
   public final static IID IID_ISampleGrabber = new IID("{6b652fff-11fe-4fce-92-ad-02-66-b5-d7-c7-8f}");
   public final static IID IID_IPin = new IID("{56a86891-0ad4-11ce-b0-3a-00-20-af-0b-a7-70}");
+  public final static IID IID_IRDPSRAPISharingSession = new IID("{eeb20886-e470-4cf6-842b-2739c0ec5cfb}");
+  public final static IID IID_IRDPSRAPIViewer = new IID("{c6bfcd38-8ce9-404d-8ae8-f31d00c65cb5}");
+  public final static IID IID_IOleObject = new IID("{00000112-0000-0000-C000-000000000046}");
+  public final static IID IID_IMarshal = new IID("{00000003-0000-0000-C000-000000000046}");
+  public final static IID IID_IStdMarshalInfo = new IID("{00000018-0000-0000-C000-000000000046}");
+  public final static IID IID_IExternalConnection = new IID("{00000019-0000-0000-C000-000000000046}");
+  public final static IID IID_IOleClientSite = new IID("{00000118-0000-0000-C000-000000000046}");
+  public final static IID IID_IOleInPlaceSite = new IID("{00000119-0000-0000-C000-000000000046}");
+  public final static IID IID_IDispatch = new IID("{00020400-0000-0000-C000000000000046}");
+  public final static IID IID_IOleInPlaceSiteEx = new IID("{9C2CAD80-3424-11CF-B670-00AA004CD6D8}");
+  public final static IID IID_ICallFactory = new IID("{1c733a30-2a1c-11ce-ade5-00aa0044773d}");
+  public final static IID IID_IWebBrowser2 = new IID("{D30C1661-CDAF-11d0-8A3E-00C04FC9E26E}");
+  public final static IID IID_IConnectionPointContainer = new IID("{B196B284-BAB4-101A-B69C-00AA00341D07}");
+  public final static IID IID_IConnectionPoint = new IID("{B196B286-BAB4-101A-B69C-00AA00341D07}");
+  public final static IID IID_IOleInPlaceObject = new IID("{00000113-0000-0000-C000-000000000046}");
+  public final static IID IID_IServiceProvider = new IID("{6D5140C1-7436-11CE-8034-00AA006009FA}");
+  public final static IID IID_IOleContainer = new IID("{0000011b-0000-0000-C000-000000000046}");
+  public final static IID IID_IParseDisplayName = new IID("{0000011a-0000-0000-C000-000000000046}");
+  public final static IID IID_IOleControlSite = new IID("{B196B289-BAB4-101A-B69C-00AA00341D07}");
+  public final static IID IID_IOleCommandTarget = new IID("{B722BCCB-4E68-101B-A2BC-00AA00404770}");
+  public final static IID IID_IDocHostUIHandler = new IID("{BD3F23C0-D43E-11CF-893B-00AA00BDCE1A}");
+  public final static IID IID_IRDPSRAPIAttendee = new IID("{ec0671b3-1b78-4b80-a464-9132247543e3}");
 
   public final static GUID GUID_NULL = new GUID();
   public final static GUID PIN_CATEGORY_PREVIEW = new GUID("{fb6c4282-0353-11d1-90-5f-00-00-c0-cc-16-ba}");
@@ -45,6 +77,10 @@ public interface Guid {
   public final static GUID MEDIASUBTYPE_RGB24 = new GUID("{e436eb7d-524f-11ce-9f-53-00-20-af-0b-a7-70}");
   public final static GUID MEDIASUBTYPE_RGB32 = new GUID("{e436eb7e-524f-11ce-9f-53-00-20-af-0b-a7-70}");
 
+  //DIID's
+  public final static IID DIID_DWebBrowserEvents2 = new IID("{34a715a0-6587-11d0-924a-0020afc7ac4d}");
+  public final static IID DIID__IRDPSessionEvents = new IID("{98a97042-6698-40e9-8efd-b3200990004b}");
+
   /**
    * The Class GUID.
    */
@@ -53,8 +89,9 @@ public interface Guid {
     /**
      * The Class ByReference.
      */
-    public static class ByReference extends GUID implements
-            Structure.ByReference {
+    public static class ByReference extends GUID
+      implements Structure.ByReference
+    {
 
       /**
        * Instantiates a new by reference.
@@ -326,11 +363,11 @@ public interface Guid {
 
     /**
      * The value of this Guid, formatted as follows:
-     * xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx.
+     * {xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}
      *
      * @return the string
      */
-    public String toGuidString() {
+    public String toString() {
       final String HEXES = "0123456789ABCDEF";
       byte[] bGuid = toByteArray();
 
@@ -349,6 +386,16 @@ public interface Guid {
 
       hexStr.append("}");
       return hexStr.toString();
+    }
+
+    public boolean equals(GUID guid) {
+      if (this.Data1 != guid.Data1) return false;
+      if (this.Data2 != guid.Data2) return false;
+      if (this.Data3 != guid.Data3) return false;
+      for(int a=0;a<8;a++) {
+        if (this.Data4[a] != guid.Data4[a]) return false;
+      }
+      return true;
     }
 
     /**
@@ -379,7 +426,9 @@ public interface Guid {
     /**
      * The Class ByReference.
      */
-    public static class ByReference extends GUID {
+    public static class ByReference extends CLSID
+      implements Structure.ByReference
+    {
 
       /**
        * Instantiates a new by reference.
@@ -392,7 +441,7 @@ public interface Guid {
        *
        * @param guid the guid
        */
-      public ByReference(GUID guid) {
+      public ByReference(CLSID guid) {
         super(guid);
       }
 
@@ -402,7 +451,7 @@ public interface Guid {
        * @param memory the memory
        */
       public ByReference(Pointer memory) {
-
+        super(memory);
       }
     }
 
@@ -418,12 +467,20 @@ public interface Guid {
     public CLSID(String string) {
       super(string);
     }
+
+    public CLSID(CLSID clsid) {
+      super(clsid);
+    }
+
+    public CLSID(Pointer ptr) {
+      super(ptr);
+    }
   }
 
   /**
    * The Class REFIID.
    */
-  public class REFIID extends IID {
+  public static class REFIID extends IID {
 
     /**
      * Instantiates a new refiid.
@@ -457,7 +514,7 @@ public interface Guid {
   /**
    * The Class IID.
    */
-  public class IID extends GUID {
+  public static class IID extends GUID {
 
     /**
      * Instantiates a new iid.
@@ -490,5 +547,22 @@ public interface Guid {
       super(data);
       // TODO Auto-generated constructor stub
     }
+  }
+
+  /** Returns name of GUID if defined in this class. */
+  public static String find(GUID guid) {
+    Class c = Guid.class;
+    Field f[] = c.getDeclaredFields();
+    for(int a=0;a<f.length;a++) {
+      try {
+        GUID g = (GUID)f[a].get(null);
+        if (g.equals(guid)) {
+          return f[a].getName();
+        }
+      } catch (Exception e) {
+
+      }
+    }
+    return guid.toString();
   }
 }

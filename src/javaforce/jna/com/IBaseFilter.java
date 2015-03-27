@@ -18,7 +18,7 @@ public class IBaseFilter extends IMediaFilter {
   }
   //10 = EnumPins
   public int EnumPins(PointerByReference ref) {
-    return invokeInt(7, new Object[] { getPointer(), ref });
+    return invokeInt(10, new Object[] { getPointer(), ref });
   }
 
   //11 = FindPin

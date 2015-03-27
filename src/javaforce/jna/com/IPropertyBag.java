@@ -12,19 +12,10 @@ public class IPropertyBag extends IUnknown {
   public IPropertyBag(Pointer pvInstance) {
     super(pvInstance);
   }
-  public int Read(WString name, Variant var, Pointer iErrorLog) {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(3 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this, name, var, iErrorLog });
+  public int Read(WString name, VARIANT var, Pointer iErrorLog) {
+    return invokeInt(3, new Object[] { getPointer(), name, var, iErrorLog });
   }
-  public int Write(WString name, Variant var) {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(3 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this, name, var });
+  public int Write(WString name, VARIANT var) {
+    return invokeInt(4, new Object[] { getPointer(), name, var });
   }
-
 }

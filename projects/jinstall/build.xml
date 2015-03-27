@@ -23,7 +23,7 @@
     <mkdir dir="${build}"/>
     <ant dir="../jparted" target="compile" inheritAll="false"/>
     <ant dir="../jconfig" target="compile" inheritAll="false"/> <!-- need TimeZonePanel -->
-    <javac srcdir="${src}" destdir="${build}"  target="1.6" source="1.6" debug="true">
+    <javac srcdir="${src}" destdir="${build}"  target="1.6" source="1.6" debug="true" includeantruntime="false">
       <classpath path="${classpath}"/>
       <classpath path="../jparted/classes"/>
       <classpath path="../jconfig/classes"/>

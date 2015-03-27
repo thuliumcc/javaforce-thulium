@@ -114,7 +114,7 @@ public class WinCamera implements Camera.Input {
         }
         propBag = new IPropertyBag(ref.getValue());
 //        System.out.println("IPropertyBag=" + propBag);
-        Variant var = new Variant();
+        VARIANT var = new VARIANT();
         oleaut.VariantInit(var);
         res = propBag.Read(new WString("Description"), var, null);
         if (res != 0) res = propBag.Read(new WString("FriendlyName"), var, null);

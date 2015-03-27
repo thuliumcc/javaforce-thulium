@@ -12,6 +12,8 @@ package javaforce.gl;
 
 import java.awt.*;
 
+import javaforce.*;
+
 public class GLCanvas extends Canvas {
   private GLInterface iface;
   private GL gl;
@@ -53,8 +55,8 @@ public class GLCanvas extends Canvas {
     return gl;
   }
   public void addNotify() {
-    GL.disableBackgroundErase(this);
+    JF.disableBackgroundErase(this);
     super.addNotify();
-    GL.disableBackgroundErase(this);
+    JF.disableBackgroundErase(this);
   }
 }

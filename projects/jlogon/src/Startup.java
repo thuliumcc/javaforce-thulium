@@ -353,9 +353,12 @@ public class Startup implements ShellProcessListener{
 
   public static void createLogon() {
     Linux.x11_rr_reset("800x600");
-    java.awt.EventQueue.invokeLater(new Runnable() {public void run() {
-      new Logon().setVisible(true);
-    }});
+    //execute greeter
+    try {
+      Runtime.getRuntime().exec("jlogon");
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   private static void hidePlymouth() {

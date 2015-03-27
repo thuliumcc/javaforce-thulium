@@ -19,4 +19,11 @@ public class IDispatch extends IUnknown {
   //4 = GetTypeInfo
   //5 = GetIDsOfNames
   //6 = Invoke
+
+  //dispIdMember's
+  public static final int DISPID_AMBIENT_USERMODE              = (-709);
+  public static final int DISPID_AMBIENT_OFFLINEIFNOTCONNECTED = (-5501);
+  public static final int DISPID_AMBIENT_SILENT                = (-5502);
+  public static final int DISPID_AMBIENT_DLCONTROL             = (-5512);
+  public static final int DISPID_AMBIENT_USERAGENT             = (-5513);
 }

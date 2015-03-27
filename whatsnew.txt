@@ -1,5 +1,18 @@
 What's new...
 
+Mar 19/2015 : JF 7.44.0 released!
+  - javaforce.jna.WinWebBrowser
+    - new class to embed ActiveX Browser into a java.awt.Canvas
+    - see javaforce.jna.TestBrowser for an example
+  - javaforce.jna.WinRDPServer and WinRDPClient
+    - new classes to use Windows Desktop Sharing API (ActiveX)
+  - jfRDP/0.1 released!
+    - new app : Remote Desktop Server/Client for Windows Vista or higher
+    - uses the Windows Desktop Sharing API (based on RDP)
+  - jLogon/0.18
+    - fixed booting in Ubuntu/15.04
+    - Ubuntu ISO boots now, but once installed X11 fails to start, so close...
+
 Mar 10/2015 : JF 7.43.0 released!
   - jfNetTools/0.1 released!
     - new app with some basic networking tools (LAN benchmark, ping, dns, etc.)

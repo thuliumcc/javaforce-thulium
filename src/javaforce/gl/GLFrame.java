@@ -12,6 +12,8 @@ package javaforce.gl;
 
 import java.awt.*;
 
+import javaforce.*;
+
 //extending Frame causes flickering
 //extending JFrame works
 
@@ -56,8 +58,8 @@ public class GLFrame extends Frame {
     return gl;
   }
   public void addNotify() {
-    GL.disableBackgroundErase(this);
+    JF.disableBackgroundErase(this);
     super.addNotify();
-    GL.disableBackgroundErase(this);
+    JF.disableBackgroundErase(this);
   }
 }

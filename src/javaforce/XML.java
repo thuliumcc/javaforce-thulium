@@ -25,6 +25,7 @@ import javax.swing.event.*;
  * fields MUST be public. static and transient members are skipped. No special
  * annotations are required.
  */
+
 public class XML implements TreeModelListener {
   private DefaultTreeModel treemodel;
   private boolean useContentForNameGlobal = false;

@@ -174,7 +174,8 @@ int JavaThread(void *ignore) {
   options[0].optionString = CreateClassPath();
   options[0].extraInfo = NULL;
 
-  if ((*CreateJavaVM)(&jvm, &env, &args) == -1) {
+  int result = (*CreateJavaVM)(&jvm, &env, &args);
+  if (result == -1) {
     error("Unable to create Java VM");
     return -1;
   }
@@ -200,6 +201,7 @@ int JavaThread(void *ignore) {
     argv++;
     argc--;
   }
+
   (*env)->CallStaticVoidMethod(env, cls, mid, ConvertStringArray(env, argv, argc));
   (*jvm)->DestroyJavaVM(jvm);  //waits till all threads are complete
   //NOTE : Swing creates the EDT to keep Java alive until all windows are disposed
@@ -215,42 +217,50 @@ int main(int argc, char **argv) {
 
   GetModuleFileName(NULL, module, MAX_PATH);
 
-  if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\JavaSoft\\Java Runtime Environment", 0, KEY_READ, &key) != 0) {
-    error("Unable to open Java Registry");
-    return -1;
-  }
+  //check if JVM is bundled with app
+  HANDLE test = CreateFile("java\\bin\\server\\jvm.dll", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+  if (test == INVALID_HANDLE_VALUE) {
+    //find system installed JVM
+    if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, "Software\\JavaSoft\\Java Runtime Environment", 0, KEY_READ, &key) != 0) {
+      error("Unable to open Java Registry");
+      return -1;
+    }
 
-  size = 0;
-  if (RegQueryValueEx(key, "CurrentVersion", 0, (LPDWORD)&type, 0, (LPDWORD)&size) != 0 || (type != REG_SZ) || (size > MAX_PATH)) {
-    error("Unable to open Java Registry");
-    return -1;
-  }
+    size = 0;
+    if (RegQueryValueEx(key, "CurrentVersion", 0, (LPDWORD)&type, 0, (LPDWORD)&size) != 0 || (type != REG_SZ) || (size > MAX_PATH)) {
+      error("Unable to open Java Registry");
+      return -1;
+    }
 
-  size = MAX_PATH;
-  if (RegQueryValueEx(key, "CurrentVersion", 0, 0, version, (LPDWORD)&size) != 0) {
-    error("Unable to open Java Registry");
-    return -1;
-  }
+    size = MAX_PATH;
+    if (RegQueryValueEx(key, "CurrentVersion", 0, 0, version, (LPDWORD)&size) != 0) {
+      error("Unable to open Java Registry");
+      return -1;
+    }
 
-  if (RegOpenKeyEx(key, version, 0, KEY_READ, &subkey) != 0) {
-    error("Unable to open Java Registry");
-    return -1;
-  }
+    if (RegOpenKeyEx(key, version, 0, KEY_READ, &subkey) != 0) {
+      error("Unable to open Java Registry");
+      return -1;
+    }
 
-  size = 0;
-  if (RegQueryValueEx(subkey, "JavaHome", 0, (LPDWORD)&type, 0, (LPDWORD)&size) != 0 || (type != REG_SZ) || (size > MAX_PATH)) {
-    error("Unable to open Java Registry");
-    return -1;
-  }
+    size = 0;
+    if (RegQueryValueEx(subkey, "JavaHome", 0, (LPDWORD)&type, 0, (LPDWORD)&size) != 0 || (type != REG_SZ) || (size > MAX_PATH)) {
+      error("Unable to open Java Registry");
+      return -1;
+    }
 
-  size = MAX_PATH;
-  if (RegQueryValueEx(subkey, "JavaHome", 0, 0, javahome, (LPDWORD)&size) != 0) {
-    error("Unable to open Java Registry");
-    return -1;
-  }
+    size = MAX_PATH;
+    if (RegQueryValueEx(subkey, "JavaHome", 0, 0, javahome, (LPDWORD)&size) != 0) {
+      error("Unable to open Java Registry");
+      return -1;
+    }
 
-  RegCloseKey(key);
-  RegCloseKey(subkey);
+    RegCloseKey(key);
+    RegCloseKey(subkey);
+  } else {
+    CloseHandle(test);
+    strcpy(javahome, "java");
+  }
 
   //JRE7/8
   strcpy(crt, javahome);

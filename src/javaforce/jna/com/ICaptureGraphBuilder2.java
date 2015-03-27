@@ -18,21 +18,13 @@ public class ICaptureGraphBuilder2 extends IUnknown {
   }
   //3 = SetFiltergraph
   public int SetFiltergraph(Pointer iGraph) {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(3 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this, iGraph });
+    return invokeInt(3, new Object[] { getPointer(), iGraph });
   }
   //4 = GetFiltergraph
   //5 = SetOutputFileName
   //6 = FindInterface
   public int FindInterface(GUID category, GUID type, Pointer iBaseFilter, IID refiid, PointerByReference ppint) {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(6 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this, category, type, iBaseFilter, refiid, ppint });
+    return invokeInt(4, new Object[] { getPointer(), category, type, iBaseFilter, refiid, ppint });
   }
   //7 = RenderStream
   public int RenderStream(GUID category, GUID type, Pointer src, Pointer compressor, Pointer renderer) {

@@ -19,10 +19,6 @@ public class ICreateDevEnum extends IUnknown {
     super(pvInstance);
   }
   public int CreateClassEnumerator(CLSID clsid, PointerByReference ienummoniker, int flags) {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(3 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this, clsid, ienummoniker, flags });
+    return invokeInt(3, new Object[] { getPointer(), clsid, ienummoniker, flags });
   }
 }

@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jlogon
-Version: 0.17
+Version: 0.18
 Release: 1
 Summary: Java Startup and Logon for jfLinux
 License: LGPL

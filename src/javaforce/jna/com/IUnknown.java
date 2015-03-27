@@ -20,6 +20,7 @@ public class IUnknown extends PointerType {
     super(pvInstance);
   }
 
+  /** Invokes a COM function. Note: args[0] MUST be the 'this' pointer (ie: getPointer()) */
   public int invokeInt(int idx, Object args[]) {
     //cpp_this = getPointer()
     //vtbl = cpp_this.getPointer(0);
@@ -27,12 +28,17 @@ public class IUnknown extends PointerType {
     return Function.getFunction(getPointer().getPointer(0).getPointer(idx * Pointer.SIZE)).invokeInt(args);
   }
 
+  //NOTE : Functions are numbered as defined in the header files (MSDN lists them in alphabetical order)
+
+  //0 = QueryInterface
   public int QueryInterface(IID riid, PointerByReference ppvObject) {
     return invokeInt(0, new Object[] { getPointer(), riid, ppvObject });
   }
+  //1 = AddRef
   public int AddRef() {
     return invokeInt(1, new Object[] { getPointer() });
   }
+  //2 = Release
   public int Release() {
     return invokeInt(2, new Object[] { getPointer() });
   }

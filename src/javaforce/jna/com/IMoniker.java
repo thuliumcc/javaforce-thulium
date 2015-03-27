@@ -21,19 +21,11 @@ public class IMoniker extends IPersistStream {
   //15 methods (8-22)
   //8 = BindToObject
   public int BindToObject(Pointer iBindCtx, Pointer iMoniker, IID refiid, PointerByReference pvResult) {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(8 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this, iBindCtx, iMoniker, refiid, pvResult });
+    return invokeInt(8, new Object[] { getPointer(), iBindCtx, iMoniker, refiid, pvResult });
   }
   //9 = BindToStorage
   public int BindToStorage(Pointer iBindCtx, Pointer iMoniker, IID refiid, PointerByReference ppv) {
-    Pointer _this = this.getPointer();
-    Pointer vtbl = _this.getPointer(0);
-    Pointer pfunc = vtbl.getPointer(9 * Pointer.SIZE);
-    Function func = Function.getFunction(pfunc);
-    return func.invokeInt(new Object[] { _this, iBindCtx, iMoniker, refiid, ppv });
+    return invokeInt(9, new Object[] { getPointer(), iBindCtx, iMoniker, refiid, ppv });
   }
   //10 = Reduce
   //11 = ComposeWith
