@@ -5,7 +5,7 @@ Comment=Media Player
 Icon=jmedia
 
 Type=Application
-Categories=System
+Categories=AudioVideo
 
 Exec=jmedia %f
 StartupNotify=false

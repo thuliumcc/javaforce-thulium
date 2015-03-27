@@ -5,7 +5,7 @@ Comment=Archive Manager
 Icon=jarchive
 
 Type=Application
-Categories=System
+Categories=Utility
 
 Exec=jarchive
 StartupNotify=false

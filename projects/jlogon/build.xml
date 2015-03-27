@@ -48,6 +48,17 @@
     <copy file="jlogon.service" todir="/usr/lib/systemd/system"/>
   </target>
 
+  <target name="uninstall">
+    <delete file="/usr/share/java/jlogon.jar"/>
+    <delete file="/usr/sbin/jlogon-runsession"/>
+    <delete file="/usr/sbin/jlogon-rundomain"/>
+    <delete file="/usr/sbin/jlogon"/>
+    <delete file="/etc/dhcp/dhclient-script"/>
+    <delete file="/etc/init/jlogon.conf"/>
+    <delete file="/usr/lib/systemd/system-preset/82-jlogon.preset"/>
+    <delete file="/usr/lib/systemd/system/jlogon.service"/>
+  </target>
+
   <target name="deb" description="create deb package">
     <exec executable="jdeb">
       <arg value="jlogon-${JLOGONVERSION}_all.deb"/>

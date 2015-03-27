@@ -5,7 +5,7 @@ Comment=Apps Center
 Icon=japps
 
 Type=Application
-Categories=System
+Categories=Settings
 
 Exec=japps
 StartupNotify=false

@@ -5,7 +5,7 @@ Comment=Select your repository geo-graphically.
 Icon=jrepo
 
 Type=Application
-Categories=System
+Categories=Settings
 
 Exec=jrepo
 StartupNotify=false

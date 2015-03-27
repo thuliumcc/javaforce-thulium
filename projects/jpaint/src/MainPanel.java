@@ -20,7 +20,7 @@ import javaforce.*;
 
 public class MainPanel extends javax.swing.JPanel implements MouseListener, MouseMotionListener, KeyListener, KeyEventDispatcher, ActionListener {
 
-  public static String version = "0.14";
+  public static String version = "0.15";
 
   /**
    * Creates new form PaintPanel
@@ -71,10 +71,12 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     scaleSize = new javax.swing.JButton();
     fillMode = new javax.swing.JToggleButton();
     fillAlpha = new javax.swing.JToggleButton();
+    fillEdge = new javax.swing.JToggleButton();
     selectFont = new javax.swing.JButton();
     changeSize = new javax.swing.JButton();
     round = new javax.swing.JToggleButton();
     selkeyclr = new javax.swing.JToggleButton();
+    backswap = new javax.swing.JButton();
     tabs = new javax.swing.JTabbedPane();
     toolbar2 = new javax.swing.JToolBar();
     foreColor = new javax.swing.JButton();
@@ -299,6 +301,13 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     fillAlpha.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
     toolbar1.add(fillAlpha);
 
+    fillEdge.setIcon(new javax.swing.ImageIcon(getClass().getResource("/fillEdge.png"))); // NOI18N
+    fillEdge.setToolTipText("Fill edges only");
+    fillEdge.setFocusable(false);
+    fillEdge.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    fillEdge.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    toolbar1.add(fillEdge);
+
     selectFont.setIcon(new javax.swing.ImageIcon(getClass().getResource("/font.png"))); // NOI18N
     selectFont.setToolTipText("Select Font");
     selectFont.setFocusable(false);
@@ -341,6 +350,18 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     selkeyclr.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     selkeyclr.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
     toolbar1.add(selkeyclr);
+
+    backswap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/backswap.png"))); // NOI18N
+    backswap.setToolTipText("Alternate background checker patter");
+    backswap.setFocusable(false);
+    backswap.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    backswap.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    backswap.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        backswapActionPerformed(evt);
+      }
+    });
+    toolbar1.add(backswap);
 
     tabs.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
     tabs.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -624,15 +645,27 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     paintModeChanged();
   }//GEN-LAST:event_paintModeActionPerformed
 
+  private void backswapActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_backswapActionPerformed
+    int idx = getidx();
+    if (idx == -1) return;
+    PaintCanvas pc = imageTabs.get(idx).pc;
+    if (pc == null) return;
+    pc.swap = !pc.swap;
+    pc.backClear();
+    pc.repaint();
+  }//GEN-LAST:event_backswapActionPerformed
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JSpinner alphaLevel;
   private javax.swing.JButton backColor;
+  private javax.swing.JButton backswap;
   private javax.swing.JToggleButton box;
   private javax.swing.JButton changeSize;
   private javax.swing.JToggleButton circle;
   private javax.swing.JToggleButton curve;
   private javax.swing.JToggleButton fill;
   private javax.swing.JToggleButton fillAlpha;
+  private javax.swing.JToggleButton fillEdge;
   private javax.swing.JToggleButton fillMode;
   private javax.swing.JButton flipHorz;
   private javax.swing.JButton flipVert;
@@ -895,8 +928,11 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     JFImage tmp = new JFImage();
     boolean state = tmp.load(filename);
     if (state) {
-      pc.setImageSize(tmp.getWidth(), tmp.getHeight());
-      pc.img.getGraphics().drawImage(tmp.getImage(), 0, 0, null);
+      int w = tmp.getWidth();
+      int h = tmp.getHeight();
+      pc.setImageSize(w, h);
+      int px[] = tmp.getPixels();
+      pc.img.putPixels(px, 0, 0, w, h, 0);
     }
     pc.disableScale = false;
     return state;
@@ -1310,9 +1346,12 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     int idx = paintMode.getSelectedIndex();
     if (idx == 0) {
       fillAlpha.setEnabled(true);
+      fillEdge.setEnabled(true);
     } else {
       fillAlpha.setEnabled(false);
       fillAlpha.setSelected(false);
+      fillEdge.setEnabled(false);
+      fillEdge.setSelected(false);
     }
     switch (idx) {
       case 0:  //normal
@@ -1679,12 +1718,12 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
         switch (paintMode.getSelectedIndex()) {
           case 0:
             if (fillAlpha.isSelected())
-              pc.fillFast(x, y, clr | getAlphaLevel() << 24, true);
+              pc.fillFast(x, y, clr | getAlphaLevel() << 24, true, fillEdge.isSelected());
             else
-              pc.fillFast(x, y, clr, false);
+              pc.fillFast(x, y, clr, false, fillEdge.isSelected());
             break;
           default:
-            pc.fillSlow(x,y);
+            pc.fillSlow(x, y, fillEdge.isSelected());
             break;
         }
         break;
@@ -1982,6 +2021,8 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       selkeyclr.setEnabled(false);
       fillAlpha.setSelected(false);
       fillAlpha.setEnabled(false);
+      fillEdge.setSelected(false);
+      fillEdge.setEnabled(false);
     } else {
       paintMode.setEnabled(true);
       selBox.setEnabled(true);
@@ -1993,6 +2034,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       flipHorz.setEnabled(true);
       selkeyclr.setEnabled(true);
       fillAlpha.setEnabled(true);
+      fillEdge.setEnabled(true);
     }
     repaint();
     pc.repaint();

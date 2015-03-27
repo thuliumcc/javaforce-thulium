@@ -5,7 +5,7 @@ Comment=Torrent
 Icon=jtorrent
 
 Type=Application
-Categories=System
+Categories=Network
 
 Exec=jtorrent
 StartupNotify=false

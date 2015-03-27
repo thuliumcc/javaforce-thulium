@@ -1,5 +1,13 @@
 What's new...
 
+Sept 20/2014 : JF 7.31.0 released!
+  - jfPaint/0.15
+    - added new fill mode (fill edges)
+  - jfMedia/0.10
+    - changed video frame into a video panel and integrated into main frame
+  - Linux : all apps now have correct categories set in their .desktop files for those using other desktop environments
+    - so now the apps will appear in correct menus for Mate and similar desktops.
+
 Sept 15/2014 : JF 7.30.0 released!
   - cosmetic fixes only
   - jfPasswords/0.12 & jPBXLite/0.21 & jPhoneLite/1.9.1 & jfBroadcast/0.23

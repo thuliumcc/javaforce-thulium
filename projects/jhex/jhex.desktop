@@ -5,7 +5,7 @@ Comment=Hex Editor
 Icon=jhex
 
 Type=Application
-Categories=System
+Categories=Utility
 
 Exec=japps
 StartupNotify=false

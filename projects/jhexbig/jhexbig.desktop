@@ -5,7 +5,7 @@ Comment=Hex Editor (big files)
 Icon=jhexbig
 
 Type=Application
-Categories=System
+Categories=Utility
 
 Exec=japps
 StartupNotify=false

@@ -5,7 +5,7 @@ Comment=Record Camera
 Icon=jrecordcamera
 
 Type=Application
-Categories=System
+Categories=AudioVideo
 
 Exec=jrecordcamera
 StartupNotify=false

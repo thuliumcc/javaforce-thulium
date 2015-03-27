@@ -5,7 +5,7 @@ Comment=AutoDialer System
 Icon=jbroadcast
 
 Type=Application
-Categories=System
+Categories=Network
 
 Exec=jbroadcast
 StartupNotify=false

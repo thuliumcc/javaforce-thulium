@@ -4,9 +4,7 @@
  * @author pquiring
  */
 
-import java.awt.Dimension;
-import java.awt.GraphicsEnvironment;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.io.*;
 
 import javaforce.jna.*;
@@ -14,7 +12,7 @@ import javaforce.*;
 
 public class MediaApp extends javax.swing.JFrame {
 
-  public static String version = "0.9";
+  public static String version = "0.10";
 
   /**
    * Creates new form MediaApp
@@ -24,12 +22,11 @@ public class MediaApp extends javax.swing.JFrame {
     JFImage icon = new JFImage();
     icon.loadPNG(this.getClass().getClassLoader().getResourceAsStream("jmedia.png"));
     setIconImage(icon.getImage());
-    This = this;
+    frame = this;
     panel = new MainPanel();
     setContentPane(panel);
     setPosition();
     if (args.length > 0) {
-      if (args[0].equals("--javavideo")) MainPanel.useVideoFrame = true;  //experimental
       File file = new File(args[0]);
       if (file.exists()) {
         panel.play(file);
@@ -82,7 +79,7 @@ public class MediaApp extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // End of variables declaration//GEN-END:variables
 
-  public static javax.swing.JFrame This;
+  public static MediaApp frame;
   public static String args[];
   public static MainPanel panel;
 
@@ -95,5 +92,21 @@ public class MediaApp extends javax.swing.JFrame {
       setSize(d);
     }
     setLocation(s.width/2 - d.width/2, s.height/2 - d.height/2);
+  }
+
+  public boolean fullScreen = false;
+
+  public void toggleFullScreen() {
+    GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+    if (fullScreen) {
+      gd.setFullScreenWindow(null);
+    } else {
+      gd.setFullScreenWindow(this);
+    }
+    fullScreen = !fullScreen;
+  }
+
+  public boolean isFullScreen() {
+    return fullScreen;
   }
 }

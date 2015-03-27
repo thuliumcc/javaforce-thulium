@@ -5,7 +5,7 @@ Comment=Text Editor
 Icon=jedit
 
 Type=Application
-Categories=System
+Categories=Utility
 
 Exec=jedit %f
 StartupNotify=false

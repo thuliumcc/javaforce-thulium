@@ -5,7 +5,7 @@ Comment=CD/DVD Burner
 Icon=jburn
 
 Type=Application
-Categories=System
+Categories=AudioVideo
 
 Exec=jburn
 StartupNotify=false

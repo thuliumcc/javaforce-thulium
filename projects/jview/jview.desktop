@@ -5,7 +5,7 @@ Comment=Preview images
 Icon=jview
 
 Type=Application
-Categories=System
+Categories=Graphics
 
 Exec=jview %f
 StartupNotify=false

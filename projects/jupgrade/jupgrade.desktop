@@ -5,7 +5,7 @@ Comment=Upgrade Manager
 Icon=jupgrade
 
 Type=Application
-Categories=System
+Categories=Settings
 
 Exec=jupgrade
 StartupNotify=false

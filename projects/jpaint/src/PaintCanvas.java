@@ -255,12 +255,16 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     public int x,y,dir;
     public Point(int x,int y,int dir) {this.x=x; this.y=y; this.dir=dir;}
   }
-  public void fillFast(int x1,int y1,int clr, boolean hasAlpha) {
+  private static final byte TODO = 0;
+  private static final byte DONE = 1;
+  private static final byte PAINT = 2;
+  public void fillFast(int x1,int y1,int clr, boolean hasAlpha, boolean edge) {
     int w = cimg.getWidth();
     int h = cimg.getHeight();
     int target = cimg.getPixel(x1,y1) & JFImage.RGB_MASK;
     if (target == (clr & JFImage.RGB_MASK)) return;
     int px[] = cimg.getBuffer();
+    byte done[] = new byte[w * h];  //to keep track of what has been filled in already
     Vector<Point> pts = new Vector<Point>();
     pts.add(new Point(x1,y1,1));
     if (x1 > 0) pts.add(new Point(x1-1,y1,-1));
@@ -275,16 +279,109 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
       bottom = false;
       while ((x >= 0) && (x < w)) {
         p = y * w + x;
-        if ((px[p] & JFImage.RGB_MASK) != target) break;
-        if (hasAlpha) {
-          px[p] = clr;
+        if (done[p] != TODO || (px[p] & JFImage.RGB_MASK) != target) {
+          break;
+        }
+        if (edge) {
+          if ( (x > 0 && (px[p-1] & JFImage.RGB_MASK) != target)
+          || (x < w-1 && (px[p+1] & JFImage.RGB_MASK) != target)
+          || (y > 0 && (px[p-w] & JFImage.RGB_MASK) != target)
+          || (y < h-1 && (px[p+w] & JFImage.RGB_MASK) != target) )
+          {
+            done[p] = PAINT;
+          } else {
+            done[p] = DONE;
+          }
         } else {
-          px[p] &= JFImage.ALPHA_MASK;
-          px[p] |= clr;
+          if (hasAlpha) {
+            px[p] = clr;
+          } else {
+            px[p] &= JFImage.ALPHA_MASK;
+            px[p] |= clr;
+          }
+          done[p] = DONE;  //not needed
         }
         if (y > 0) {
           if (!top) {
-            if ((px[p-w] & JFImage.RGB_MASK) == target) {
+            if (done[p-w] == TODO && (px[p-w] & JFImage.RGB_MASK) == target) {
+              top=true;
+              pts.add(new Point(x,y-1,1));
+              if (x > 0) pts.add(new Point(x-1,y-1,-1));
+            }
+          } else {
+            if (done[p-w] == TODO && (px[p-w] & JFImage.RGB_MASK) != target) top=false;
+          }
+        }
+        if (y < h-1) {
+          if (!bottom) {
+            if (done[p+w] == TODO && (px[p+w] & JFImage.RGB_MASK) == target) {
+              bottom=true;
+              pts.add(new Point(x,y+1,1));
+              if (x > 0) pts.add(new Point(x-1,y+1,-1));
+            }
+          } else {
+            if (done[p+w] == TODO && (px[p+w] & JFImage.RGB_MASK) != target) bottom=false;
+          }
+        }
+        x += dir;
+      }
+    }
+    if (edge) {
+      //do all edge painting after
+      int wh = w * h;
+      for(p=0;p<wh;p++) {
+        if (done[p] == PAINT) {
+          if (hasAlpha) {
+            px[p] = clr;
+          } else {
+            px[p] &= JFImage.ALPHA_MASK;
+            px[p] |= clr;
+          }
+        }
+      }
+    }
+  }
+  public void fillSlow(int x1,int y1, boolean edge) {
+    int w = getUnscaledWidth();
+    int h = getUnscaledHeight();
+    Graphics2D g = img.getGraphics2D();
+    int target = img.getPixel(x1,y1) & JFImage.RGB_MASK;
+    int px[] = cimg.getBuffer();
+    byte done[] = new byte[w * h];  //to keep track of what has been filled in already
+    Vector<Point> pts = new Vector<Point>();
+    pts.add(new Point(x1,y1,1));
+    if (x1 > 0) pts.add(new Point(x1-1,y1,-1));
+    int x,y,dir,p;
+    boolean top,bottom;
+    while (pts.size() > 0) {
+      Point pt = pts.remove(0);
+      x = pt.x;
+      y = pt.y;
+      dir = pt.dir;
+      top = false;
+      bottom = false;
+      while ((x >= 0) && (x < w)) {
+        p = y * w + x;
+        if (((px[p] & JFImage.RGB_MASK) != target) || (done[p] != TODO)) {
+          break;
+        }
+        if (edge) {
+          if ( (x > 0 && (px[p-1] & JFImage.RGB_MASK) != target)
+          || (x < w-1 && (px[p+1] & JFImage.RGB_MASK) != target)
+          || (y > 0 && (px[p-w] & JFImage.RGB_MASK) != target)
+          || (y < h-1 && (px[p+w] & JFImage.RGB_MASK) != target) )
+          {
+            done[p] = PAINT;
+          } else {
+            done[p] = DONE;
+          }
+        } else {
+          g.fillRect(x,y,1,1);  //slow
+          done[p] = DONE;
+        }
+        if (y > 0) {
+          if (!top) {
+            if (((px[p-w] & JFImage.RGB_MASK) == target) && (done[p-w] == TODO)) {
               top=true;
               pts.add(new Point(x,y-1,1));
               if (x > 0) pts.add(new Point(x-1,y-1,-1));
@@ -295,7 +392,7 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
         }
         if (y < h-1) {
           if (!bottom) {
-            if ((px[p+w] & JFImage.RGB_MASK) == target) {
+            if (((px[p+w] & JFImage.RGB_MASK) == target) && (done[p+w] == TODO)) {
               bottom=true;
               pts.add(new Point(x,y+1,1));
               if (x > 0) pts.add(new Point(x-1,y+1,-1));
@@ -307,54 +404,16 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
         x += dir;
       }
     }
-  }
-  public void fillSlow(int x1,int y1) {
-    int w = getUnscaledWidth();
-    int h = getUnscaledHeight();
-    Graphics2D g = img.getGraphics2D();
-    int target = img.getPixel(x1,y1) & JFImage.RGB_MASK;
-    g.fillRect(x1,y1,1,1);
-    boolean done[] = new boolean[w * h];  //to keep track of what has been filled in already
-    Vector<Point> pts = new Vector<Point>();
-    pts.add(new Point(x1,y1,1));
-    if (x1 > 0) pts.add(new Point(x1-1,y1,-1));
-    int x,y,dir,p;
-    boolean top,bottom;
-    while (pts.size() > 0) {
-      Point pt = pts.remove(0);
-      x = pt.x;
-      y = pt.y;
-      dir = pt.dir;
-      top = false;
-      bottom = false;
-      while ((x >= 0) && (x < w)) {
-        p = y * w + x;
-        if (((img.getPixel(x,y) & JFImage.RGB_MASK) != target) || (done[p])) break;
-        g.fillRect(x,y,1,1);  //slow
-        done[p] = true;
-        if (y > 0) {
-          if (!top) {
-            if (((img.getPixel(x,y-1) & JFImage.RGB_MASK) == target) && (!done[p-w])) {
-              top=true;
-              pts.add(new Point(x,y-1,1));
-              if (x > 0) pts.add(new Point(x-1,y-1,-1));
-            }
-          } else {
-            if ((img.getPixel(x,y-1) & JFImage.RGB_MASK) != target) top=false;
+    if (edge) {
+      //do all edge painting after
+      p = 0;
+      for(y=0;y<h;y++) {
+        for(x=0;x<w;x++) {
+          if (done[p] == PAINT) {
+            g.fillRect(x,y,1,1);  //slow
           }
+          p++;
         }
-        if (y < h-1) {
-          if (!bottom) {
-            if (((img.getPixel(x,y+1) & JFImage.RGB_MASK) == target) && (!done[p+w])) {
-              bottom=true;
-              pts.add(new Point(x,y+1,1));
-              if (x > 0) pts.add(new Point(x-1,y+1,-1));
-            }
-          } else {
-            if ((img.getPixel(x,y+1) & JFImage.RGB_MASK) != target) bottom=false;
-          }
-        }
-        x += dir;
       }
     }
   }
@@ -449,6 +508,7 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
   public void drawText(String txt, int x, int y) {
     cimg.getGraphics().drawString(txt, x, y);
   }
+  public static boolean swap;
   public void backClear() {
     //create a checkered board on the back image (only visible if there is any transparent parts)
     int x = getUnscaledWidth();
@@ -459,8 +519,13 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     tmp.setImageSize(16,16);
     Graphics g = tmp.getGraphics();
     g.setColor(new Color(0x888888));
-    g.fillRect(0,0,8,8);
-    g.fillRect(8,8,8,8);
+    if (swap) {
+      g.fillRect(0,0,8,8);
+      g.fillRect(8,8,8,8);
+    } else {
+      g.fillRect(8,0,8,8);
+      g.fillRect(0,8,8,8);
+    }
     Graphics2D g2d = bimg.getGraphics2D();
     g2d.setPaint(new TexturePaint(tmp.getBufferedImage(), new Rectangle2D.Double(0,0,16,16) ));
     g2d.fillRect(0,0,x,y);

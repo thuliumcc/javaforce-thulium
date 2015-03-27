@@ -5,7 +5,7 @@ Comment=Java WebBrowser (no plugins, javascript) (HTML 3.4 only)
 Icon=jweb
 
 Type=Application
-Categories=System
+Categories=Network
 
 Exec=jweb
 StartupNotify=false

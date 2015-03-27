@@ -5,7 +5,7 @@ Comment=Create Music
 Icon=jmusic
 
 Type=Application
-Categories=System
+Categories=AudioVideo
 
 Exec=jmusic
 StartupNotify=false

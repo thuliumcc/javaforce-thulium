@@ -5,7 +5,7 @@ Comment=Manage your files.
 Icon=jfile
 
 Type=Application
-Categories=System
+Categories=Utility
 
 Exec=jfile
 StartupNotify=false

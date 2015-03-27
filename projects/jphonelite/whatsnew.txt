@@ -1,6 +1,6 @@
 CHANGELOG:
 9-15-2014 : v1.9.1 released
-  - new option : exit with closed
+  - new option : exit when closed
   - new tray icon (Windows 7 theme)
 7-8-2014 : v1.9.0 released
   - new codec : G.722 wideband : 16Khz sampling rate @ 14bits/sample (64Kbps)

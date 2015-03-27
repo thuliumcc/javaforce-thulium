@@ -1,5 +1,10 @@
 Whatsnew ...
 
+Sept 20, 2014 - v0.15 released!
+  - new : added fill at edge modifier for the fill tool
+  - fix : alpha channel was striped on load
+  - new : added alternate checkered pattern button
+
 Apr 22, 2014 - v0.14 released!
   - new : moved fill and color picker to mousePressed() event
 

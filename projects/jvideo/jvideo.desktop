@@ -5,7 +5,7 @@ Comment=Video Editor similar to PiTiVi
 Icon=jvideo
 
 Type=Application
-Categories=System
+Categories=AudioVideo
 
 Exec=jvideo
 StartupNotify=false

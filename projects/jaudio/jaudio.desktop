@@ -5,13 +5,13 @@ Comment=Audio Editor similar to Audacity
 Icon=jaudio
 
 Type=Application
-Categories=System
+Categories=AudioVideo
 
 Exec=jaudio
 StartupNotify=false
 Terminal=false
 MimeType=audio/x-wav;audio/flac;audio/mpeg
 
-Action=edit
-
 Title=jfAudio
+
+Action=edit

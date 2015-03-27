@@ -23,6 +23,8 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
    */
   public MainPanel() {
     initComponents();
+    playIcon = new javax.swing.ImageIcon(getClass().getResource("/play.png"));
+    pauseIcon = new javax.swing.ImageIcon(getClass().getResource("/pause.png"));
     model = (DefaultTableModel)table.getModel();
     if (!JF.isWindows()) {
       jbusClient = new JBusClient(null, null);  //send only
@@ -125,7 +127,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
     jToolBar1.setFloatable(false);
     jToolBar1.setRollover(true);
 
-    play.setText("Play");
+    play.setIcon(new javax.swing.ImageIcon(getClass().getResource("/play.png"))); // NOI18N
     play.setFocusable(false);
     play.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     play.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -136,7 +138,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
     });
     jToolBar1.add(play);
 
-    prev.setText("< Prev");
+    prev.setIcon(new javax.swing.ImageIcon(getClass().getResource("/prev.png"))); // NOI18N
     prev.setFocusable(false);
     prev.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     prev.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -147,7 +149,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
     });
     jToolBar1.add(prev);
 
-    next.setText("Next >");
+    next.setIcon(new javax.swing.ImageIcon(getClass().getResource("/next.png"))); // NOI18N
     next.setFocusable(false);
     next.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     next.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -159,13 +161,13 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
     jToolBar1.add(next);
     jToolBar1.add(jSeparator1);
 
-    repeat.setText("Repeat");
+    repeat.setIcon(new javax.swing.ImageIcon(getClass().getResource("/repeat.png"))); // NOI18N
     repeat.setFocusable(false);
     repeat.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     repeat.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
     jToolBar1.add(repeat);
 
-    random.setText("Random");
+    random.setIcon(new javax.swing.ImageIcon(getClass().getResource("/random.png"))); // NOI18N
     random.setFocusable(false);
     random.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     random.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -269,9 +271,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
   }//GEN-LAST:event_playActionPerformed
 
   private void timeStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_timeStateChanged
-    if (!playing) return;
-    if (updatingPos) return;
-    seekPosition = time.getValue();
+    seek();
   }//GEN-LAST:event_timeStateChanged
 
   private void extractActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_extractActionPerformed
@@ -318,16 +318,15 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
   private long frameCount;
   private long audioCount;
   private final Object countLock = new Object();
-  private boolean playing, paused, updatingPos, eof, preBuffering, videoFrameVisible;
+  private boolean playing, paused, updatingPos, eof, preBuffering;
   private int currentIdx = -1;
-  private VideoFrame videoFrame;
+  private VideoPanel videoPanel;
   private javax.swing.Timer timer;  //to update position
   private DefaultTableModel model;
   private boolean ripping, abort;
   private JFImage icon_playing, icon_paused, icon_ripped, icon_ripping;
   private int randomIdx, randomIdxList[];
   private StatusCellRenderer statusCellRenderer = new StatusCellRenderer();
-  public static boolean useVideoFrame = false;
   private JBusClient jbusClient;
   private ReadThread readThread;
   private Thread playThread;
@@ -335,6 +334,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
   private long fileLength;
   private int seekPosition;
   private long mediaLength;
+  private Icon playIcon, pauseIcon;
 
   private class StatusCellRenderer extends javax.swing.table.DefaultTableCellRenderer {
     protected void setValue(Object value) {
@@ -455,7 +455,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
     playing = true;
     readThread = new ReadThread(tableFiles.get(idx));
     readThread.start();
-    play.setText("Pause");
+    play.setIcon(pauseIcon);
     timer = new javax.swing.Timer(1000, this);
     timer.start();
   }
@@ -467,17 +467,12 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
     playing = true;
     readThread = new ReadThread(file.getAbsolutePath());
     readThread.start();
-    play.setText("Pause");
+    play.setIcon(pauseIcon);
     timer = new javax.swing.Timer(1000, this);
     timer.start();
   }
 
-  public static void closingVideoFrame() {
-    This.videoFrameVisible = false;
-    This.stop(true);
-  }
-
-  private synchronized void stop(boolean wait) {
+  public synchronized void stop(boolean wait) {
     if (!playing) return;
     if (decoder == null) return;
     if (readThread == null) return;
@@ -489,23 +484,26 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       try {readThread.join();} catch (Exception e) {JFLog.log(e);}
       JFLog.log("read thread done");
     }
-    play.setText("Play");
+    play.setIcon(playIcon);
     if (currentIdx != -1) model.setValueAt(null, currentIdx, 0);
     time.setValue(0);
+    if (videoPanel != null) videoPanel.time().setValue(0);
   }
 
   private void pause() {
     if (!playing) return;
     if (paused) return;
     if (decoder == null) return;
-    play.setText("Resume");
+    play.setIcon(playIcon);
+    if (videoPanel != null) videoPanel.play().setIcon(playIcon);
     paused = true;
     if (currentIdx != -1) model.setValueAt(icon_paused, currentIdx, 0);
   }
 
   private void resume() {
     if (!paused) return;
-    play.setText("Pause");
+    play.setIcon(pauseIcon);
+    if (videoPanel != null) videoPanel.play().setIcon(pauseIcon);
     paused = false;
     if (currentIdx != -1) model.setValueAt(icon_playing, currentIdx, 0);
   }
@@ -526,8 +524,12 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       updatingPos = true;
       if (mediaLength == 0) {
         time.setValue(0);
+        if (videoPanel != null) videoPanel.time().setValue(0);
       } else {
-        time.setValue((int)((pos * 100) / mediaLength));
+        int ipos = (int)((pos * 100) / mediaLength);
+//        JFLog.log("ipos=" + ipos);
+        time.setValue(ipos);
+        if (videoPanel != null) videoPanel.time().setValue(ipos);
       }
       updatingPos = false;
     } catch (Exception e) {
@@ -571,7 +573,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
     int track = 1;
     String artist = "Unknown";
     String album = "Unknown";
-    GetNamesDialog dialog = new GetNamesDialog(MediaApp.This, true);
+    GetNamesDialog dialog = new GetNamesDialog(MediaApp.frame, true);
     dialog.setVisible(true);
     if (dialog.accepted) {
       artist = dialog.getArtist();
@@ -697,7 +699,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
   public void updateToolbar() {
     int idx = table.getSelectedRow();
     if (idx == -1) return;
-    if ((idx == currentIdx) && (playing)) play.setText("Resume"); else play.setText("Play");
+    if ((idx == currentIdx) && (playing)) play.setIcon(pauseIcon); else play.setIcon(playIcon);
   }
 
   public void log(String msg) {
@@ -757,11 +759,15 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
         fps = decoder.getFrameRate();
         JFLog.log("FPS=" + fps);
         if (fps > 0) {
-          videoFrame = new VideoFrame("Video", MainPanel.this);
-          videoFrame.setVisible(true);
-          videoFrameVisible = true;
-          width = videoFrame.getVideoWidth();
-          height = videoFrame.getVideoHeight();
+          videoPanel = new VideoPanel();
+          java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+              setPanel(videoPanel);
+            }
+          });
+          videoPanel.start();
+          width = getWidth();
+          height = getHeight();
           decoder.resize(width, height);
           video_buffer = new VideoBuffer(width, height, buffer_seconds * (int)fps);
           playThread = new PlayAudioVideoThread();
@@ -781,6 +787,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
         while (playing && !eof) {
           if (paused) {
             JF.sleep(100);  //TODO:use a lock with wait() and notify() instead
+            preBuffering = true;  //pre buffer again after unpause
             continue;
           }
           if ((video_buffer != null && video_buffer.size() >= fps * (buffer_seconds-1)) || (audio_buffer.size() > (44100 * chs * (buffer_seconds-1)))) {
@@ -856,9 +863,10 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       playThread = null;
       audio_buffer = null;
       video_buffer = null;
-      if (videoFrame != null && videoFrameVisible) {
-        videoFrame.dispose();
-        videoFrame = null;
+      if (videoPanel != null) {
+        videoPanel.stop();
+        videoPanel = null;
+        setPanel(MainPanel.this);
       }
       if (playing) MainPanel.this.stop(false);
       decoder = null;
@@ -903,14 +911,17 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       output.start(chs, 44100, 16, audio_bufsiz * 2 /*bytes*/, "<default>");
       short samples[] = new short[audio_bufsiz];
       double current = System.currentTimeMillis();
-      //wait till buffers are 50% full before starting
-      while (!eof && playing && preBuffering) {
-        if (video_buffer.size() >= (fps * pre_buffer_seconds)) break;
-        JF.sleep(25);
-      }
-      for(int a=0;a<2;a++) output.write(samples);  //prime audio output
       int skip = 0;
       while (playing) {
+        if (preBuffering) {
+          //wait till buffers are 50% full before starting
+          while (!eof && playing && preBuffering) {
+            if (video_buffer.size() >= (fps * pre_buffer_seconds)) break;
+            JF.sleep(25);
+          }
+          preBuffering = false;
+          for(int a=0;a<2;a++) output.write(samples);  //prime audio output
+        }
         samplesToWrite += samplesPerFrame;
         if (eof) {
           if ((video_buffer.size() == 0) && (audio_buffer.size() < audio_bufsiz)) break;
@@ -933,7 +944,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
           }
           skip = 0;
           if (img != null) {
-            videoFrame.setImage(img);
+            videoPanel.setImage(img);
             video_buffer.freeNextFrame();
           }
         } else {
@@ -960,13 +971,16 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       output.start(chs, 44100, 16, audio_bufsiz * 2 /*bytes*/, "<default>");
       short samples[] = new short[audio_bufsiz];
       double current = System.currentTimeMillis();
-      //wait till buffers are 50% full before starting
-      while (!eof && playing && preBuffering) {
-        if (audio_buffer.size() >= (44100 * chs * pre_buffer_seconds)) break;
-        JF.sleep(25);
-      }
-      for(int a=0;a<2;a++) output.write(samples);  //prime output
       while (playing) {
+        if (preBuffering) {
+          //wait till buffers are 50% full before starting
+          while (!eof && playing && preBuffering) {
+            if (audio_buffer.size() >= (44100 * chs * pre_buffer_seconds)) break;
+            JF.sleep(25);
+          }
+          preBuffering = false;
+          for(int a=0;a<2;a++) output.write(samples);  //prime output
+        }
         samplesToWrite += samplesPerFrame;
         if (eof) {
           if (audio_buffer.size() < audio_bufsiz) break;
@@ -994,5 +1008,22 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       new_height = height;
       resizeVideo = true;
     }
+  }
+  public void setPanel(JPanel panel) {
+    JFLog.log("setPanel:" + panel);
+    MediaApp.frame.setContentPane(panel);
+    panel.revalidate();
+  }
+  public void playOrPause() {
+    if (paused) resume(); else pause();
+  }
+  public void seek() {
+    if (!playing) return;
+    if (updatingPos) return;
+    if (videoPanel != null)
+      seekPosition = videoPanel.time().getValue();
+    else
+      seekPosition = time.getValue();
+//    JFLog.log("seek=" + seekPosition);
   }
 }

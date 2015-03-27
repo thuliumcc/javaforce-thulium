@@ -5,7 +5,7 @@ Comment=Perform calculations
 Icon=jcalc
 
 Type=Application
-Categories=System
+Categories=Utility
 
 Exec=jcalc
 StartupNotify=false

@@ -5,7 +5,7 @@ Comment=VoIP/SIP SoftPhone
 Icon=jphonelite
 
 Type=Application
-Categories=System
+Categories=Network
 
 Exec=jphonelite
 StartupNotify=false
