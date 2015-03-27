@@ -503,7 +503,9 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
   private void loadWallPaper() {
     if (wallPaperFile == null) return;
     wallPaper = new JFImage();
-    wallPaper.load(wallPaperFile);
+    if (!wallPaper.load(wallPaperFile)) {
+      wallPaper = null;
+    }
   }
 
   public void setWallPaper(String file, int mode) {
@@ -924,33 +926,11 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
   }
 
   public static void runCmd(String cmd[], int numFiles) {
-    JFTask task = new JFTask() {
-      private String cmd[];
-      private int numFiles, filesDone = 0;
-      public boolean work() {
-        cmd = (String[])this.getProperty("cmd");
-        numFiles = cmd.length - 3;
-        setTitle("File Operation");
-        if (cmd[0].equals("cp")) {
-          setLabel("Copying files...");
-        } else {
-          setLabel("Moving files...");
-        }
-        ShellProcess sp = new ShellProcess();
-        sp.addListener(this);
-        sp.run(cmd, true);
-        return true;
-      }
-      public void shellProcessOutput(String str) {
-        int lines = str.split("\n").length;
-        filesDone += (lines-1);
-        setProgress(filesDone * 100 / numFiles);
-      }
-    };
-    task.setProperty("cmd", cmd);
-    ProgressDialog dialog = new ProgressDialog(null, true, task);
-    dialog.setAutoClose(true);
-    dialog.setVisible(true);
+    try {
+      Runtime.getRuntime().exec(cmd);
+    } catch (Exception e) {
+      JFLog.log(e);
+    }
   }
 
   public static int cntFiles(String fn) {
@@ -1069,13 +1049,10 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
           }
         }
         if (cmd.isEmpty()) return false;
-        cmd.add(0, "-v");
-        cmd.add(0, "-n");
         if (copy) {
-          cmd.add(0, "-r");
-          cmd.add(0, "cp");
+          cmd.add(0, "jcp");
         } else if (move) {
-          cmd.add(0, "mv");
+          cmd.add(0, "jmv");
         } else {
           return false;
         }
@@ -1207,9 +1184,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
       FileEntry list[] = getSelected();
       if ((list == null) || (list.length == 0)) return;
       ArrayList<String> cmd = new ArrayList<String>();
-      cmd.add("mv");
-      cmd.add("-v");
-      cmd.add("-n");
+      cmd.add("jmv");
       for(int a=0;a<list.length;a++) cmd.add(list[a].file);
       cmd.add(JF.getUserPath() + "/.local/share/Trash");
       runCmd(cmd.toArray(new String[0]), list.length);
@@ -1220,9 +1195,7 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
     FileEntry list[] = getSelected();
     if ((list == null) || (list.length == 0)) return;
     ArrayList<String> cmd = new ArrayList<String>();
-    cmd.add("rm");
-    cmd.add("-v");
-    cmd.add("-r");
+    cmd.add("jrm");
     for(int a=0;a<list.length;a++) cmd.add(list[a].file);
     runCmd(cmd.toArray(new String[0]), list.length);
   }
@@ -1396,12 +1369,12 @@ public class JFileBrowser extends javax.swing.JComponent implements MouseListene
       Point pt2 = new Point();
       pt2.x = pt1.x + getWidth();
       pt2.y = pt1.y + getHeight();
-      if ((x < pt1.x) || (y < pt1.y) || (x > pt2.x) || (y > pt2.y) || (view != VIEW_ICONS)) {
+      if ((x < pt1.x) || (y < pt1.y) || (x > pt2.x) || (y > pt2.y) || (view != VIEW_ICONS) || (!desktopMode)) {
         panel.getTransferHandler().exportAsDrag(panel, me, TransferHandler.MOVE);
         setSelectedTransparent(true);
         dragicon = false;
         repaint();
-        jbusClient.call("org.jflinux.jdesktop." + System.getenv("JID"), "show", "");
+//        jbusClient.call("org.jflinux.jdesktop." + System.getenv("JID"), "show", "");
 /*        if (dragOverlay != null) {
           panel.remove(dragOverlay);
           dragOverlay = null;

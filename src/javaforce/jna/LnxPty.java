@@ -7,6 +7,7 @@ package javaforce.jna;
  * Created : Jan 17, 2014
  */
 
+import java.io.*;
 import java.util.*;
 import java.lang.reflect.*;
 
@@ -122,7 +123,13 @@ public class LnxPty {
     public int waitpid(int pid, IntByReference status, int opts);
   }
 
+  public interface Util extends Library {
+    public int forkpty(IntByReference master, Pointer name, Pointer termios, Pointer winsize);
+  }
+
   private static C c;
+  private static Util util;
+
   private static final int O_RDWR = 02;
   private static final int O_NOCTTY = 0400;
   private static final int O_NONBLOCK = 04000;
@@ -155,6 +162,7 @@ public class LnxPty {
     if (c != null) return true;
     try {
       c = (C)Native.loadLibrary("c", C.class);
+      util = (Util)Native.loadLibrary("util", Util.class);
       return true;
     } catch (Throwable t) {
       JFLog.log(t);
@@ -198,19 +206,254 @@ public class LnxPty {
     return sb.toString();
   }
 
+  public boolean isClosed() {
+    return closed;
+  }
+
   private int master = -1;
   private boolean closed = false;
   private long writeBuf, readBuf;
 //  private termios orgattrs;
 
-  /** Spawns a new process in a new PTY.  Note:args, env MUST be null terminated. */
+  private int pid;
+  private Process p;
+
+  /** Spawns a new process with a new pty.
+   * Note:args, env MUST be null terminated.
+   */
   private boolean fork(String cmd, String args[], String env[]) {
+    return fork_nofork(cmd,args,env);
+  }
+
+  /** This method uses Java to fork but the child process starts in LnxPty.main()
+   *
+   * Works 100% of the time.
+   */
+  private boolean fork_nofork(String cmd, String args[], String env[]) {
+    JFLog.log("fork:no fork version");
     String slaveName;
     master = c.posix_openpt(O_RDWR | O_NOCTTY);
     if (master == -1) return false;
-//    JFLog.log("LnxPty:master=" + master);
     slaveName = c.ptsname(master);
-//    JFLog.log("LnxPty:slave=" + slaveName);
+    if (slaveName == null) {
+      JFLog.log("LnxPty:slave pty == null");
+      return false;
+    }
+    if (c.grantpt(master) != 0) {
+      JFLog.log("LnxPty:grantpt() failed");
+      return false;
+    }
+    if (c.unlockpt(master) != 0) {
+      JFLog.log("LnxPty:unlockpt() failed");
+      return false;
+    }
+
+    ArrayList<String> cmdline = new ArrayList<String>();
+    cmdline.add("java");
+    cmdline.add("-cp");
+    cmdline.add("/usr/share/java/javaforce.jar:/usr/share/java/jna.jar");
+    cmdline.add("javaforce.jna.LnxPty");
+    cmdline.add(slaveName);
+    cmdline.add(cmd);
+    cmdline.add("" + (args.length-1));  //# args
+    for(int a=0;a<args.length;a++) {
+      if (args[a] == null) break;
+      cmdline.add(args[a]);
+    }
+    for(int a=0;a<env.length;a++) {
+      if (env[a] == null) break;
+      cmdline.add(env[a]);
+    }
+    String cl[] = cmdline.toArray(new String[0]);
+/*
+    for(int a=0;a<cl.length;a++) {
+      JFLog.log("cmd=" + cl[a]);
+    }
+*/
+    try {
+      ProcessBuilder pb = new ProcessBuilder(cl);
+      String user = System.getenv("USER");
+      if (user != null) {
+        if (user.equals("root")) {
+          pb.directory(new File("/root"));
+        } else {
+          pb.directory(new File("/home/" + user));
+        }
+      }
+      p = pb.start();
+    } catch (Exception e) {
+      JFLog.log(e);
+      return false;
+    }
+
+    writeBuf = Native.malloc(1024);
+    readBuf = Native.malloc(1024);
+    new Thread() {
+      public void run() {
+        try {p.waitFor();} catch (Exception e) {}
+        close();
+      }
+    }.start();
+    return true;
+  }
+
+  /** This is the child process for fork_nofork() implementation.
+   */
+  public static void main(String args[]) {
+    if (args == null || args.length < 3) {
+      System.out.println("Usage : LnxPty slaveName, cmd, #args, [args...], [env...]");
+      return;
+    }
+    init();
+
+    String slaveName = args[0];
+    String cmd = args[1];
+    int noArgs = JF.atoi(args[2]);
+    int p = 3;
+    ArrayList<String> process_args = new ArrayList<String>();
+    ArrayList<String> process_env = new ArrayList<String>();
+    for(int a=0;a<noArgs;a++) {
+      process_args.add(args[p++]);
+    }
+    while (p < args.length) {
+      process_env.add(args[p++]);
+    }
+
+    termios attrs = new termios();
+
+    try {
+      int slave = c.open(slaveName, O_RDWR);  //should open this in child process
+      if (slave == -1) {
+        System.out.println("LnxPty:unable to open slave pty");
+        System.exit(0);
+      }
+      if (c.setsid() == -1) {
+        System.out.println("LnxPty:unable to setsid");
+        System.exit(0);
+      }
+      c.tcgetattr(slave, attrs);
+      // Assume input is UTF-8; this allows character-erase to be correctly performed in cooked mode.
+      attrs.c_iflag |= IUTF8;
+      // Humans don't need XON/XOFF flow control of output, and it only serves to confuse those who accidentally hit ^S or ^Q, so turn it off.
+      attrs.c_iflag &= ~IXON;
+      // ???
+      attrs.c_cc[VERASE] = 127;
+      c.tcsetattr(slave, TCSANOW, attrs);
+      c.dup2(slave, STDIN_FILENO);
+      c.dup2(slave, STDOUT_FILENO);
+      c.dup2(slave, STDERR_FILENO);
+      c.signal(SIGINT, SIG_DFL);
+      c.signal(SIGQUIT, SIG_DFL);
+      c.signal(SIGCHLD, SIG_DFL);
+      c.execvpe(cmd, process_args.toArray(new String[0]), process_env.toArray(new String[0]));
+      System.exit(0);  //should not happen
+    } catch (Exception e) {
+      e.printStackTrace();
+      System.exit(0);
+    }
+  }
+
+  /** This method uses ProcessBuilder to execute bash directly
+   * but uses redirectInput/Output/Error(File) to redirect stdin/out/err to the pty.
+   *
+   * I can not call setsid() in the new process so bash is complaining about ioctl
+   * issues and the pty is not valid.
+   *
+   */
+  private boolean fork_java(String cmd, String args[], String env[]) {
+    JFLog.log("fork:Java version");
+    ProcessBuilder pb = new ProcessBuilder();
+    master = c.posix_openpt(O_RDWR | O_NOCTTY);
+    if (master == -1) return false;
+    String slaveName = c.ptsname(master);
+    if (slaveName == null) {
+      JFLog.log("LnxPty:slave pty == null");
+      return false;
+    }
+    if (c.grantpt(master) != 0) {
+      JFLog.log("LnxPty:grantpt() failed");
+      return false;
+    }
+    if (c.unlockpt(master) != 0) {
+      JFLog.log("LnxPty:unlockpt() failed");
+      return false;
+    }
+    File slaveFile = new File(slaveName);
+    ArrayList<String> cmdlist = new ArrayList<String>();
+    cmdlist.add(cmd);
+    for(int a=1;a<args.length;a++) {
+      if (args[a] == null) break;
+      cmdlist.add(args[a]);
+    }
+    writeBuf = Native.malloc(1024);
+    readBuf = Native.malloc(1024);
+    try {
+      pb.command(cmdlist);
+      for(int a=0;a<env.length;a++) {
+        if (env[a] == null) break;
+        int idx = env[a].indexOf("=");
+        if (idx == -1) continue;  //bad env
+        String key = env[a].substring(0, idx);
+        String val = env[a].substring(idx+1);
+        pb.environment().put(key, val);
+      }
+      pb.redirectInput(slaveFile);
+      pb.redirectOutput(slaveFile);
+      pb.redirectError(slaveFile);
+      pb.directory(new File("/home/" + System.getenv("USER")));
+      p = pb.start();
+      new Thread() {
+        public void run() {
+          try { p.waitFor(); } catch (Exception e) { JFLog.log(e); }
+          p = null;
+          close();
+        }
+      }.start();
+    } catch (Exception e) {
+      JFLog.log(e);
+      return false;
+    }
+    return true;
+  }
+
+  /** This method uses the forkpty() from the util library.
+   *
+   * Fails 30% of the time.
+   */
+  private boolean fork_forkpty(String cmd, String args[], String env[]) {
+    JFLog.log("fork:forkpty version");
+    IntByReference masterRef = new IntByReference();
+//    termios attrs = new termios();
+//    winsize size = new winsize();
+    pid = util.forkpty(masterRef, null, null, null);  //attrs.getPointer(), size.getPointer());
+    if (pid == 0) {
+      //child process (slave)
+      c.execvpe(cmd, args, env);  //searches path for cmd
+      System.exit(0);
+    }
+    //parent process (master)
+    master = masterRef.getValue();
+    writeBuf = Native.malloc(1024);
+    readBuf = Native.malloc(1024);
+    new Thread() {
+      public void run() {
+        c.waitpid(pid, new IntByReference(), 0);
+        close();
+      }
+    }.start();
+    return true;
+  }
+
+  /** This method uses just the c library.
+   *
+   * Fails 30% of the time.
+   */
+  private boolean fork_old(String cmd, String args[], String env[]) {
+    JFLog.log("fork:org version");
+    String slaveName;
+    master = c.posix_openpt(O_RDWR | O_NOCTTY);
+    if (master == -1) return false;
+    slaveName = c.ptsname(master);
     if (slaveName == null) {
       JFLog.log("LnxPty:slave pty == null");
       return false;
@@ -245,7 +488,7 @@ public class LnxPty {
       attrs.c_iflag |= IUTF8;
       // Humans don't need XON/XOFF flow control of output, and it only serves to confuse those who accidentally hit ^S or ^Q, so turn it off.
       attrs.c_iflag &= ~IXON;
-      //???
+      // ???
       attrs.c_cc[VERASE] = 127;
       c.tcsetattr(slave, TCSANOW, attrs);
       c.dup2(slave, STDIN_FILENO);
@@ -272,7 +515,7 @@ public class LnxPty {
   }
 
   /** Frees resources */
-  public void close() {
+  public synchronized void close() {
     if (closed) return;
     if (master != -1) {
       c.close(master);
@@ -311,12 +554,20 @@ public class LnxPty {
     error_set.write();
 
     int res = c.select(master+1, read_set.getPointer(), null, error_set.getPointer(), timeout);
-    if (res == -1) return -1;  //select error
-    if (res == 0) return 0;  //timeout
+    if (res == -1) {
+      //select error
+      return -1;
+    }
+    if (res == 0) {
+      //timeout
+      return 0;
+    }
     read_set.read();
     error_set.read();
 
-    if (closed) return -1;
+    if (closed) {
+      return -1;
+    }
 
     if (FD_ISSET(error_set, master)) {
       return -1;

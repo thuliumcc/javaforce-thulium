@@ -3,7 +3,7 @@
   <!-- set global properties for this build -->
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
-  <property name="VERSION" value="7.34.0"/>
+  <property name="VERSION" value="7.35.0"/>
 
   <target name="compile" description="compile the source">
     <!-- Compile the java code from ${src} into ${build} -->
@@ -37,6 +37,7 @@
     <copy file="jars/jna.jar" todir="/usr/share/java"/>
     <copy file="jars/jna-platform.jar" todir="/usr/share/java"/>
     <copy file="jars/bouncycastle.jar" todir="/usr/share/java"/>
+    <copy file="jars/filters.jar" todir="/usr/share/java"/>
     <copy file="bin/jbus-call" todir="/usr/bin"/>
     <chmod file="/usr/bin/jbus-call" perm="+x"/>
     <copy file="bin/jbus-client" todir="/usr/bin"/>
@@ -80,6 +81,12 @@
     <chmod file="/usr/bin/jfuse-cdfs" perm="+x"/>
     <copy file="bin/jfshare" todir="/usr/bin"/>
     <chmod file="/usr/bin/jfshare" perm="+x"/>
+    <copy file="bin/jcp" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jcp" perm="+x"/>
+    <copy file="bin/jmv" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jmv" perm="+x"/>
+    <copy file="bin/jrm" todir="/usr/bin"/>
+    <chmod file="/usr/bin/jrm" perm="+x"/>
   </target>
 
   <target name="deb" description="create deb package">

@@ -2,6 +2,7 @@
 /usr/share/java/jna.jar
 /usr/share/java/jna-platform.jar
 /usr/share/java/bouncycastle.jar
+/usr/share/java/filters.jar
 /usr/bin/jbus-call
 /usr/bin/jbus-client
 /usr/bin/jfs
@@ -21,3 +22,6 @@
 /usr/bin/jfuse-iso
 /usr/bin/jfuse-cdfs
 /usr/bin/jfshare
+/usr/bin/jcp
+/usr/bin/jmv
+/usr/bin/jrm

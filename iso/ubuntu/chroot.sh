@@ -38,8 +38,10 @@ dbus-uuidgen > /var/lib/dbus/machine-id
 dpkg-divert --local --rename --add /sbin/initctl
 ln -s /bin/true /sbin/initctl
 
+#install some common tools
+apt-get install --yes wget unzip
+
 #download JavaForce Repo file
-apt-get install --yes wget
 cd /etc/apt/sources.list.d
 if [ ! -f javaforce.list ]; then
   echo Download javaforce.list
@@ -65,6 +67,9 @@ echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/source
 #update repo
 apt-get --yes update
 apt-get --yes upgrade
+
+#install chrome
+apt-get install google-chrome-stable
 
 #install ffmpeg
 apt-get install --yes libav-tools

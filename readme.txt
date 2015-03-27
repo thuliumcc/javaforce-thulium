@@ -1,7 +1,7 @@
 JavaForce SDK
 =============
 
-Version 7.34.0
+Version 7.35.0
 
 What is it?
 ===========
@@ -82,7 +82,7 @@ pquiring@gmail.com
 
 http://javaforce.sourceforge.net
 
-Version 7.34.0
+Version 7.35.0
 
-Released : October 8 2014
+Released : October 13 2014
 

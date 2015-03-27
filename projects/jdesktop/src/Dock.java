@@ -39,8 +39,8 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         JFLog.log(t);
       }
       addTo = buttons;
-      addPlus();
-      Dimension d = plus.getPreferredSize();
+      addAppsButton();
+      Dimension d = apps.getPreferredSize();
       buttonWidth = d.width;
       buttonHeight = d.height;
       panelHeight = d.height + 10;
@@ -475,7 +475,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   private JFImage clockImage;
   private Font clockFont;
   private String clockLine1 = "MONTH DAY", clockLine2 = "HH:MM";
-  private JButton left, right, plus, trash, keyboard;
+  private JButton left, right, apps, trash, keyboard;
   private JButton soundQuad, networkQuad, powerQuad, settingsQuad;
   private JButton soundHalf, networkHalf, powerHalf, settingsHalf;
   private JFImage batteryImage, trashFullImage, trashEmptyImage;
@@ -749,7 +749,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     config.showIcons = true;
     config.mountAudio = true;
     config.dock = new App[0];
-    config.desktopFile = "/usr/share/icons/hicolor/48x48/apps/Stripes.jpg";
+    config.desktopFile = "/usr/share/icons/hicolor/48x48/apps/jdesktop-wallpaper.png";
     config.desktopMode = 3;
     config.bc = Color.BLUE;
     config.fc = Color.WHITE;
@@ -860,6 +860,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     if (addArrow) {
       buttonImage = IconCache.scaleIcon(buttonImage, bx, bx);
       JFImage tmpImage = new JFImage(bx, by);
+      tmpImage.fill(0, 0, bx, by, 0, true);
       tmpImage.getGraphics().drawImage(buttonImage.getImage(), 0,(by-bx)/2 + 4, null);
       tmpImage.getGraphics().drawImage(arrowImage.getImage(), 0,0, null);
       buttonImage = tmpImage;
@@ -871,7 +872,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     button.setActionCommand(file);
     button.setContentAreaFilled(false);
     button.addActionListener(this);
-//    b.setToolTipText(name);  //mouse over the tooltip causes dock to hide
+//    button.setToolTipText(name);  //mouse over the tooltip causes dock to hide
     button.addMouseListener(this);
     button.putClientProperty("file", file);
     button.putClientProperty("pinned", new Boolean(pinned));
@@ -987,8 +988,8 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
     }
   }
 
-  public void addPlus() {
-    plus = addButton("jdesktop-plus", "Add", "#plus", appIdx++, true);
+  public void addAppsButton() {
+    apps = addButton("jdesktop-apps", "Add", "#apps", appIdx++, true);
   }
 
   public void addClock() {
@@ -1169,7 +1170,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         updateBattery();
         return;
       }
-      if (action.equals("#plus")) {
+      if (action.equals("#apps")) {
         AddAppDialog dialog = new AddAppDialog(null, true);
         dialog.setVisible(true);
         if (dialog.accepted) {
@@ -1993,8 +1994,8 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       Dimension d;
       //do we need arrows?
       int tWidth = 0, bWidth = 0;  //tools x, buttons x
-      bWidth += (appIdx-1) * buttonWidth;  //-1 for plus
-      tWidth += buttonWidth;  //plus
+      bWidth += (appIdx-1) * buttonWidth;  //-1 for apps
+      tWidth += buttonWidth;  //apps button
       if (config.showClock) {
         d = clockImage.getPreferredSize();
         tWidth += d.width;
@@ -2036,7 +2037,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
         overflowCnt = 0;
       }
       int cx = (sx - tWidth - bWidth) / 2;
-      plus.setBounds(cx, 5, buttonWidth, buttonHeight);
+      apps.setBounds(cx, 5, buttonWidth, buttonHeight);
       cx += buttonWidth;
       if (needArrows) {
         left.setBounds(cx, 5, halfWidth, buttonHeight);
@@ -2149,6 +2150,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
       JFImage img = IconCache.loadIcon("jdesktop-network-" + (a+1));
       networkIconsQuad[a] = IconCache.scaleIcon(img, 21, 21);
       JFImage tmpImage = new JFImage(bx, by);
+      tmpImage.fill(0, 0, bx, by, 0, true);
       tmpImage.getGraphics().drawImage(IconCache.scaleIcon(img, 24, 24).getImage(), 0,(by-bx)/2 + 4, null);
       tmpImage.getGraphics().drawImage(arrowImage.getImage(), 0,0, null);
       networkIconsHalf[a] = tmpImage;

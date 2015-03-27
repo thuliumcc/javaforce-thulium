@@ -1,5 +1,15 @@
 What's new...
 
+Oct 13/2014 : JF 7.35.0 released!
+  - jfLinux
+    - fix more Ubuntu 14.10 issues (boots now)
+  - jfTerm/0.17
+    - opening a local bash tab works 100% of the time now
+  - jDesktop/0.23
+    - minor changes
+  - jLogon/0.14
+    - added some required packages
+
 Oct 8/2014 : JF 7.34.0 released!
   - jfBroadcast/0.26
     - fix -allowdups option

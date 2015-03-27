@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jdesktop
-Version: 0.22
+Version: 0.23
 Release: 1
 Summary: Java Desktop Environment
 License: LGPL

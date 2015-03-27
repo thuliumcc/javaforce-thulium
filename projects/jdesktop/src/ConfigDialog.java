@@ -46,7 +46,6 @@ public class ConfigDialog extends javax.swing.JDialog {
   private void initComponents() {
 
     buttonGroup1 = new javax.swing.ButtonGroup();
-    autoHide = new javax.swing.JCheckBox();
     accept = new javax.swing.JButton();
     cancel = new javax.swing.JButton();
     jPanel1 = new javax.swing.JPanel();
@@ -59,17 +58,17 @@ public class ConfigDialog extends javax.swing.JDialog {
     fc = new javax.swing.JButton();
     noWallpaper = new javax.swing.JRadioButton();
     wallpaper = new javax.swing.JRadioButton();
-    showClock = new javax.swing.JCheckBox();
     themes = new javax.swing.JButton();
-    compact = new javax.swing.JCheckBox();
-    showKeyboard = new javax.swing.JCheckBox();
     mountAudio = new javax.swing.JCheckBox();
+    jPanel2 = new javax.swing.JPanel();
+    autoHide = new javax.swing.JCheckBox();
+    showClock = new javax.swing.JCheckBox();
+    showKeyboard = new javax.swing.JCheckBox();
+    compact = new javax.swing.JCheckBox();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Settings");
     setResizable(false);
-
-    autoHide.setText("Auto Hide");
 
     accept.setText("Accept");
     accept.addActionListener(new java.awt.event.ActionListener() {
@@ -174,8 +173,6 @@ public class ConfigDialog extends javax.swing.JDialog {
         .addContainerGap(14, Short.MAX_VALUE))
     );
 
-    showClock.setText("Show Clock");
-
     themes.setText("Themes...");
     themes.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -183,39 +180,34 @@ public class ConfigDialog extends javax.swing.JDialog {
       }
     });
 
-    compact.setText("Compact controls");
+    mountAudio.setText("Auto Mount Audio Discs (jMedia)");
+
+    jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Dock"));
+
+    autoHide.setText("Auto Hide");
+
+    showClock.setText("Show Clock");
 
     showKeyboard.setText("Show Keyboard");
 
-    mountAudio.setText("Auto Mount Audio Discs (jMedia)");
+    compact.setText("Compact controls");
 
-    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-    getContentPane().setLayout(layout);
-    layout.setHorizontalGroup(
-      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGroup(layout.createSequentialGroup()
+    javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+    jPanel2.setLayout(jPanel2Layout);
+    jPanel2Layout.setHorizontalGroup(
+      jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(jPanel2Layout.createSequentialGroup()
         .addContainerGap()
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-          .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-            .addComponent(themes)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(cancel)
-            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(accept))
-          .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-          .addGroup(layout.createSequentialGroup()
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-              .addComponent(showKeyboard)
-              .addComponent(compact)
-              .addComponent(showClock)
-              .addComponent(autoHide)
-              .addComponent(mountAudio))
-            .addGap(0, 0, Short.MAX_VALUE)))
-        .addContainerGap())
+        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addComponent(showKeyboard)
+          .addComponent(compact)
+          .addComponent(showClock)
+          .addComponent(autoHide))
+        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
-    layout.setVerticalGroup(
-      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addGroup(layout.createSequentialGroup()
+    jPanel2Layout.setVerticalGroup(
+      jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(jPanel2Layout.createSequentialGroup()
         .addContainerGap()
         .addComponent(autoHide)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -224,16 +216,44 @@ public class ConfigDialog extends javax.swing.JDialog {
         .addComponent(showKeyboard)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(compact)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(mountAudio)
+        .addContainerGap())
+    );
+
+    javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+    getContentPane().setLayout(layout);
+    layout.setHorizontalGroup(
+      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(layout.createSequentialGroup()
+        .addContainerGap()
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+          .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+          .addGroup(layout.createSequentialGroup()
+            .addComponent(mountAudio)
+            .addGap(0, 0, Short.MAX_VALUE))
+          .addGroup(layout.createSequentialGroup()
+            .addComponent(themes)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(cancel)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(accept)))
+        .addContainerGap())
+    );
+    layout.setVerticalGroup(
+      layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+      .addGroup(layout.createSequentialGroup()
+        .addGap(5, 5, 5)
+        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(mountAudio)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(themes)
-          .addComponent(cancel)
-          .addComponent(accept))
-        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+          .addComponent(accept)
+          .addComponent(cancel))
+        .addContainerGap())
     );
 
     pack();
@@ -291,6 +311,7 @@ public class ConfigDialog extends javax.swing.JDialog {
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JPanel jPanel1;
+  private javax.swing.JPanel jPanel2;
   private javax.swing.JCheckBox mountAudio;
   private javax.swing.JRadioButton noWallpaper;
   private javax.swing.JButton selectDesktopFile;

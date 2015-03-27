@@ -1,5 +1,8 @@
 What's new...
 
+Oct 13/2014 - jfTerm/0.17 released!
+  - fix : the Linux pty function works 100% of the time.  So opening a new bash tab locally is reliable now.
+
 Mar 27/2014 - jfTerm/0.16 released!
   - fix : timer in Buffer was never cancelled causing Buffer to never get freed.
 

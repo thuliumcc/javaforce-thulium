@@ -12,12 +12,12 @@ import javaforce.*;
 import javaforce.jna.*;
 import javaforce.media.*;
 
-public class Test extends javax.swing.JFrame {
+public class TestCamera extends javax.swing.JFrame {
 
   /**
    * Creates new form Test2
    */
-  public Test() {
+  public TestCamera() {
     initComponents();
   }
 
@@ -145,7 +145,7 @@ public class Test extends javax.swing.JFrame {
     /* Create and display the form */
     java.awt.EventQueue.invokeLater(new Runnable() {
       public void run() {
-        new Test().setVisible(true);
+        new TestCamera().setVisible(true);
       }
     });
   }

@@ -943,7 +943,7 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
     localBrowser.setListener(this);
     remoteBrowser = new JFileBrowser(view, null, remoteDesktopMenu
       , localFileMenu, null, 0, false, null, "jopen", Color.LIGHT_GRAY, Color.BLACK
-      , true, false, false, false, FileApp.jbusClient, true);
+      , true, false, false, false, FileApp.jbusClient, false);
     remoteBrowser.setListener(this);
     remoteBrowser.setName("remoteFiles");  //see FileApp.search()
 
@@ -1259,7 +1259,7 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
     pathTrash.mkdirs();
 //    System.out.println("mkdirs:" + pathTrash.getAbsolutePath());
     try {
-      Runtime.getRuntime().exec(new String[] {"mv", file.getAbsolutePath(), pathTrash.getAbsolutePath()});
+      JFileBrowser.runCmd(new String[] {"jmv", file.getAbsolutePath(), pathTrash.getAbsolutePath()}, 1);
 //      System.out.println("move:" + file.getAbsolutePath() + " to " + pathTrash.getAbsolutePath());
     } catch (Exception e) {
       JFLog.log(e);
@@ -1439,35 +1439,6 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
     localBrowser.requestFocus();
   }
 
-  private void runCmd(String cmd[], int numFiles) {
-    JFTask task = new JFTask() {
-      private String cmd[];
-      private int numFiles, filesDone = 0;
-      public boolean work() {
-        cmd = (String[])this.getProperty("cmd");
-        numFiles = cmd.length - 3;
-        if (cmd[0].equals("cp")) {
-          setLabel("Copying files...");
-        } else {
-          setLabel("Moving files...");
-        }
-        ShellProcess sp = new ShellProcess();
-        sp.addListener(this);
-        sp.run(cmd, true);
-        return true;
-      }
-      public void shellProcessOutput(String str) {
-        int lines = str.split("\n").length;
-        filesDone += (lines-1);
-        setProgress(filesDone * 100 / numFiles);
-      }
-    };
-    task.setProperty("cmd", cmd);
-    ProgressDialog dialog = new ProgressDialog(null, true, task);
-    dialog.setAutoClose(true);
-    dialog.setVisible(true);
-  }
-
   private static ArrayList<String> ccp_files;  //cut/copy/paste files
   private static boolean ccp_copy;  //else cut
 
@@ -1496,10 +1467,7 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
   public void local_paste() {
     if (ccp_files == null) return;
     ArrayList<String> cmd = new ArrayList<String>();
-    cmd.add(ccp_copy ? "cp" : "mv");
-    if (ccp_copy) cmd.add("-r");
-    cmd.add("-v");
-    cmd.add("-n");
+    cmd.add(ccp_copy ? "jcp" : "jmv");
     int cnt = 0;
     if (!ccp_copy) cnt = ccp_files.size();
     for(int a=0;a<ccp_files.size();a++) {
@@ -1508,7 +1476,7 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
       if (ccp_copy) cnt += JFileBrowser.cntFiles(fn);
     }
     cmd.add(localDir.getText());
-    runCmd(cmd.toArray(new String[0]), cnt);
+    JFileBrowser.runCmd(cmd.toArray(new String[0]), cnt);
     ccp_files = null;
     //refresh both sides
     local_ls();
@@ -1538,8 +1506,7 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
   public void remote_paste() {
     if (ccp_files == null) return;
     ArrayList<String> cmd = new ArrayList<String>();
-    cmd.add(ccp_copy ? "cp" : "mv");
-    if (ccp_copy) cmd.add("-r");
+    cmd.add(ccp_copy ? "jcp" : "jmv");
     int cnt = 0;
     if (!ccp_copy) cnt = ccp_files.size();
     for(int a=0;a<ccp_files.size();a++) {
@@ -1548,7 +1515,7 @@ public class Site extends javax.swing.JPanel implements JFileBrowserListener {
       if (ccp_copy) cnt += JFileBrowser.cntFiles(fn);
     }
     cmd.add(remoteRoot + remoteDir.getText());
-    runCmd(cmd.toArray(new String[0]), cnt);
+    JFileBrowser.runCmd(cmd.toArray(new String[0]), cnt);
     ccp_files = null;
     //refresh both sides
     local_ls();

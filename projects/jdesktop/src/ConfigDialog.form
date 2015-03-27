@@ -12,6 +12,7 @@
   </Properties>
   <SyntheticProperties>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -31,23 +32,18 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="102" alignment="1" attributes="0">
+                  <Component id="jPanel1" max="32767" attributes="0"/>
+                  <Component id="jPanel2" max="32767" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="mountAudio" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="0" attributes="0">
                       <Component id="themes" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="cancel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="accept" min="-2" max="-2" attributes="0"/>
-                  </Group>
-                  <Component id="jPanel1" max="32767" attributes="0"/>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="showKeyboard" min="-2" max="-2" attributes="0"/>
-                          <Component id="compact" min="-2" max="-2" attributes="0"/>
-                          <Component id="showClock" min="-2" max="-2" attributes="0"/>
-                          <Component id="autoHide" min="-2" max="-2" attributes="0"/>
-                          <Component id="mountAudio" alignment="0" min="-2" max="-2" attributes="0"/>
-                      </Group>
-                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -57,35 +53,24 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="autoHide" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="showClock" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="showKeyboard" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="compact" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
-              <Component id="mountAudio" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+              <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
+              <Component id="mountAudio" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="32767" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="themes" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cancel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="accept" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="cancel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JCheckBox" name="autoHide">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Auto Hide"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JButton" name="accept">
       <Properties>
         <Property name="text" type="java.lang.String" value="Accept"/>
@@ -242,11 +227,6 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JCheckBox" name="showClock">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Show Clock"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JButton" name="themes">
       <Properties>
         <Property name="text" type="java.lang.String" value="Themes..."/>
@@ -255,20 +235,73 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="themesActionPerformed"/>
       </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="compact">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Compact controls"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="showKeyboard">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Show Keyboard"/>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JCheckBox" name="mountAudio">
       <Properties>
         <Property name="text" type="java.lang.String" value="Auto Mount Audio Discs (jMedia)"/>
       </Properties>
     </Component>
+    <Container class="javax.swing.JPanel" name="jPanel2">
+      <Properties>
+        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+          <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
+            <TitledBorder title="Dock"/>
+          </Border>
+        </Property>
+      </Properties>
+
+      <Layout>
+        <DimensionLayout dim="0">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="showKeyboard" min="-2" max="-2" attributes="0"/>
+                      <Component id="compact" min="-2" max="-2" attributes="0"/>
+                      <Component id="showClock" min="-2" max="-2" attributes="0"/>
+                      <Component id="autoHide" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="32767" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+        <DimensionLayout dim="1">
+          <Group type="103" groupAlignment="0" attributes="0">
+              <Group type="102" attributes="0">
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="autoHide" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="showClock" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="showKeyboard" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="compact" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+              </Group>
+          </Group>
+        </DimensionLayout>
+      </Layout>
+      <SubComponents>
+        <Component class="javax.swing.JCheckBox" name="autoHide">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Auto Hide"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="showClock">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Show Clock"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="showKeyboard">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Show Keyboard"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JCheckBox" name="compact">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Compact controls"/>
+          </Properties>
+        </Component>
+      </SubComponents>
+    </Container>
   </SubComponents>
 </Form>

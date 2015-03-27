@@ -45,6 +45,11 @@ Scripting support:
     HitKey VK_ENTER
   Some VK_...: VK_ENTER, VK_TAB, VK_SPACE, etc.
 
+Linux support:
+  Recommend you install with deb or rpm package.
+  Otherwise you should install from source.
+  The jar files MUST be placed in /usr/share/java so jfTerm can execute bash properly.
+
 Author : Peter Quiring
 
 URL : http://jfterm.sourceforge.net

@@ -19,7 +19,7 @@ import javaforce.*;
 
 public class TermApp extends javax.swing.JFrame implements KeyEventDispatcher {
 
-  public static String version = "0.16";
+  public static String version = "0.17";
 
   public boolean dispatchKeyEvent(KeyEvent e) {
     //System.out.println("KeyEvent:" + e);

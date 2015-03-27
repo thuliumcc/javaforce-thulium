@@ -5,7 +5,7 @@ import java.util.*;
 
 /**
  * JFLog is a file logger with support for multiple files and optional outputs
- * to System.out or System.err as well.
+ * to System.out as well.
  */
 
 public class JFLog {

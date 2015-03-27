@@ -68,6 +68,7 @@ public class IconCache {
   public static JFImage scaleIcon(JFImage image,int x,int y) {
     if ((image.getWidth() == x) && (image.getHeight() == y)) return image;
     JFImage scale = new JFImage(x, y);
+    scale.fill(0, 0, x, y, 0x00000000, true);
     scale.getGraphics().drawImage(image.getImage(), 0,0, x-1,y-1, 0,0, image.getWidth()-1,image.getHeight()-1, null);
     return scale;
   }

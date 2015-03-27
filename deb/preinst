@@ -9,5 +9,6 @@ fi
 mkdir -p /etc/jconfig.d
 mkdir -p /etc/jinit
 mkdir -p /usr/share/jhelp
+mkdir -p /usr/share/icons/hicolor/48x48/apps
 
 exit 0
