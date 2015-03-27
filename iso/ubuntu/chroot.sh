@@ -60,6 +60,9 @@ apt-get install --yes software-properties-common
 #add wine repo (ubuntu is always out-dated)
 add-apt-repository ppa:ubuntu-wine/ppa
 
+#allow i386 packages for wine
+dpkg --add-architecture i386
+
 #add google-chrome repo
 wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
 echo "deb http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list

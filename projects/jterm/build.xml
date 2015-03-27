@@ -5,7 +5,7 @@
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
-  <property name="JTERMVERSION" value="0.17"/>
+  <property name="JTERMVERSION" value="0.18"/>
 
   <target name="depjars">
     <jar destfile="javaforce.jar">
@@ -150,6 +150,7 @@
         <include name="jars/javaforce.jar"/>
         <include name="keys/*.xml"/>
         <include name="keys/*.txt"/>
+        <include name="include/*.h"/>
       </fileset>
     </zip>
     <move file="jterm-src-${JTERMVERSION}.zip" todir="/home/pquiring/zips"/>

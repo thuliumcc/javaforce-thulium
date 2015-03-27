@@ -196,6 +196,7 @@ public class GL {
     pfd.iPixelType = PFD_TYPE_RGBA;
     pfd.cColorBits = 24;
     pfd.cDepthBits = 16;
+    pfd.cStencilBits = 8;
     pfd.iLayerType = PFD_MAIN_PLANE;
     int pixelFormat = gdi32.ChoosePixelFormat(gl.whdc, pfd);
     gdi32.SetPixelFormat(gl.whdc, pixelFormat, pfd);
@@ -623,6 +624,7 @@ public class GL {
   public static final int GL_COLOR_BUFFER_BIT = 0x4000;
   public static final int GL_DEPTH_BUFFER_BIT= 0x0100;
   public static final int GL_STENCIL_BUFFER_BIT = 0x0400;
+  public static final int GL_STENCIL_TEST = 0x0B90;
   public static final int GL_ARRAY_BUFFER = 0x8892;
   public static final int GL_STATIC_DRAW = 0x88e4;
   public static final int GL_STREAM_DRAW = 0x88e0;
@@ -704,6 +706,7 @@ public class GL {
     public Function glBufferData;
     public Function glClear;
     public Function glClearColor;
+    public Function glColorMask;
     public Function glCompileShader;
     public Function glCreateProgram;
     public Function glCreateShader;
@@ -736,6 +739,9 @@ public class GL {
     public Function glReadPixels;
     public Function glRenderbufferStorage;
     public Function glShaderSource;
+    public Function glStencilFunc;
+    public Function glStencilMask;
+    public Function glStencilOp;
     public Function glTexImage2D;
     public Function glTexParameteri;
     public Function glUseProgram;
@@ -790,6 +796,9 @@ public class GL {
   }
   public void glClearColor(float r, float g, float b, float a) {
     api.glClearColor.invoke(new Object[]{r,g,b,a});
+  }
+  public void glColorMask(boolean r, boolean g, boolean b, boolean a) {
+    api.glColorMask.invoke(new Object[]{r,g,b,a});
   }
   public void glCompileShader(int id) {
     api.glCompileShader.invoke(new Object[]{id});
@@ -898,6 +907,15 @@ public class GL {
   }
   public int glShaderSource(int type, int count, String src[], int src_lengths[]) {
     return api.glShaderSource.invokeInt(new Object[]{type,count,src,src_lengths});
+  }
+  public int glStencilFunc(int func, int ref, int mask) {
+    return api.glStencilFunc.invokeInt(new Object[]{func, ref, mask});
+  }
+  public int glStencilMask(int mask) {
+    return api.glStencilMask.invokeInt(new Object[]{mask});
+  }
+  public int glStencilOp(int sfail, int dpfail, int dppass) {
+    return api.glStencilOp.invokeInt(new Object[]{sfail, dpfail, dppass});
   }
   public void glTexImage2D(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int px[]) {
     api.glTexImage2D.invoke(new Object[]{i1,i2,i3,i4,i5,i6,i7,i8,px});

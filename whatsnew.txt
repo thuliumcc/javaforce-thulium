@@ -1,5 +1,14 @@
 What's new...
 
+Nov 27/2014 : JF 7.40.0 released!
+  - javaforce.GL
+    - added Stencil functions (untested)
+  - jfTerm/0.18
+    - fixed some ANSI codes
+  - jfLinux : Ubuntu ISO : fixed Wine installation
+    - Wine on amd64 requires 'dpkg --add-architecture i386' since it requires both i386 and amd64 packages to
+      run 32/64bit Windows apps.
+
 Nov 7/2014 : JF 7.39.0 released!
   - all linux apps now use a native c loader just like the msi packages for windows
     - before bash scripts were used which made the process list look confusing

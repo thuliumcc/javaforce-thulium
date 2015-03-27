@@ -48,7 +48,7 @@ public class Settings {
   public Color cursorColor = new Color(0x0000ff);  //black
   public Color selectColor = new Color(0x777777);  //grey
   public int fontSize = 12;
-  public String termType = "vt220";
+  public String termType = "xterm";
   public int tabStops = 8;
   public int WindowXSize = 800;
   public int WindowYSize = 600;

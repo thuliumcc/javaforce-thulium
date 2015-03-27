@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jterm
-Version: 0.17
+Version: 0.18
 Release: 1
 Summary: Java Terminal Emulator
 License: LGPL

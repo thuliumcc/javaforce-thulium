@@ -93,7 +93,7 @@ public class Buffer extends JComponent implements KeyListener, MouseListener, Mo
   //public data
   public int sx, sy;  //screen size x/y (80x24)
   public boolean applet = false;  //non-signed applet
-  public int y1,y2;  //scroll range
+  private int y1,y2;  //scroll range
   public Script script = null;
 
   //private static data
@@ -146,6 +146,7 @@ public class Buffer extends JComponent implements KeyListener, MouseListener, Mo
   private boolean init = false;
   private JScrollPane pane;
   private LnxPty pty;
+  private boolean autowrap = true;
 
   private long profile_last = 0;
   private void profile(boolean show, String msg) {
@@ -215,7 +216,7 @@ public class Buffer extends JComponent implements KeyListener, MouseListener, Mo
           code[0] = buf[a];
           continue;
         }
-        newbuf[newbuflen++] = buf[a];
+        newbuf[newbuflen++] = ansi.encodeChar(buf[a]);
       } else {
         code[codelen++] = buf[a];  //TODO: check overflow
         //some systems generate two ESC in a row (ignore the 1st ESC)
@@ -434,7 +435,6 @@ public class Buffer extends JComponent implements KeyListener, MouseListener, Mo
         else
           g.setColor(chars[p].fc);
         ch = chars[p].ch;
-        if (!sd.utf8 && ch > 127 && ch < 256) ch = ASCII8.convert(ch);
         if (ch != 0) g.drawString("" + ch, (x - startx) * fx - offx,(y+1-starty) * fy - descent - offy);
       }
       if ((y == scrollBack) && (scrollBack > 0)) {
@@ -465,7 +465,6 @@ public class Buffer extends JComponent implements KeyListener, MouseListener, Mo
   }
 
   public void print(char buf[], int buflen) {
-    buf = ansi.encodeString(buf, buflen);
     for(int a=0;a<buflen;a++) {
       if (script != null) script.input(buf[a], this);
       switch (buf[a]) {
@@ -535,6 +534,7 @@ public class Buffer extends JComponent implements KeyListener, MouseListener, Mo
   }
   private void incPosX() {
     if (eol) {
+      if (!autowrap) return;
       cx = 0;
       incPosY();
       eol = false;
@@ -546,6 +546,7 @@ public class Buffer extends JComponent implements KeyListener, MouseListener, Mo
       }
     }
   }
+
   private void incPosY() {
     if (cy < y2)
       cy++;
@@ -553,13 +554,27 @@ public class Buffer extends JComponent implements KeyListener, MouseListener, Mo
       scrollUp(1);
   }
 
+  public void setAutoWrap(boolean state) {
+    autowrap = state;
+  }
+
   public int getx() {return cx + 1;}
   public int gety() {return cy + 1;}
   public void gotoPos(int x,int y) {
     cx = x-1;
+    if (cx < 0) cx = 0;
+    if (cx >= sx) cx = sx-1;
     cy = y-1;
+    if (cy < 0) cy = 0;
+    if (cy >= sy) cy = sy-1;
     eol = false;
   }
+
+  public int gety1() {return y1 + 1;}
+  public int gety2() {return y2 + 1;}
+
+  public void sety1(int v) {y1 = v-1;}
+  public void sety2(int v) {y2 = v-1;}
 
   public void scrollUp(int cnt) {
     while (cnt > 0) {

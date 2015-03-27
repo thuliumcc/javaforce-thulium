@@ -1,4 +1,4 @@
-/*
+/**
  * ANSI.java
  *
  * Created on August 3, 2007, 8:37 PM
@@ -8,6 +8,8 @@
 
 import java.awt.event.KeyEvent;
 import java.awt.Color;
+
+import javaforce.*;
 
 public class ANSI {
 
@@ -25,6 +27,7 @@ public class ANSI {
   };
 
   public boolean altfnt = false;  //use alternate font
+  public boolean keypadMode = false;
   public char altcode = '[';  //prefix some key codes with this
   public int high = 0;   //high intensity color (0/1)
   private int savedx = -1, savedy = -1;
@@ -36,10 +39,15 @@ public class ANSI {
   public int nums[] = new int[16];
 
   public char encodeChar(char ch) {
-    if (!altfnt) return ch;
-    char ret = altfntchars[ch];
-    if (ret == 0) ret = ch;
-    return ret;
+    if (!altfnt) {
+      if (ch > 127 && ch < 256) ch = ASCII8.convert(ch);
+      return ch;
+    } else {
+      char ret = altfntchars[ch];
+      if (ret == 0) ret = ch;
+      if (ret > 127 && ret < 256) ret = ASCII8.convert(ret);
+      return ret;
+    }
   }
 
   public char[] encodeString(char buf[], int buflen) {
@@ -127,28 +135,49 @@ public class ANSI {
 
   public boolean decode(char code[], int codelen, Buffer buffer) {
     int x,y;
+    x = buffer.getx();
+    y = buffer.gety();
     if (codelen < 2) return false;
     switch (code[1]) {
       case 'H':
-        //??? (unix vi)
+        //add tab stop at cursor position
+        JFLog.log("ANSI:Not implemented:" + code[1]);
         return true;
-      case 'M':
-        buffer.scrollDown(1);
+      case 'M':  //move cursor up one (scroll down if needed)
+        if (y <= buffer.gety1())
+          buffer.scrollDown(1);
+        else
+          buffer.gotoPos(x, y - 1);
+        return true;
+      case 'D':  //move cursor down one (scroll up if needed)
+        if (y >= buffer.gety2())
+          buffer.scrollUp(1);
+        else
+          buffer.gotoPos(x, y + 1);
         return true;
       case '7':
         //save cursor pos
-        savedx = buffer.getx();
-        savedy = buffer.gety();
+        savedx = x;
+        savedy = y;
         return true;
       case '8':
         //restore cursor pos
         if (savedx == -1) return true;
         buffer.gotoPos(savedx, savedy);
         return true;
+      case '=':
+        keypadMode = true;
+        return true;
+      case '>':
+        keypadMode = false;
+        return true;
       case '#':
       case '(':
-      case '[': break;
-      default: return true;  //ignore unknown code
+      case '[':
+      case ']': break;
+      default:
+        JFLog.log("ANSI:Unknown code:" + code[1]);
+        return true;  //ignore unknown code
     }
     if (codelen < 3) return false;
     switch (code[1]) {
@@ -162,34 +191,58 @@ public class ANSI {
         break;
       case '(':
         switch (code[2]) {
-          case '0': altfnt = true; break;
-          case 'B': altfnt = false; break;
+          case 'A': altfnt = false; break;  //UK char set
+          case 'B': altfnt = false; break;  //US char set
+          case '0': altfnt = true; break;  //line drawing char set
+          case '1': altfnt = false; break;  //alt ROM char set
+          case '2': altfnt = false; break;  //alt ROM special char set
         }
         break;
-      case '[':
+      case ']':  //operating system command
+        if (code[codelen-1] != 7) return false;  //incomplete
+        //OSC is currently not supported
+        break;
+      case '[':  //control sequence introducer
         if (!(
           ((code[codelen-1]) >= 'A' && (code[codelen-1] <= 'Z')) ||
           ((code[codelen-1]) >= 'a' && (code[codelen-1] <= 'z')) ||
           ((code[codelen-1]) == '~') ||
-          ((code[codelen-1]) == '@'))) return false;
-        x = buffer.getx();
-        y = buffer.gety();
+          ((code[codelen-1]) == '@'))) return false;  //incomplete
         if (code[2] == '?') {
           decodeNums(code, codelen, 3);
           switch (code[codelen-1]) {
-            case 'h':
-              if (numc == 1 && nums[0] == 1) altcode = 'O';
-              break;
-            case 'l':
-              if (numc == 1 && nums[0] == 1) altcode = '[';
-              break;
+            case 'h':  //set private functions
+              for(int a=0;a<numc;a++) {
+                switch (nums[a]) {
+                  case 1: altcode = 'O'; break;  //cursor key mode : control/app functions
+                  case 7: buffer.setAutoWrap(false); break;
+                  case 12: break;  //TODO : start blinking cursor
+                  case 25: break;  //TODO : show cursor
+                  default: JFLog.log("ANSI:Unknown [ ? h:" + nums[a]);
+                }
+              }
+              return true;
+            case 'l':  //reset private functions
+              for(int a=0;a<numc;a++) {
+                switch (nums[a]) {
+                  case 1: altcode = '['; break;  //cursor key mode : ANSI control sequences
+                  case 7: buffer.setAutoWrap(true); break;
+                  case 12: break;  //TODO : stop blinking cursor
+                  case 25: break;  //TODO : hide cursor
+                  default: JFLog.log("ANSI:Unknown [ ? l:" + nums[a]);
+                }
+              }
+              return true;
+            default:
+              JFLog.log("ANSI:Unknown [ ? code:" + code[codelen-1]);
+              //ignore unknown ? code
+              return true;
           }
-          return true;
         }
         decodeNums(code, codelen, 2);
         switch (code[codelen-1]) {
           case 'J':
-            if (numc==0) nums[0]=0;
+            if (numc == 0) nums[0] = 0;
             switch (nums[0]) {
               case 0:
                 //from cursor to end of screen
@@ -208,7 +261,7 @@ public class ANSI {
             }
             break;
           case 'K':
-            if (numc==0) nums[0]=0;
+            if (numc == 0) nums[0] = 0;
             switch (nums[0]) {
               case 0:
                 //erase from cursor to end of line
@@ -240,16 +293,31 @@ public class ANSI {
                 break;
             }
             break;
-          case 'A': if (numc==0) nums[0]=1; if (y-nums[0]>1 ) buffer.gotoPos(x,y-nums[0]); else buffer.gotoPos(x,1); break;
-          case 'B': if (numc==0) nums[0]=1; if (y+nums[0]<buffer.sy) buffer.gotoPos(x,y+nums[0]); else buffer.gotoPos(x,buffer.sy); break;
-          case 'C': if (numc==0) nums[0]=1; if (x+nums[0]<buffer.sx) buffer.gotoPos(x+nums[0],y); else buffer.gotoPos(buffer.sx,y); break;
-          case 'D': if (numc==0) nums[0]=1; if (x-nums[0]>1 ) buffer.gotoPos(x-nums[0],y); else buffer.gotoPos(1,y); break;
-          case 'L': if (numc==0) nums[0]=1; buffer.scrollDown(nums[0]); break;
+          case 'A': //up
+            if (numc == 0) nums[0] = 1; if (y-nums[0]>1 ) buffer.gotoPos(x,y-nums[0]); else buffer.gotoPos(x,1);
+            break;
+          case 'B': //down
+            if (numc == 0) nums[0] = 1; if (y+nums[0]<buffer.sy) buffer.gotoPos(x,y+nums[0]); else buffer.gotoPos(x,buffer.sy);
+            break;
+          case 'C': //forward
+            if (numc == 0) nums[0] = 1; if (x+nums[0]<buffer.sx) buffer.gotoPos(x+nums[0],y); else buffer.gotoPos(buffer.sx,y);
+            break;
+          case 'D': //backwards
+            if (numc == 0) nums[0] = 1; if (x-nums[0]>1 ) buffer.gotoPos(x-nums[0],y); else buffer.gotoPos(1,y);
+            break;
+          case 'L': //insert lines (only if within margin area)
+            if ((y < buffer.gety1()) || (y > buffer.gety2())) break;
+            if (numc == 0) nums[0] = 1;
+            int oy1 = buffer.gety1();
+            buffer.sety1(y);
+            buffer.scrollDown(nums[0]);
+            buffer.sety1(oy1);
+            break;
           case 'r':
-            //define rows that scroll
+            //define rows that scroll (margin)
             if (numc != 2) break;
-            buffer.y1 = nums[0]-1;
-            buffer.y2 = nums[1]-1;
+            buffer.sety1(nums[0]);
+            buffer.sety2(nums[1]);
             break;
           case 'm':
             //colour
@@ -278,7 +346,7 @@ public class ANSI {
 //              if (nums[a] == 28) {continue;}  //visible (not implemented) [vt300]
               if ((nums[a] >= 30) && (nums[a] <= 37)) {buffer.setForeColor(clrs[high][nums[a]-30]); continue;}
               if (nums[a] == 39) {buffer.setForeColor(orgForeColor); continue;}  //default (org)
-              if ((nums[a] >= 40) && (nums[a] <= 47)) {buffer.setBackColor(clrs[1][nums[a]-40]); continue;}
+              if ((nums[a] >= 40) && (nums[a] <= 47)) {buffer.setBackColor(clrs[0][nums[a]-40]); continue;}
               if (nums[a] == 49) {buffer.setBackColor(orgBackColor); continue;}  //default (org)
             }
             break;
@@ -302,12 +370,45 @@ public class ANSI {
             //save cursor pos
             savedx = buffer.getx();
             savedy = buffer.gety();
-            return true;
+            break;
           case 'u':
             //restore cursor pos
             if (savedx == -1) return true;
             buffer.gotoPos(savedx, savedy);
-            return true;
+            break;
+          case 'g':  //not implemented
+            //0 = clear tab stop at cursor location
+            //3 = clear all tab stops
+            break;
+          case 'd':  //line position absolute (default = 1)
+            if (numc == 0) nums[0] = 1;
+            buffer.gotoPos(x, nums[0]);
+            break;
+          case 'e':  //line position relative (default = row+1)
+            if (numc == 0) nums[0] = 1;
+            buffer.gotoPos(x, y + nums[0]);
+            break;
+          case 'G':  //column position absolute (default = 1)
+            if (numc == 0) nums[0] = 1;
+            buffer.gotoPos(nums[0], y);
+            break;
+          case 'X':  //delete 'x' chars
+            if (numc == 0) nums[0] = 1;
+            int cnt = nums[0];
+            while (cnt > 0) {
+              buffer.setChar(x, y, ' ');
+              x++;
+              if (x == buffer.sx+1) {
+                x = 1;
+                y++;
+                if (y == buffer.sy+1) break;
+              }
+              cnt--;
+            }
+            break;
+          default:
+            //ignore unknown code
+            break;
         }
     }
     return true;
@@ -355,7 +456,7 @@ public class ANSI {
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  //48
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  //64
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  //80
-    0,0,0,0,0,0,0,0,0,0,217,191,218,192,0,0,  //96
+    0,177,0,0,0,0,0,0,0,0,217,191,218,192,0,0,  //96
     0,196,0,0,195,180,193,194,179,0,0,0,0,0,0,0,  //112
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  //128
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -367,4 +468,3 @@ public class ANSI {
     0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
   };
 }
-

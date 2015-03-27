@@ -191,7 +191,7 @@ public class EditSettings extends javax.swing.JDialog {
 
     jLabel8.setText("Term Type");
 
-    tTermType.setText("vt100");
+    tTermType.setText("xterm");
     tTermType.addKeyListener(new java.awt.event.KeyAdapter() {
       public void keyPressed(java.awt.event.KeyEvent evt) {
         anykey(evt);

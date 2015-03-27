@@ -1,5 +1,12 @@
 What's new...
 
+Nov 27/2014 - jfTerm/0.18 released!
+  - ANSI codes added and fixed
+  - ASCII8bit to Unicode improved
+  - default term type switched to 'xterm' (was vt220)
+    - now bash is more colorfull
+  - aptitude in Ubuntu works better now
+
 Oct 13/2014 - jfTerm/0.17 released!
   - fix : the Linux pty function works 100% of the time.  So opening a new bash tab locally is reliable now.
 
