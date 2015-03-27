@@ -49,6 +49,8 @@ public class CallDetails implements Cloneable {
   public String authstr;
   /** was auth (401/407) tried? */
   public boolean authsent;
+  /** last set of full headers received. */
+  public String headers[];
   public Object clone() {
     try {
       return super.clone();

@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jpasswords
-Version: 0.11
+Version: 0.12
 Release: 1
 Summary: Password Manager
 License: LGPL

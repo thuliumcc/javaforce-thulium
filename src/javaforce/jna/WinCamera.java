@@ -147,7 +147,7 @@ public class WinCamera implements Camera.Input {
   private IBaseFilter videoInputFilter;
   private IAMStreamConfig streamConfig;
   private AM_MEDIA_TYPE mediaType;
-  private AM_MEDIA_TYPE enumMediaType;
+//  private AM_MEDIA_TYPE enumMediaType;
   private AM_MEDIA_TYPE rgbMediaType;
   private VIDEOINFOHEADER videoInfo;
   private IBaseFilter sampleGrabberBaseFilter;
@@ -157,7 +157,7 @@ public class WinCamera implements Camera.Input {
   private int width, height;
   private Pointer buffer;
   private int px[], pxf[];
-  private byte rgb[];
+//  private byte rgb[];
   private IPin pin;
   private IEnumMediaTypes enumMediaTypes;
 
@@ -333,7 +333,7 @@ public class WinCamera implements Camera.Input {
       buffer = malloc(width * height * 4);
       px = new int[width * height];
       pxf = new int[width * height];
-      rgb = new byte[width * height * 4];
+//      rgb = new byte[width * height * 4];
 
       videoInputFilter.Release();
       videoInputFilter = null;
@@ -418,6 +418,6 @@ public class WinCamera implements Camera.Input {
       buffer = null;
     }
     px = null;
-    rgb = null;
+//    rgb = null;
   }
 }

@@ -24,7 +24,7 @@ import javaforce.voip.*;
 
 public class Broadcast extends javax.swing.JFrame implements SIPClientInterface, RTPInterface, ActionListener {
 
-  public final String version = "0.22";
+  public final String version = "0.23";
 
   /** Creates new form Broadcast */
   public Broadcast() {
@@ -56,12 +56,24 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
     JFImage appicon = new JFImage();
     appicon.loadPNG(this.getClass().getClassLoader().getResourceAsStream("jbroadcast.png"));
     setIconImage(appicon.getImage());
-    //tray icon must be 16x16
-    JFImage scaled = new JFImage(16, 16);
-    scaled.fill(0, 0, 16, 16, 0x00000000, true);  //fill with alpha transparent
-    scaled.getGraphics().drawImage(appicon.getImage()
-      , 0, 0, 15, 15
-      , 0, 0, appicon.getWidth()-1, appicon.getHeight()-1, null);
+    appicon.loadPNG(this.getClass().getClassLoader().getResourceAsStream("jbroadcast_tray.png"));
+    tray = SystemTray.getSystemTray();
+    Dimension size = tray.getTrayIconSize();
+    JFImage scaled = new JFImage(size.width, size.height);
+    scaled.fill(0, 0, size.width, size.height, 0x00000000, true);  //fill with alpha transparent
+    if (false) {
+      //scaled image (looks bad sometimes)
+      scaled.getGraphics().drawImage(appicon.getImage()
+        , 0, 0, size.width, size.height
+        , 0, 0, appicon.getWidth(), appicon.getHeight()
+        , null);
+    } else {
+      //center image
+      scaled.getGraphics().drawImage(appicon.getImage()
+        , (size.width - appicon.getWidth()) / 2
+        , (size.height - appicon.getHeight()) / 2
+        , null);
+    }
     //create tray icon
     PopupMenu popup = new PopupMenu();
     show = new MenuItem("Show");

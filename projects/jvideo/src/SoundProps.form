@@ -62,7 +62,7 @@
   <SubComponents>
     <Component class="javax.swing.JLabel" name="jLabel1">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Sound Gain (dB):"/>
+        <Property name="text" type="java.lang.String" value="Audio Gain (dB):"/>
       </Properties>
     </Component>
     <Component class="javax.swing.JSlider" name="db">
@@ -77,7 +77,7 @@
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Sound Delay"/>
+        <Property name="text" type="java.lang.String" value="Audio Delay"/>
         <Property name="toolTipText" type="java.lang.String" value="Delay for split second timing"/>
       </Properties>
     </Component>

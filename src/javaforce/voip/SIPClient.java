@@ -689,6 +689,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
       cd.dst.port = remoteport;
       cd.dst.cseq = getcseq(msg);
       cd.dst.branch = getbranch(msg);
+      cd.headers = msg;
       //get cd.dst.to
       tmp = getHeader("To:", msg);
       if (tmp == null) {
@@ -916,5 +917,10 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
     CallDetails cd = getCallDetails(callid);
     buildsdp(cd, cd.dst);
     return cd.sdp;
+  }
+
+  public String[] getHeaders(String callid) {
+    CallDetails cd = getCallDetails(callid);
+    return cd.headers;
   }
 }

@@ -35,7 +35,7 @@ public class SoundProps extends javax.swing.JPanel {
     jLabel3 = new javax.swing.JLabel();
     mute = new javax.swing.JCheckBox();
 
-    jLabel1.setText("Sound Gain (dB):");
+    jLabel1.setText("Audio Gain (dB):");
 
     db.setMajorTickSpacing(10);
     db.setMaximum(50);
@@ -44,7 +44,7 @@ public class SoundProps extends javax.swing.JPanel {
     db.setPaintTicks(true);
     db.setValue(0);
 
-    jLabel2.setText("Sound Delay");
+    jLabel2.setText("Audio Delay");
     jLabel2.setToolTipText("Delay for split second timing");
 
     audioDelay.setText("0");

@@ -1359,6 +1359,9 @@ public class FFMPEG {
     private Pointer audio_dst_data[] = new Pointer[4];
     private int audio_dst_linesize[] = new int[4];
 
+    /** Set to make fps = fps * 1000 / 1001. */
+    public boolean v1001;
+
     /** Number of frames per group of pictures (GOP).
      * Determines how often key frame is generated.
      * Default = 12
@@ -1400,8 +1403,13 @@ public class FFMPEG {
           codec_ctx.bit_rate = config_audio_bit_rate;
           codec_ctx.sample_rate = freq;
           codec_ctx.channels = chs;
-          codec_ctx.time_base_num = 1;
-          codec_ctx.time_base_den = fps;
+          if (v1001) {
+            codec_ctx.time_base_num = 1001;
+            codec_ctx.time_base_den = fps * 1000;
+          } else {
+            codec_ctx.time_base_num = 1;
+            codec_ctx.time_base_den = fps;
+          }
           switch (chs) {
             case 1: codec_ctx.channel_layout = AV_CH_LAYOUT_MONO; break;
             case 2: codec_ctx.channel_layout = AV_CH_LAYOUT_STEREO; break;
@@ -1413,8 +1421,13 @@ public class FFMPEG {
           codec_ctx.bit_rate = config_video_bit_rate;
           codec_ctx.width = width;
           codec_ctx.height = height;
-          codec_ctx.time_base_num = 1;
-          codec_ctx.time_base_den = fps;
+          if (v1001) {
+            codec_ctx.time_base_num = 1001;
+            codec_ctx.time_base_den = fps * 1000;
+          } else {
+            codec_ctx.time_base_num = 1;
+            codec_ctx.time_base_den = fps;
+          }
           codec_ctx.gop_size = config_gop_size;
           codec_ctx.pix_fmt = AV_PIX_FMT_YUV420P;
           if (codec_ctx.codec_id == AV_CODEC_ID_MPEG2VIDEO) {

@@ -11,7 +11,7 @@ import javaforce.*;
 
 public class PasswordsApp extends javax.swing.JFrame implements ActionListener {
 
-  private String version = "0.11";
+  private String version = "0.12";
 
   /**
    * Creates new form PasswordsApp
@@ -34,11 +34,24 @@ public class PasswordsApp extends javax.swing.JFrame implements ActionListener {
     JFImage appicon = new JFImage();
     appicon.loadPNG(this.getClass().getClassLoader().getResourceAsStream("jpasswords.png"));
     setIconImage(appicon.getImage());
-    JFImage scaled = new JFImage(16, 16);
-    scaled.fill(0, 0, 16, 16, 0x00000000, true);  //fill with alpha transparent
-    scaled.getGraphics().drawImage(appicon.getImage()
-      , 0, 0, 15, 15
-      , 0, 0, appicon.getWidth()-1, appicon.getHeight()-1, null);
+    appicon.loadPNG(this.getClass().getClassLoader().getResourceAsStream("jpasswords_tray.png"));
+    tray = SystemTray.getSystemTray();
+    Dimension size = tray.getTrayIconSize();
+    JFImage scaled = new JFImage(size.width, size.height);
+    scaled.fill(0, 0, size.width, size.height, 0x00000000, true);  //fill with alpha transparent
+    if (false) {
+      //scaled image (looks bad sometimes)
+      scaled.getGraphics().drawImage(appicon.getImage()
+        , 0, 0, size.width, size.height
+        , 0, 0, appicon.getWidth(), appicon.getHeight()
+        , null);
+    } else {
+      //center image
+      scaled.getGraphics().drawImage(appicon.getImage()
+        , (size.width - appicon.getWidth()) / 2
+        , (size.height - appicon.getHeight()) / 2
+        , null);
+    }
     //create tray icon
     PopupMenu popup = new PopupMenu();
     show = new MenuItem("Show");
@@ -50,7 +63,6 @@ public class PasswordsApp extends javax.swing.JFrame implements ActionListener {
     popup.add(exit);
     icon = new TrayIcon(scaled.getImage(), "Passwords", popup);
     icon.addActionListener(this);
-    tray = SystemTray.getSystemTray();
     try { tray.add(icon); } catch (Exception e) { JFLog.log(e); }
   }
 

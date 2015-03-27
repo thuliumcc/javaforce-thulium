@@ -568,30 +568,6 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
     return pos;
   }
 
-  public static class Track {
-    public Element element[];
-    public Track() {}
-  }
-
-  public static class Config {
-    public String path;
-    public int videoRate, audioRate, audioChannels, width, height;
-    public Track track[];
-    public boolean preview;
-    public int videoBitRate, audioBitRate;
-    public CameraKey cameraKey[];
-    public Config() {
-      videoRate = 24;
-      audioRate = 44100;
-      audioChannels = 2;
-      width = 640;
-      height = 480;
-      preview = true;
-      videoBitRate = 400000;
-      audioBitRate = 128000;
-    }
-  }
-
   public void saveConfig() {
     int noTracks = tracks.getComponentCount() - 1;
     config.track = new Track[noTracks];
@@ -1135,6 +1111,7 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
         FFMPEG.Encoder ff = new FFMPEG.Encoder();
         ff.config_video_bit_rate = config.videoBitRate;
         ff.config_audio_bit_rate = config.audioBitRate;
+        ff.v1001 = config.v1001;
         ff.start(ProjectPanel.this, config.width, config.height, config.videoRate, config.audioChannels, config.audioRate, "avi", true, true);
         int audioFractionCounter = 0;
         short audio0[] = new short[audioLengthPerFrame * config.audioChannels];
@@ -1186,7 +1163,7 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
               }
               break;
             }
-          }
+          }  //keys
           for(int frame=0;frame<config.videoRate;frame++) {
             if (!foundKey) {
               if (delta) {
@@ -1214,12 +1191,12 @@ public class ProjectPanel extends javax.swing.JPanel implements FFMPEGIO {
               track.renderVideo(gldata, image, second, frame);
               track.renderAudio(audio, second, frame);
               if (track.isCut()) cut = true;
-            }
+            }  //track
             if (cut) continue;
             ff.add_video(image.getBuffer());
             ff.add_audio(audio);
-          }
-        }
+          }  //frame
+        }  //second
         uninit3d();
         ff.stop();
         for(int trackNo=1;trackNo<tracks.getComponentCount();trackNo++) {

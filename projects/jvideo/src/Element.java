@@ -88,7 +88,7 @@ public class Element implements FFMPEGIO {
   private RandomAccessFile raf;
   private ArrayList<JFImage> preview = new ArrayList<JFImage>();
   private static JFImage imgImage, imgVideo, imgAudio, imgCut, imgBlur, imgText;
-  private static ProjectPanel.Config previewConfig = new ProjectPanel.Config();
+  private static Config previewConfig = new Config();
   private boolean ready;
   private JFImage srcImage;
   private int width, height;
@@ -99,7 +99,7 @@ public class Element implements FFMPEGIO {
   private int imgIdx;
   private double gain, attn;
   private double alphaFadeLevel, alphaFadeStep;
-  private double frameRate;
+  private double frameRateRatio;
   private double currentFrame;
   private boolean eof;
   private double videoRate;
@@ -129,12 +129,15 @@ public class Element implements FFMPEGIO {
   public boolean isReady() {
     return ready;
   }
-  public boolean start(ProjectPanel.Config config) {
+  public boolean start(Config config) {
     if (ready) return true;  //already done
     JFLog.log("Element.start:" + path[0]);
     ready = true;
     eof = false;
     videoRate = config.videoRate;
+    if (config.v1001) {
+      videoRate = videoRate * 1000.0 / 1001.0;
+    }
     switch (type) {
       case TYPE_IMAGE:
         srcImage = new JFImage();
@@ -159,7 +162,10 @@ public class Element implements FFMPEGIO {
         }
         if (type == TYPE_VIDEO) {
           //calc frameRate
-          frameRate = ff.getFrameRate() / config.videoRate;
+          JFLog.log("input frameRate=" + ff.getFrameRate());
+          JFLog.log("output frameRate=" + videoRate);
+          frameRateRatio = ff.getFrameRate() / videoRate;
+          JFLog.log("frameRateRatio=" + frameRateRatio);
           currentFrame = 0.0;
         }
         audio = null;
@@ -197,7 +203,7 @@ public class Element implements FFMPEGIO {
     }
     if (alphaFadeIn) {
       alphaFadeLevel = 0.0;
-      alphaFadeStep = 256.0 / ((double)(config.videoRate * alphaFadeInDuration));
+      alphaFadeStep = 256.0 / ((double)(videoRate * alphaFadeInDuration));
     }
     width = config.width;
     height = config.height;
@@ -271,7 +277,8 @@ public class Element implements FFMPEGIO {
           px[a] |= 0xff000000;  //test - should already be done
         }
         srcImage.putPixels(px, 0, 0, width, height, 0);
-        currentFrame += frameRate;
+        //BUG : this code to resample video rate is drifting...
+        currentFrame += frameRateRatio;
         while (currentFrame >= 1.0) {
           while (!eof && frames.isEmpty()) readMore();
           currentFrame -= 1.0;
@@ -450,7 +457,7 @@ public class Element implements FFMPEGIO {
           if (task != null) task.setProgress(frame * 100 / length);
           if (imgIdx >= path.length) break;
           srcImage.load(JF.getUserPath() + "/" + path[imgIdx]);
-          if (path.length > 1) imgIdx += 4 * frameRate;
+          if (path.length > 1) imgIdx += 4 * frameRateRatio;
           previewImage = new JFImage(64, 60);
           previewImage.getGraphics().drawImage(srcImage.getImage()
             , dx1 * width / 100, dy1 * height / 100

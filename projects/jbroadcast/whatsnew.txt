@@ -1,6 +1,9 @@
 ChangeLog
 =========
 
+9-15-2014 : version 0.23
+ - new : tray icon (Windows 7 theme)
+
 7-25-2014 : version 0.22
  - new : goto message from user input will now timeout after 5 seconds and repeat (user requested feature)
  - new : if user does not respond to 5 inputs the call is terminated.

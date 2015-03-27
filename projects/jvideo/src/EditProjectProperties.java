@@ -20,6 +20,7 @@ public class EditProjectProperties extends javax.swing.JDialog {
     setPosition();
     this.project = project;
     videoRate.setValue(new Integer(project.config.videoRate));
+    v1001.setSelected(project.config.v1001);
     audioRate.setSelectedItem("" + project.config.audioRate);
     audioChannels.setValue(new Integer(project.config.audioChannels));
     width.setText("" + project.config.width);
@@ -68,6 +69,7 @@ public class EditProjectProperties extends javax.swing.JDialog {
     videoBitRate = new javax.swing.JComboBox();
     jLabel7 = new javax.swing.JLabel();
     audioBitRate = new javax.swing.JComboBox();
+    v1001 = new javax.swing.JCheckBox();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
     setTitle("Project Properties");
@@ -123,6 +125,8 @@ public class EditProjectProperties extends javax.swing.JDialog {
     audioBitRate.setSelectedIndex(2);
     audioBitRate.setToolTipText("");
 
+    v1001.setText("X 1000 / 1001");
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -139,7 +143,10 @@ public class EditProjectProperties extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                   .addComponent(audioRate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                  .addComponent(videoRate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                  .addGroup(layout.createSequentialGroup()
+                    .addComponent(videoRate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                    .addComponent(v1001))))
               .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                   .addGroup(layout.createSequentialGroup()
@@ -183,7 +190,8 @@ public class EditProjectProperties extends javax.swing.JDialog {
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel1)
-          .addComponent(videoRate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+          .addComponent(videoRate, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(v1001))
         .addGap(18, 18, 18)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel2)
@@ -225,6 +233,7 @@ public class EditProjectProperties extends javax.swing.JDialog {
   private void acceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_acceptActionPerformed
     try {
       project.config.videoRate = (Integer)videoRate.getValue();
+      project.config.v1001 = v1001.isSelected();
       project.config.audioRate = Integer.valueOf((String)audioRate.getSelectedItem());
       project.config.audioChannels = (Integer)audioChannels.getValue();
       project.config.width = Integer.valueOf(width.getText());
@@ -254,6 +263,7 @@ public class EditProjectProperties extends javax.swing.JDialog {
   private javax.swing.JLabel jLabel6;
   private javax.swing.JLabel jLabel7;
   private javax.swing.JCheckBox preview;
+  private javax.swing.JCheckBox v1001;
   private javax.swing.JComboBox videoBitRate;
   private javax.swing.JSpinner videoRate;
   private javax.swing.JTextField width;

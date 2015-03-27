@@ -1,5 +1,11 @@
 What's new...
 
+Sept 15/2014 : JF 7.30.0 released!
+  - cosmetic fixes only
+  - jfPasswords/0.12 & jPBXLite/0.21 & jPhoneLite/1.9.1 & jfBroadcast/0.23
+    - tray icon is now scaled to correct size (must call SystemTray.getTrayIconSize() to get OS specific size)
+    - new tray icons that matches Windows 7 theme
+
 Aug 8/2014 : JF 7.29.0 released!
   - ffmpeg
     - fixed audio resampling (no more audio ticks if input/output sample rates differ)

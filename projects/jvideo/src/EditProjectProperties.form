@@ -38,7 +38,11 @@
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="audioRate" min="-2" max="-2" attributes="0"/>
-                                  <Component id="videoRate" min="-2" max="-2" attributes="0"/>
+                                  <Group type="102" attributes="0">
+                                      <Component id="videoRate" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                                      <Component id="v1001" min="-2" max="-2" attributes="0"/>
+                                  </Group>
                               </Group>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -100,6 +104,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel1" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="videoRate" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="v1001" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -274,6 +279,11 @@
         </Property>
         <Property name="selectedIndex" type="int" value="2"/>
         <Property name="toolTipText" type="java.lang.String" value=""/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="v1001">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="X 1000 / 1001"/>
       </Properties>
     </Component>
   </SubComponents>

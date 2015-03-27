@@ -37,7 +37,7 @@ public class EditElementProperties extends javax.swing.JDialog {
         addDuration();
         break;
       case Element.TYPE_SPECIAL_BLUR:
-        addBlur();
+        addBlur();  //includes duration
         break;
       case Element.TYPE_CAMERA:
         addGL(fov);
