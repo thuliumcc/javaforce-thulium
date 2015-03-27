@@ -76,7 +76,7 @@ public class DNS extends Thread {
     + "#www.mydomain.com,a,3600,192.168.0.2\r\n"
     + "#mydomain.com,mx,3600,50,mail.mydomain.com\r\n"
     + "#mail.mydomain.com,a,3600,192.168.0.3\r\n"
-    + "#www.mydomain.com,aaaa,1234:1234:1234:1234:1234:1234:1234:1234\r\n";
+    + "#www.mydomain.com,aaaa,3600,1234:1234:1234:1234:1234:1234:1234:1234\r\n";
 
   private void loadConfig() {
     Section section = Section.None;
@@ -136,9 +136,12 @@ public class DNS extends Thread {
   private static final int AD = 0x0020;  //auth data???
   private static final int CD = 0x0010;  //checking disabled???
   //4 bits result code (0=no error)
+  private static final int ERR_NO_ERROR     = 0x0000;  //no error
+  private static final int ERR_NO_SUCH_NAME = 0x0003;  //404
 
   private static final int A = 1;
   private static final int CNAME = 5;
+  private static final int PTR = 12;
   private static final int MX = 15;
   private static final int AAAA = 28;
 
@@ -184,6 +187,16 @@ public class DNS extends Thread {
           int cls = bb.getShort(offset);
           if (cls != 1) throw new Exception("only internet class supported");
           offset += 2;
+          if (domain.endsWith(".in-addr.arpa")) {
+            //reverse IPv4 query (just send bogus info)
+            sendReply(domain, "*.in-addr.arpa,ptr,1440,localdomain", type, id);
+            continue;
+          }
+          if (domain.endsWith(".ip6.arpa")) {
+            //reverse IPv6 query (just send bogus info)
+            sendReply(domain, "*.ip6.arpa,ptr,1440,localdomain", type, id);
+            continue;
+          }
           if (queryLocal(domain, type, id)) continue;
           queryRemote(domain, type);
         }
@@ -202,10 +215,11 @@ public class DNS extends Thread {
         if (length == 0) break;
         if (length >= 0xc0) {
           //pointer
-          if (!jump) nameLength += 2;
+          if (!jump) nameLength++;
           jump = true;
-          offset = (length & 0x6f) << 8;
-          offset += ((int)data[offset]) & 0xff;
+          int newOffset = (length & 0x3f) << 8;
+          newOffset += data[offset] & 0xff;
+          offset = newOffset;
         } else {
           if (!jump) nameLength += length;
           if (name.length() != 0) name.append(".");
@@ -316,6 +330,7 @@ public class DNS extends Thread {
           putIP4(f[3]);  //Rdata
           break;
         case CNAME:
+        case PTR:
           encodeName(query);
           putShort((short)type);
           putShort((short)1);  //class

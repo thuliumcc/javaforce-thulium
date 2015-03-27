@@ -1,5 +1,13 @@
 What's new...
 
+Mar 10/2015 : JF 7.43.0 released!
+  - jfNetTools/0.1 released!
+    - new app with some basic networking tools (LAN benchmark, ping, dns, etc.)
+  - jfDNS/0.2 released!
+    - fix : getName() had some bugs with pointers
+    - fix : default config was missing a TTL
+    - fix : sends bogus info for reverse dns queries (nslookup likes to know who the dns server is)
+
 Feb 9/2015 : JF 7.42.0 released!
   - javaforce.voip.SIPClientInterface now includes onAck()
   - jPhoneLite/1.9.3 beta 1

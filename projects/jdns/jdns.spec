@@ -1,6 +1,6 @@
 Buildroot: .
 Name: jdns
-Version: 0.1
+Version: 0.2
 Release: 1
 Summary: DNS Server
 License: LGPL

@@ -2,7 +2,7 @@
   <description>dns</description>
   <!-- set global properties for this build -->
   <property name="app" location="jdns"/>
-  <property name="JDNSVERSION" value="0.1"/>
+  <property name="JDNSVERSION" value="0.2"/>
 
   <target name="jar" description="jar">
     <copy file="../../jars/javaforce.jar" todir="."/>
