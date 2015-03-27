@@ -1874,6 +1874,7 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
   }
 
   private void closeAllApps() {
+    saveConfig();
     //close open VPN connections
     jbusClient.call("org.jflinux", "closeAllVPN", "");
     //close all apps belonging to this user
@@ -2420,12 +2421,14 @@ public class Dock extends javax.swing.JWindow implements ActionListener, MouseLi
               file = ((File)data.get(a)).getAbsolutePath();
               if (!file.endsWith(".desktop")) continue;
               addButton(file, true, -1);
+              addApp(file);
               break;
             case LINK:
               //BUG : not supported : ???
               continue;
           }
         }
+        saveConfig();
         return true;
       }
 

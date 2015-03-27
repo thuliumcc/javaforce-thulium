@@ -1,5 +1,11 @@
 What's new...
 
+Oct 25/2014 : JF 7.37.0 released!
+  - jPhoneLite/1.9.2
+    - some minor fixes
+  - jDesktop/0.25
+    - fix : config was not saved in some cases
+
 Oct 24/2014 : JF 7.36.0 released!
   - GLMatrix
     - added addRotate3() and addRotate4() to add rotation that is not affected by previous rotations.
