@@ -8,12 +8,14 @@
 #define JNI_VERSION_1_4 0x00010004
 #define JNI_VERSION_1_6 0x00010006
 
-#define JNIEXPORT __declspec(dllexport)
-#define JNIIMPORT __declspec(dllimport)
 #ifdef __WINNT__
   #define JNICALL __stdcall
+  #define JNIEXPORT __declspec(dllexport)
+  #define JNIIMPORT __declspec(dllimport)
 #else
   #define JNICALL
+  #define JNIEXPORT __attribute__ ((visibility ("default")))
+  #define JNIIMPORT
 #endif
 
 typedef int             jint;

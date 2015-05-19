@@ -1,7 +1,10 @@
 <project name="plymouth-theme-jflinux" default="help" basedir=".">
   <description>plymouth-theme-jflinux</description>
   <!-- set global properties for this build -->
-  <property name="PLYMOUTHTHEMEJFLINUXVERSION" value="0.2"/>
+  <property name="home" location="../.."/>
+  <property name="version" value="0.2"/>
+
+  <!-- do not import base.xml, custom build process -->
 
   <target name="help">
     <echo>sudo ant install-ubuntu - install files for Ubuntu</echo>
@@ -34,11 +37,11 @@
 
   <target name="deb" description="create deb package">
     <exec executable="jdeb">
-      <arg value="plymouth-theme-jflinux-${PLYMOUTHTHEMEJFLINUXVERSION}_all.deb"/>
+      <arg value="plymouth-theme-jflinux-${version}_all.deb"/>
       <arg value="deb"/>
       <arg value="files-ubuntu.lst"/>
     </exec>
-    <copy file="plymouth-theme-jflinux-${PLYMOUTHTHEMEJFLINUXVERSION}_all.deb" todir="../../repo/ubuntu"/>
+    <copy file="plymouth-theme-jflinux-${version}_all.deb" todir="../../repo/ubuntu"/>
   </target>
 
   <target name="rpm" description="create rpm package">
@@ -46,7 +49,7 @@
       <arg value="jflinux.spec"/>
       <arg value="files-fedora.lst"/>
     </exec>
-    <copy file="plymouth-theme-jflinux-${PLYMOUTHTHEMEJFLINUXVERSION}-1.noarch.rpm" todir="../../repo/fedora"/>
+    <copy file="plymouth-theme-jflinux-${version}-1.noarch.rpm" todir="../../repo/fedora"/>
   </target>
 
   <target name="clean" description="deletes compiled files">

@@ -13,6 +13,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import javaforce.jni.JFNative;
 import javax.swing.*;
 
 /**
@@ -24,7 +25,7 @@ import javax.swing.*;
 public class JF {
 
   public static String getVersion() {
-    return "7.50.0";
+    return "8.0.0";
   }
 
   public static void sleep(int milli) {
@@ -629,6 +630,12 @@ public class JF {
       JFLog.log(e);
       return false;
     }
+  }
+
+  public static boolean isWildcard(String wcstr) {
+    if (wcstr.indexOf("*") != -1) return true;
+    if (wcstr.indexOf("?") != -1) return true;
+    return false;
   }
 
   public static boolean wildcardCompare(String fnstr, String wcstr, boolean caseSensitive) {
@@ -1289,5 +1296,51 @@ public class JF {
 
   public static void donate() {
     showMessage("Donate", "If you find this program useful,\nplease send $5 US or more via Paypal to pquiring@gmail.com\nThanks!");
+  }
+
+  /** Expand arguments.
+   *  Performs argument globbing (wildcards).
+   *  Used by native launcher.
+   * (same as sun.launcher.LauncherHelper) */
+  public static String[] expandArgs(String args[]) {
+    ArrayList<String> list = new ArrayList<String>();
+
+    boolean caseSensitive = !isWindows();
+
+    for(int a=0;a<args.length;a++) {
+      if (args[a].length() > 0 && args[a].charAt(0) != '\"' && (args[a].indexOf('*') != -1 || args[a].indexOf('?') != -1)) {
+        File x = new File(args[a]);
+        File parent = x.getParentFile();
+        String glob = x.getName();
+        if (parent == null) {
+          parent = new File(".");
+        }
+        String parentPath = args[a].substring(0, args[a].length() - glob.length());
+        if (parentPath.indexOf('*') != -1 || parentPath.indexOf('?') != -1) {
+          list.add(args[a]);
+          continue;
+        }
+        File files[] = parent.listFiles();
+        if (files == null) {
+          list.add(args[a]);
+          continue;
+        }
+        int cnt = 0;
+        for(int f=0;f<files.length;f++) {
+          String name = files[f].getName();
+          if (wildcardCompare(name, glob, caseSensitive)) {
+            list.add(parentPath + name);
+            cnt++;
+          }
+        }
+        if (cnt == 0) {
+          list.add(args[a]);
+        }
+      } else {
+        list.add(args[a]);
+      }
+    }
+
+    return list.toArray(new String[list.size()]);
   }
 }

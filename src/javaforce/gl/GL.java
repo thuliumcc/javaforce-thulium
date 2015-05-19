@@ -8,7 +8,7 @@ package javaforce.gl;
  * Created : Sept 16, 2013
  *
  * Notes:
- *   - only support OpenGL 2.0 or better (1.x not supported)
+ *   - only supports OpenGL 2.0 or better (1.x not supported)
  *   - only call GL functions from the EDT (event dispatching thread)
  *     - shared resources are used making it not thread safe
  *   - doesn't work on Ubuntu unless you install 'libgl1-mesa-dev' package
@@ -23,25 +23,35 @@ package javaforce.gl;
 import com.sun.jna.*;
 import com.sun.jna.ptr.*;
 import com.sun.jna.win32.*;
+
 import java.awt.*;
 import java.lang.reflect.*;
 import java.util.*;
 
 import javaforce.*;
+import javaforce.jni.*;
 import javaforce.jna.objc.*;
 import static javaforce.jna.objc.NSOpenGLPixelFormat.*;
 
-public class GL {
-  private static Pointer malloc(int size) {
+public abstract class GL {
+  protected static Pointer malloc(int size) {
     return new Pointer(Native.malloc(size));
   }
 
-  private static void free(Pointer ptr) {
+  protected static void free(Pointer ptr) {
     Native.free(Pointer.nativeValue(ptr));
   }
 
-  public GL(GLInterface iface) {
-    this.iface = iface;
+  protected GL() {}
+
+  public static GL create(GLInterface iface) {
+    if (JFNative.loaded) {
+      JFLog.log("GL:Using JNI interface");
+      return new GLJNI(iface);
+    } else {
+      JFLog.log("GL:Using JNA interface");
+      return new GLJNA(iface);
+    }
   }
 
   //Windows
@@ -65,7 +75,7 @@ public class GL {
     public int wglMakeCurrent(Pointer hdc, Pointer hglrc);
     public Pointer wglGetProcAddress(String name);
   }
-  private static WGL wgl;
+  protected static WGL wgl;
 
   public static class PIXELFORMATDESCRIPTOR extends Structure {
     public short nSize, nVersion;
@@ -130,11 +140,11 @@ public class GL {
   /** Creates an OpenGL context in a Canvas.
    */
   public static GL createComponent(Canvas c, GLInterface iface, GL shared) {
-    GL gl = new GL(iface);
+    GL gl = create(iface);
     if (os == OS.WINDOWS) {
       gl.whwnd = Native.getComponentPointer(c);
       createWindows(gl, shared);
-      getWindowsAPI();
+      gl.getWindowsAPI();
     } else if (os == OS.MAC) {
       if (!createMac(gl, c, shared)) return null;
       getMacAPI();
@@ -148,12 +158,12 @@ public class GL {
 
   /** Creates an OpenGL context that renders to offscreen image.
    */
-  static GL createOffscreen(Window w, Component c, GLInterface iface, GL shared) {
-    GL gl = new GL(iface);
+  public static GL createOffscreen(Window w, Component c, GLInterface iface, GL shared) {
+    GL gl = create(iface);
     if (os == OS.WINDOWS) {
       gl.whwnd = Native.getWindowPointer(w);
       createWindows(gl, shared);
-      getWindowsAPI();
+      gl.getWindowsAPI();
     } else if (os == OS.MAC) {
       if (!createMac(gl, w, shared)) return null;
       getMacAPI();
@@ -195,7 +205,7 @@ public class GL {
     wgl.wglMakeCurrent(gl.whdc, gl.wctx);
   }
 
-  private static void getWindowsAPI() {
+  protected void getWindowsAPI() {
     if (api != null) return;
     api = new GLFuncs();
     NativeLibrary glLibrary = NativeLibrary.getInstance("opengl32");
@@ -517,7 +527,7 @@ public class GL {
   }
 
   //common data
-  private GLInterface iface;
+  protected GLInterface iface;
   private enum OS {WINDOWS, LINUX, MAC};
   private static OS os;
 
@@ -669,7 +679,7 @@ public class GL {
     swap();
   }
 
-  private static class GLFuncs {
+  protected static class GLFuncs {
     public Function glActiveTexture;
     public Function glAttachShader;
     public Function glBindBuffer;
@@ -731,378 +741,80 @@ public class GL {
     public Function glVertexAttribPointer;
     public Function glViewport;
   }
-  private static GLFuncs api;
+  protected static GLFuncs api;
 
-  private Object a1[] = new Object[1];
-  private Object a2[] = new Object[2];
-  private Object a3[] = new Object[3];
-  private Object a4[] = new Object[4];
-  private Object a5[] = new Object[5];
-  private Object a6[] = new Object[6];
-  private Object a7[] = new Object[7];
-//  private Object a8[] = new Object[8];
-  private Object a9[] = new Object[9];
+  protected Object a1[] = new Object[1];
+  protected Object a2[] = new Object[2];
+  protected Object a3[] = new Object[3];
+  protected Object a4[] = new Object[4];
+  protected Object a5[] = new Object[5];
+  protected Object a6[] = new Object[6];
+  protected Object a7[] = new Object[7];
+//  protected Object a8[] = new Object[8];
+  protected Object a9[] = new Object[9];
 
-  public void glActiveTexture(int i1) {
-    a1[0] = i1;
-    api.glActiveTexture.invoke(a1);
-  }
-  public void glAttachShader(int i1, int i2) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glAttachShader.invoke(a2);
-  }
-  public void glBindBuffer(int i1, int i2) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glBindBuffer.invoke(a2);
-  }
-  public void glBindFramebuffer(int i1, int i2) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glBindFramebuffer.invoke(a2);
-  }
-  public void glBindRenderbuffer(int i1, int i2) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glBindRenderbuffer.invoke(a2);
-  }
-  public void glBindTexture(int i1, int i2) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glBindTexture.invoke(a2);
-  }
-  public void glBlendFunc(int i1, int i2) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glBlendFunc.invoke(a2);
-  }
+  public abstract void glActiveTexture(int i1);
+  public abstract void glAttachShader(int i1, int i2);
+  public abstract void glBindBuffer(int i1, int i2);
+  public abstract void glBindFramebuffer(int i1, int i2);
+  public abstract void glBindRenderbuffer(int i1, int i2);
+  public abstract void glBindTexture(int i1, int i2);
+  public abstract void glBlendFunc(int i1, int i2);
   //NOTE : GLsizeiptr is 32 or 64 bits - use a Pointer
-  public void glBufferData(int i1, int i2, float i3[], int i4) {
-    a4[0] = i1;
-    a4[1] = new Pointer(i2);
-    a4[2] = i3;
-    a4[3] = i4;
-    api.glBufferData.invoke(a4);
-  }
-  public void glBufferData(int i1, int i2, short i3[], int i4) {
-    a4[0] = i1;
-    a4[1] = new Pointer(i2);
-    a4[2] = i3;
-    a4[3] = i4;
-    api.glBufferData.invoke(a4);
-  }
-  public void glBufferData(int i1, int i2, int i3[], int i4) {
-    a4[0] = i1;
-    a4[1] = new Pointer(i2);
-    a4[2] = i3;
-    a4[3] = i4;
-    api.glBufferData.invoke(a4);
-  }
-  public void glBufferData(int i1, int i2, byte i3[], int i4) {
-    a4[0] = i1;
-    a4[1] = new Pointer(i2);
-    a4[2] = i3;
-    a4[3] = i4;
-    api.glBufferData.invoke(a4);
-  }
-  public void glClear(int flags) {
-    a1[0] = flags;
-    api.glClear.invoke(a1);
-  }
-  public void glClearColor(float r, float g, float b, float a) {
-    a4[0] = r;
-    a4[1] = g;
-    a4[2] = b;
-    a4[3] = a;
-    api.glClearColor.invoke(a4);
-  }
-  public void glColorMask(boolean r, boolean g, boolean b, boolean a) {
-    a4[0] = r;
-    a4[1] = g;
-    a4[2] = b;
-    a4[3] = a;
-    api.glColorMask.invoke(a4);
-  }
-  public void glCompileShader(int id) {
-    a1[0] = id;
-    api.glCompileShader.invoke(a1);
-  }
-  public int glCreateProgram() {
-    return api.glCreateProgram.invokeInt(null);
-  }
-  public int glCreateShader(int type) {
-    a1[0] = type;
-    return api.glCreateShader.invokeInt(a1);
-  }
-  public void glCullFace(int id) {
-    a1[0] = id;
-    api.glCullFace.invoke(a1);
-  }
-  public void glDeleteBuffers(int i1, int i2[]) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glDeleteBuffers.invoke(a2);
-  }
-  public void glDeleteFramebuffers(int i1, int i2[]) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glDeleteFramebuffers.invoke(a2);
-  }
-  public void glDeleteRenderbuffers(int i1, int i2[]) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glDeleteRenderbuffers.invoke(a2);
-  }
-  public void glDeleteTextures(int i1, int i2[], int i3) {
-    a3[0] = i1;
-    a3[1] = i2;
-    a3[2] = i3;
-    api.glDeleteTextures.invoke(a3);
-  }
-  public void glDrawElements(int i1, int i2, int i3, int i4) {
-    a4[0] = i1;
-    a4[1] = i2;
-    a4[2] = i3;
-    a4[3] = new Pointer(i4);
-    api.glDrawElements.invoke(a4);
-  }
-  public void glDepthFunc(int i1) {
-    a1[0] = i1;
-    api.glDepthFunc.invoke(a1);
-  }
-  public void glDisable(int id) {
-    a1[0] = id;
-    api.glDisable.invoke(a1);
-  }
-  public void glDepthMask(boolean state) {
-    a1[0] = state;
-    api.glDepthMask.invoke(a1);
-  }
-  public void glEnable(int id) {
-    a1[0] = id;
-    api.glEnable.invoke(a1);
-  }
-  public void glEnableVertexAttribArray(int id) {
-    a1[0] = id;
-    api.glEnableVertexAttribArray.invoke(a1);
-  }
-  public void glFlush() {
-    api.glFlush.invoke(null);
-  }
-  public void glFramebufferTexture2D(int i1, int i2, int i3, int i4, int i5) {
-    a5[0] = i1;
-    a5[1] = i2;
-    a5[2] = i3;
-    a5[3] = i4;
-    a5[4] = i5;
-    api.glFramebufferTexture2D.invoke(a5);
-  }
-  public void glFramebufferRenderbuffer(int i1, int i2, int i3, int i4) {
-    a4[0] = i1;
-    a4[1] = i2;
-    a4[2] = i3;
-    a4[3] = i4;
-    api.glFramebufferRenderbuffer.invoke(a4);
-  }
-  public void glFrontFace(int id) {
-    a1[0] = id;
-    api.glFrontFace.invoke(a1);
-  }
-  public int glGetAttribLocation(int i1, String str) {
-    a2[0] = i1;
-    a2[1] = str;
-    return api.glGetAttribLocation.invokeInt(a2);
-  }
-  public int glGetError() {
-    return api.glGetError.invokeInt(null);
-  }
-  public String glGetProgramInfoLog(int id) {
-    IntByReference len = new IntByReference();
-    len.setValue(1024);
-    Pointer str = malloc(1024);
-    a4[0] = id;
-    a4[1] = 1024;
-    a4[2] = len;
-    a4[3] = str;
-    api.glGetProgramInfoLog.invoke(a4);
-    String ret = str.getString(0);
-    free(str);
-    return ret;
-  }
-  public String glGetShaderInfoLog(int id) {
-    IntByReference len = new IntByReference();
-    len.setValue(1024);
-    Pointer str = malloc(1024);
-    a4[0] = id;
-    a4[1] = 1024;
-    a4[2] = len;
-    a4[3] = str;
-    api.glGetShaderInfoLog.invoke(a4);
-    String ret = str.getString(0);
-    free(str);
-    return ret;
-  }
-  public String glGetString(int type) {
-    a1[0] = type;
-    return api.glGetString.invokeString(a1, false);
-  }
-  public void glGetIntegerv(int type, int i[]) {
-    a2[0] = type;
-    a2[1] = i;
-    api.glGetIntegerv.invoke(a2);
-  }
-  public void glGenBuffers(int i1, int i2[]) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glGenBuffers.invoke(a2);
-  }
-  public void glGenFramebuffers(int i1, int i2[]) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glGenFramebuffers.invoke(a2);
-  }
-  public void glGenRenderbuffers(int i1, int i2[]) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glGenRenderbuffers.invoke(a2);
-  }
-  public void glGenTextures(int i1, int i2[]) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glGenTextures.invoke(a2);
-  }
-  public int glGetUniformLocation(int i1, String str) {
-    a2[0] = i1;
-    a2[1] = str;
-    return api.glGetUniformLocation.invokeInt(a2);
-  }
-  public void glLinkProgram(int id) {
-    a1[0] = id;
-    api.glLinkProgram.invoke(a1);
-  }
-  public void glPixelStorei(int i1, int i2) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glPixelStorei.invoke(a2);
-  }
-  public void glReadPixels(int i1, int i2, int i3, int i4, int i5, int i6, int px[]) {
-    a7[0] = i1;
-    a7[1] = i2;
-    a7[2] = i3;
-    a7[3] = i4;
-    a7[4] = i5;
-    a7[5] = i6;
-    a7[6] = px;
-    api.glReadPixels.invoke(a7);
-  }
-  public void glRenderbufferStorage(int i1, int i2, int i3, int i4) {
-    a4[0] = i1;
-    a4[1] = i2;
-    a4[2] = i3;
-    a4[3] = i4;
-    api.glRenderbufferStorage.invoke(a4);
-  }
-  public int glShaderSource(int type, int count, String src[], int src_lengths[]) {
-    a4[0] = type;
-    a4[1] = count;
-    a4[2] = src;
-    a4[3] = src_lengths;
-    return api.glShaderSource.invokeInt(a4);
-  }
-  public int glStencilFunc(int func, int ref, int mask) {
-    a3[0] = func;
-    a3[1] = ref;
-    a3[2] = mask;
-    return api.glStencilFunc.invokeInt(a3);
-  }
-  public int glStencilMask(int mask) {
-    a1[0] = mask;
-    return api.glStencilMask.invokeInt(a1);
-  }
-  public int glStencilOp(int sfail, int dpfail, int dppass) {
-    a3[0] = sfail;
-    a3[1] = dpfail;
-    a3[2] = dppass;
-    return api.glStencilOp.invokeInt(a3);
-  }
-  public void glTexImage2D(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int px[]) {
-    a9[0] = i1;
-    a9[1] = i2;
-    a9[2] = i3;
-    a9[3] = i4;
-    a9[4] = i5;
-    a9[5] = i6;
-    a9[6] = i7;
-    a9[7] = i8;
-    a9[8] = px;
-    api.glTexImage2D.invoke(a9);
-  }
-  public void glTexParameteri(int i1, int i2, int i3) {
-    a3[0] = i1;
-    a3[1] = i2;
-    a3[2] = i3;
-    api.glTexParameteri.invoke(a3);
-  }
-  public void glUseProgram(int id) {
-    a1[0] = id;
-    api.glUseProgram.invoke(a1);
-  }
-  public void glUniformMatrix4fv(int i1, int i2, int i3, float m[]) {
-    a4[0] = i1;
-    a4[1] = i2;
-    a4[2] = i3;
-    a4[3] = m;
-    api.glUniformMatrix4fv.invoke(a4);
-  }
-  public void glUniform3fv(int i1, int i2, float f[]) {
-    a3[0] = i1;
-    a3[1] = i2;
-    a3[2] = f;
-    api.glUniform3fv.invoke(a3);
-  }
-  public void glUniform2fv(int i1, int i2, float f[]) {
-    a3[0] = i1;
-    a3[1] = i2;
-    a3[2] = f;
-    api.glUniform2fv.invoke(a3);
-  }
-  public void glUniform1f(int i1, float f) {
-    a2[0] = i1;
-    a2[1] = f;
-    api.glUniform1f.invoke(a2);
-  }
-  public void glUniform3iv(int i1, int i2, int v[]) {
-    a3[0] = i1;
-    a3[1] = i2;
-    a3[2] = v;
-    api.glUniform3iv.invoke(a3);
-  }
-  public void glUniform2iv(int i1, int i2, int v[]) {
-    a3[0] = i1;
-    a3[1] = i2;
-    a3[2] = v;
-    api.glUniform2iv.invoke(a3);
-  }
-  public void glUniform1i(int i1, int i2) {
-    a2[0] = i1;
-    a2[1] = i2;
-    api.glUniform1i.invoke(a2);
-  }
-  public void glVertexAttribPointer(int i1, int i2, int i3, int i4, int i5, int i6) {
-    a6[0] = i1;
-    a6[1] = i2;
-    a6[2] = i3;
-    a6[3] = i4;
-    a6[4] = i5;
-    a6[5] = new Pointer(i6);
-    api.glVertexAttribPointer.invoke(a6);
-  }
-  public void glViewport(int x,int y,int w,int h) {
-    a4[0] = x;
-    a4[1] = y;
-    a4[2] = w;
-    a4[3] = h;
-    api.glViewport.invoke(a4);
-  }
+  public abstract void glBufferData(int i1, int i2, float i3[], int i4);
+  public abstract void glBufferData(int i1, int i2, short i3[], int i4);
+  public abstract void glBufferData(int i1, int i2, int i3[], int i4);
+  public abstract void glBufferData(int i1, int i2, byte i3[], int i4);
+  public abstract void glClear(int flags);
+  public abstract void glClearColor(float r, float g, float b, float a);
+  public abstract void glColorMask(boolean r, boolean g, boolean b, boolean a);
+  public abstract void glCompileShader(int id);
+  public abstract int glCreateProgram();
+  public abstract int glCreateShader(int type);
+  public abstract void glCullFace(int id);
+  public abstract void glDeleteBuffers(int i1, int i2[]);
+  public abstract void glDeleteFramebuffers(int i1, int i2[]);
+  public abstract void glDeleteRenderbuffers(int i1, int i2[]);
+  public abstract void glDeleteTextures(int i1, int i2[], int i3);
+  public abstract void glDrawElements(int i1, int i2, int i3, int i4);
+  public abstract void glDepthFunc(int i1);
+  public abstract void glDisable(int id);
+  public abstract void glDepthMask(boolean state);
+  public abstract void glEnable(int id);
+  public abstract void glEnableVertexAttribArray(int id);
+  public abstract void glFlush();
+  public abstract void glFramebufferTexture2D(int i1, int i2, int i3, int i4, int i5);
+  public abstract void glFramebufferRenderbuffer(int i1, int i2, int i3, int i4);
+  public abstract void glFrontFace(int id);
+  public abstract int glGetAttribLocation(int i1, String str);
+  public abstract int glGetError();
+  public abstract String glGetProgramInfoLog(int id);
+  public abstract String glGetShaderInfoLog(int id);
+  public abstract String glGetString(int type);
+  public abstract void glGetIntegerv(int type, int i[]);
+  public abstract void glGenBuffers(int i1, int i2[]);
+  public abstract void glGenFramebuffers(int i1, int i2[]);
+  public abstract void glGenRenderbuffers(int i1, int i2[]);
+  public abstract void glGenTextures(int i1, int i2[]);
+  public abstract int glGetUniformLocation(int i1, String str);
+  public abstract void glLinkProgram(int id);
+  public abstract void glPixelStorei(int i1, int i2);
+  public abstract void glReadPixels(int i1, int i2, int i3, int i4, int i5, int i6, int px[]);
+  public abstract void glRenderbufferStorage(int i1, int i2, int i3, int i4);
+  public abstract int glShaderSource(int type, int count, String src[], int src_lengths[]);
+  public abstract int glStencilFunc(int func, int ref, int mask);
+  public abstract int glStencilMask(int mask);
+  public abstract int glStencilOp(int sfail, int dpfail, int dppass);
+  public abstract void glTexImage2D(int i1, int i2, int i3, int i4, int i5, int i6, int i7, int i8, int px[]);
+  public abstract void glTexParameteri(int i1, int i2, int i3);
+  public abstract void glUseProgram(int id);
+  public abstract void glUniformMatrix4fv(int i1, int i2, int i3, float m[]);
+  public abstract void glUniform3fv(int i1, int i2, float f[]);
+  public abstract void glUniform2fv(int i1, int i2, float f[]);
+  public abstract void glUniform1f(int i1, float f);
+  public abstract void glUniform3iv(int i1, int i2, int v[]);
+  public abstract void glUniform2iv(int i1, int i2, int v[]);
+  public abstract void glUniform1i(int i1, int i2);
+  public abstract void glVertexAttribPointer(int i1, int i2, int i3, int i4, int i5, int i6);
+  public abstract void glViewport(int x,int y,int w,int h);
 }

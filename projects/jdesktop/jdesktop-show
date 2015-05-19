@@ -1,2 +1,0 @@
-#!/bin/bash
-jbus-call org.jflinux.jdesktop.$JID.show\(\)

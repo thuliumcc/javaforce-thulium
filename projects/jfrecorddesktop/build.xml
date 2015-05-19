@@ -1,0 +1,118 @@
+<project name="jfrecorddesktop" default="jar" basedir=".">
+  <description>jfrecorddesktop</description>
+  <!-- set global properties for this build -->
+  <property name="app" value="jfrecorddesktop"/>
+  <property name="home" location="../.."/>
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="javaforce.jar"/>
+  <property name="version" value="0.3"/>
+
+  <import file="../../base.xml"/>
+
+  <target name="depjars">
+    <jar destfile="javaforce.jar">
+      <zipfileset src="../../jars/javaforce.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfrecorddesktop.sourceforge.net"/>
+      </manifest>
+    </jar>
+    <jar destfile="jna.jar">
+      <zipfileset src="../../jars/jna.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfrecorddesktop.sourceforge.net"/>
+      </manifest>
+    </jar>
+    <jar destfile="jna-platform.jar">
+      <zipfileset src="../../jars/jna-platform.jar"/>
+      <manifest>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfrecorddesktop.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="compile" depends="depjars" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}"  target="1.6" source="1.6" debug="true" includeantruntime="false">
+      <classpath path="${classpath}"/>
+      <classpath path="jna-platform.jar"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jfrecorddesktop.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <fileset dir="." includes="*.crt"/>
+      <manifest>
+        <attribute name="Main-Class" value="RecordDesktopApp"/>
+        <attribute name="Trusted-Library" value="true"/>
+        <attribute name="Permissions" value="all-permissions"/>
+        <attribute name="Codebase" value="jfrecorddesktop.sourceforge.net"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app}"/>
+    <chmod file="/usr/bin/${app}" perm="+x"/>
+    <copy file="${app}.cfg" todir="/usr/bin/"/>
+    <copy file="jfrecorddesktop.jar" todir="/usr/share/java"/>
+    <copy file="jfrecorddesktop.desktop" todir="/usr/share/applications"/>
+    <copy file="jfrecorddesktop.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jfrecorddesktop.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="release-bin" depends="sign-jar" description="create release zip file">
+    <copy file="../../jars/javaforce.jar" todir="."/>
+    <copy file="../../jars/jna.jar" todir="."/>
+    <copy file="../../jars/jna-platform.jar" todir="."/>
+    <zip destfile="jfrecorddesktop-${version}.zip">
+      <fileset dir=".">
+        <include name="*.jar"/>
+        <include name="*.txt"/>
+        <include name="run.bat"/>
+      </fileset>
+      <fileset dir="../.." includes="license.txt"/>
+    </zip>
+    <move file="jfrecorddesktop-${version}.zip" todir="${user.home}/zips"/>
+  </target>
+
+  <target name="release-src" depends="" description="create release zip file">
+    <zip destfile="jfrecorddesktop-src-${version}.zip">
+      <fileset dir="../../..">
+        <include name="jf/license.txt"/>
+        <include name="jf/base.xml"/>
+        <include name="jf/projects/jfrecorddesktop/*.java"/>
+        <include name="jf/projects/jfrecorddesktop/*.form"/>
+        <include name="jf/projects/jfrecorddesktop/*.txt"/>
+        <include name="jf/projects/jfrecorddesktop/*.xml"/>
+        <include name="jf/projects/jfrecorddesktop/*.png"/>
+        <include name="jf/projects/jfrecorddesktop/*.ico"/>
+        <include name="jf/projects/jfrecorddesktop/*.cfg"/>
+        <include name="jf/projects/jfrecorddesktop/run.bat"/>
+        <include name="jf/projects/jfrecorddesktop/nbproject/*.xml"/>
+        <include name="jf/jars/javaforce.jar"/>
+        <include name="jf/jars/jna.jar"/>
+        <include name="jf/jars/jna-platform.jar"/>
+        <include name="jf/stubs/*"/>
+      </fileset>
+    </zip>
+    <move file="jfrecorddesktop-src-${version}.zip" todir="${user.home}/zips"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

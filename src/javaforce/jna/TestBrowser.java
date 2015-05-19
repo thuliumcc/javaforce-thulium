@@ -9,6 +9,9 @@ import javaforce.jna.com.Guid;
  *
  * Usage : java -cp javaforce.jar;jna.jar javaforce.jna.TestBrowser
  *
+ * BUG : Keyboard focus is stuck in the browser.  I only built this as a test
+ *   for ActiveX so I could get Windows Desktop Sharing API working.
+ *
  * @author pquiring
  */
 

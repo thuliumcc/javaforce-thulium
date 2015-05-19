@@ -1,5 +1,24 @@
 What's new...
 
+May 18/2015 : JF 8.0.0 released!
+  - all native executable launchers are now built in /stubs and copied+patched as needed
+    - the CLASSPATH/MAINCLASS properties (*.cfg) is stored in the EXE file for Windows
+    - argument expanding is now implemented (globbing)
+    - javaforce.jna.WinPE is used to patch the EXE for Windows
+    - TODO : find a reliable way to attach properties to Linux executables
+    - TODO : MacOSX (anyone want to donate a MacMini with Intel Core2 or better ;)
+  - all MSI files are now split into 32bit and 64bit files for Windows
+  - added some JNI functions in /native to complement JNA (see javaforce.jni.JFNative)
+    - these functions are used just to call functions within OpenGL for greater performance
+      - libffi (used by JNA) is a HUGE performance bottleneck
+      - these new functions have DOUBLED the frame rate in jfCraft
+    - if the JNI library fails to load it will fall back to JNA
+    - overtime I plan to merge JNA into JF but using non-generic invoke...() functions
+  - jfHex & jfHexBig
+    - minor fixes
+  - jfCraft/0.12 released!
+    - x2 FPS and added some new entities
+
 May 7/2015 : JF 7.50.0 released!
   - javaforce.gl.GL
     - more optz to reduce creating short lived Object[] arrays

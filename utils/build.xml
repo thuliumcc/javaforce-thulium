@@ -1,0 +1,47 @@
+<project name="utils" default="exe64" basedir=".">
+  <description>JavaForce utils for Windows</description>
+  <!-- set global properties for this build -->
+  <property name="app" value="varies"/>
+  <property name="home" value=".."/>
+
+  <import file="${home}/base.xml"/>
+
+  <target name="depjars">
+    <copy file="../jars/javaforce.jar" todir="."/>
+  </target>
+
+  <target name="jar" depends="depjars">
+  </target>
+
+  <macrodef name="utilsmacro">
+    <attribute name="app"/>
+    <attribute name="bits"/>
+    <sequential>
+      <copy file="${home}/stubs/win@{bits}c.exe" tofile="@{app}.exe" overwrite="true"/>
+      <java classpath="${home}/jars/javaforce.jar;${home}/jars/jna.jar" classname="javaforce.jna.WinPE">
+        <arg value="@{app}.exe"/>
+        <arg value="@{app}.cfg"/>
+      </java>
+    </sequential>
+  </macrodef>
+
+  <target name="exe32" depends="jar" description="build exe for utils 32bit">
+    <utilsmacro app="jfr" bits="32"/>
+    <utilsmacro app="jfs" bits="32"/>
+    <utilsmacro app="jimgconvert" bits="32"/>
+    <utilsmacro app="pngalpha" bits="32"/>
+    <utilsmacro app="SetPriority" bits="32"/>
+    <utilsmacro app="jfshare" bits="32"/>
+    <utilsmacro app="WinPE" bits="32"/>
+  </target>
+
+  <target name="exe64" depends="jar" description="build exe for utils 64bit">
+    <utilsmacro app="jfr" bits="64"/>
+    <utilsmacro app="jfs" bits="64"/>
+    <utilsmacro app="jimgconvert" bits="64"/>
+    <utilsmacro app="pngalpha" bits="64"/>
+    <utilsmacro app="SetPriority" bits="64"/>
+    <utilsmacro app="jfshare" bits="64"/>
+    <utilsmacro app="WinPE" bits="64"/>
+  </target>
+</project>

@@ -1,0 +1,40 @@
+<project name="native" default="help" basedir=".">
+  <description>native</description>
+
+  <target name="javah">
+    <javah class="javaforce.jni.JFNative" destdir="." classpath="../../classes"/>
+  </target>
+
+  <!-- Requires cygwin/mingw in PATH -->
+  <target name="windows" depends="javah" description="create windows native dll">
+    <exec command="i686-w64-mingw32-gcc  -I ../../include windows.c -c -Wl,-subsystem,windows -o win32.obj"/>
+    <exec command="i686-w64-mingw32-gcc -shared win32.obj -o ../jfnative32.dll"/>
+    <delete file="win32.obj"/>
+    <exec command="x86_64-w64-mingw32-gcc -I ../../include windows.c -c -Wl,-subsystem,windows -o win64.obj"/>
+    <exec command="x86_64-w64-mingw32-gcc -shared win64.obj -o ../jfnative64.dll"/>
+    <delete file="win64.obj"/>
+  </target>
+
+  <target name="linux" depends="javah"  description="create linux native so">
+    <exec command="gcc -I ../../include linux.c -c -o linux.o"/>
+    <exec command="gcc -shared linux.o -o ../jfnative64.so"/>
+    <delete file="linux.o"/>
+  </target>
+
+  <!-- TODO : Mac OS X -->
+
+  <target name="help" description="help">
+    <echo>ant windows - build windows native dll</echo>
+    <echo>ant linux - build linux native so</echo>
+    <echo></echo>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.dll"/>
+      <fileset dir="." includes="**/*.obj"/>
+      <fileset dir="." includes="**/*.so"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

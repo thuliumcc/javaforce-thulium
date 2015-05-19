@@ -1,0 +1,47 @@
+<project name="jftaskmgr" default="jar" basedir=".">
+  <description>jftaskmgr</description>
+  <!-- set global properties for this build -->
+  <property name="app" value="jftaskmgr"/>
+  <property name="home" location="../.."/>
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="version" value="0.2"/>
+
+  <import file="../../base.xml"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}" debug="true" includeantruntime="false">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jftaskmgr.jar" includes="*.class" basedir="${build}">
+      <manifest>
+        <attribute name="Main-Class" value="PaintApp"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app}"/>
+    <chmod file="/usr/bin/${app}" perm="+x"/>
+    <copy file="${app}.cfg" todir="/usr/bin/"/>
+    <copy file="jftaskmgr.jar" todir="/usr/share/java"/>
+    <copy file="jftaskmgr.desktop" todir="/usr/share/applications"/>
+    <copy file="jftaskmgr.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jftaskmgr.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

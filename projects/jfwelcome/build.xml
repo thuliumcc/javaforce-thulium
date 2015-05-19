@@ -1,0 +1,48 @@
+<project name="jfwelcome" default="jar" basedir=".">
+  <description>jfwelcome</description>
+  <!-- set global properties for this build -->
+  <property name="app" value="jfwelcome"/>
+  <property name="home" location="../.."/>
+  <property name="src" location="."/>
+  <property name="build" location="classes"/>
+  <property name="classpath" location="../../classes"/>
+  <property name="version" value="0.2"/>
+
+  <import file="../../base.xml"/>
+
+  <target name="compile" description="compile the source">
+    <!-- Compile the java code from ${src} into ${build} -->
+    <mkdir dir="${build}"/>
+    <javac srcdir="${src}" destdir="${build}"  target="1.6" source="1.6" debug="true" includeantruntime="false">
+      <classpath path="${classpath}"/>
+    </javac>
+  </target>
+
+  <target name="jar" depends="compile" description="build jar file">
+    <!-- Build jar file from class files -->
+    <jar destfile="jfwelcome.jar" includes="*.class" basedir="${build}">
+      <fileset dir="." includes="*.png"/>
+      <manifest>
+        <attribute name="Main-Class" value="Installer"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <!-- sudo ant install -->
+  <target name="install" description="install files">
+    <copy file="../../stubs/linux64.bin" tofile="/usr/bin/${app}"/>
+    <chmod file="/usr/bin/${app}" perm="+x"/>
+    <copy file="${app}.cfg" todir="/usr/bin/"/>
+    <copy file="jfwelcome.jar" todir="/usr/share/java"/>
+    <copy file="jfwelcome.desktop" todir="/usr/share/applications"/>
+    <copy file="jfwelcome.png" todir="/usr/share/icons/hicolor/48x48/apps"/>
+    <copy file="jfwelcome.html" todir="/usr/share/jhelp"/>
+  </target>
+
+  <target name="clean" description="deletes compiled files">
+    <delete>
+      <fileset dir="." includes="**/*.class"/>
+      <fileset dir="." includes="**/*.jar"/>
+    </delete>
+  </target>
+</project>

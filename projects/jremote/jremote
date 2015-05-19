@@ -1,2 +1,0 @@
-#!/bin/bash
-java -Xmx512m -cp /usr/share/java/javaforce.jar:/usr/share/java/jremote.jar RemoteApp $*

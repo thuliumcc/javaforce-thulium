@@ -31,14 +31,14 @@ public class jfr {
   String oldstr, newstr;
 
   void usage() {
-    System.out.println("Find & Replace utility");
+    System.out.println("Find & Replace utility v" + JF.getVersion());
     System.out.println("Usage : jfr [options] oldstr newstr filespec");
     System.out.println(" strings may contain C-style codes (\\n\\r\\t\\xHH\\DDD)");
     System.out.println("   HH=hex DDD=decimal ascii codes");
     System.out.println(" place \"quotes\" around str if it starts with '-' or spaces");
     System.out.println(" -asis = do not process C-style codes");
     System.out.println(" -i = case insensitive comparison");
-    System.out.println(" -r = recursive (use filespec of '.' to do everything, wildcards are not supported)");
+    System.out.println(" -r = recursive");
     System.exit(0);
   }
   byte ibuf[];
@@ -80,7 +80,12 @@ public class jfr {
     obuf = new byte[BUFSIZE];
 
     for (a = 2; a < pa.arg_names.size(); a++) {
-      dofile(new File(pa.arg_names.get(a)));
+      File file = new File(pa.arg_names.get(a));
+      if (file.isDirectory()) {
+        doFolder(file);
+      } else {
+        doFile(file);
+      }
     }
   }
 
@@ -89,18 +94,22 @@ public class jfr {
     System.exit(1);
   }
 
-  void dofile(File fi) {
+  void doFolder(File folder) {
+    File files[] = folder.listFiles();
+    for(int a=0;a<files.length;a++) {
+      File file = files[a];
+      if (file.isDirectory()) {
+        if (!b_recursive) continue;
+        doFolder(file);
+      } else {
+        doFile(file);
+      }
+    }
+  }
+
+  void doFile(File fi) {
     if (!fi.exists()) {
       error("file not found:" + fi.getAbsolutePath());
-      return;
-    }
-    if (fi.isDirectory()) {
-      if (b_recursive) {
-        File files[] = fi.listFiles();
-        for(int a=0;a<files.length;a++) {
-          dofile(files[a]);
-        }
-      }
       return;
     }
     File fo;  //out filename
