@@ -10,11 +10,15 @@ import javaforce.*;
 
 public class GLObject implements Cloneable {
   public JFArrayFloat vpl;  //vertex position list
-  public JFArrayFloat tcl;  //texture coords list
   public JFArrayInt vil;  //vertex index list
-  public String textureName;     //texture name
-  public boolean texloaded;
-  public boolean visible;
+  public int vpb = -1, vib = -1;  //GL Buffers
+
+  public int type = GL.GL_TRIANGLES;  //GL_TRIANGLES or GL_QUADS
+
+  public ArrayList<GLUVMap> maps = new ArrayList<GLUVMap>();
+
+  public boolean visible = true;
+  public boolean needCopyBuffers = true;
 //animation data
   public HashMap<Integer, GLTranslate> tl;  //move list
   public HashMap<Integer, GLRotate> rl;  //rotation list
@@ -23,15 +27,12 @@ public class GLObject implements Cloneable {
   public GLMatrix m;  //current rotation, translation, scale
   public float color[];  //RGBA (default = 1.0f,1.0f,1.0f,1.0f)
   public GLVertex org;  //origin (default = 0.0f,0.0f,0.0f)
-  public int parent;
+  public String name;
+  public int parent;  //a 3ds file field (not used)
   public int maxframeCount;
-  public int vpb = -1, tcb = -1, vib = -1;  //GL Buffers
   public GLObject() {
-    textureName = null;
-    texloaded = false;
     frameIndex = 0;
     vpl = new JFArrayFloat();
-    tcl = new JFArrayFloat();
     vil = new JFArrayInt();
     tl = new HashMap<Integer, GLTranslate>();
     rl = new HashMap<Integer, GLRotate>();
@@ -47,9 +48,8 @@ public class GLObject implements Cloneable {
   public Object clone() {
     GLObject cln = new GLObject();
     cln.vpl = vpl;
-    cln.tcl = tcl;
-    cln.textureName = textureName;
-    cln.texloaded = texloaded;
+    cln.vil = vil;
+    cln.maps = maps;
     cln.visible = visible;
     cln.tl = tl;
     cln.rl = rl;
@@ -61,6 +61,7 @@ public class GLObject implements Cloneable {
     cln.org = org;
     cln.parent = parent;
     cln.maxframeCount = maxframeCount;
+    cln.type = type;
     return cln;
   }
   public void setVisible(boolean state) {visible = state;}
@@ -112,19 +113,28 @@ public class GLObject implements Cloneable {
   public void addVertex(float xyz[]) {
     vpl.append(xyz);
   }
-  public void addVertex(float xyz[], float txy[]) {
+  public void addVertex(float xyz[], float uv[]) {
     vpl.append(xyz);
-    tcl.append(txy);
+    maps.get(0).tcl.append(uv);
+  }
+  public void addVertex(float xyz[], float uv1[], float uv2[]) {
+    vpl.append(xyz);
+    maps.get(0).tcl.append(uv1);
+    maps.get(1).tcl.append(uv2);
   }
   public void addVertex(GLVertex v) {
     vpl.append(v.x);
     vpl.append(v.y);
     vpl.append(v.z);
-    tcl.append(v.tx);
-    tcl.append(v.ty);
+    GLUVMap map = maps.get(0);
+    map.tcl.append(v.u);
+    map.tcl.append(v.v);
   }
-  public void addText(float txy[]) {
-    tcl.append(txy);
+  public void addText(float uv[]) {
+    maps.get(0).addText(uv);
+  }
+  public void addText(float uv[], int map) {
+    maps.get(map).addText(uv);
   }
   public void addPoly(int pts[]) {
     vil.append(pts);
@@ -139,12 +149,9 @@ public class GLObject implements Cloneable {
     gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vpb);
     gl.glBufferData(GL.GL_ARRAY_BUFFER, vpl.size() * 4, vpl.toArray(), GL.GL_STATIC_DRAW);
 
-    if (tcb == -1) {
-      gl.glGenBuffers(1, ids);
-      tcb = ids[0];
+    for(int a=0;a<maps.size();a++) {
+      maps.get(a).copyBuffers(gl);
     }
-    gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tcb);
-    gl.glBufferData(GL.GL_ARRAY_BUFFER, tcl.size() * 4, tcl.toArray(), GL.GL_STATIC_DRAW);
 
     if (vib == -1) {
       gl.glGenBuffers(1, ids);
@@ -152,18 +159,36 @@ public class GLObject implements Cloneable {
     }
     gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vib);
     gl.glBufferData(GL.GL_ELEMENT_ARRAY_BUFFER, vil.size() * 4, vil.toArray(), GL.GL_STREAM_DRAW);
+    needCopyBuffers = false;
   }
   public void bindBuffers(GLScene scene, GL gl) {
     gl.glBindBuffer(GL.GL_ARRAY_BUFFER, vpb);
     gl.glVertexAttribPointer(scene.vpa, 3, GL.GL_FLOAT, GL.GL_FALSE, 0, 0);
 
-    gl.glBindBuffer(GL.GL_ARRAY_BUFFER, tcb);
-    gl.glVertexAttribPointer(scene.tca, 2, GL.GL_FLOAT, GL.GL_FALSE, 0, 0);
+    for(int m=0;m<maps.size();m++) {
+      maps.get(m).bindBuffers(scene, gl);
+    }
 
     gl.glBindBuffer(GL.GL_ELEMENT_ARRAY_BUFFER, vib);
   }
-  public void render(GL gl) {
-    gl.glDrawElements(GL.GL_TRIANGLES, vil.size(), GL.GL_UNSIGNED_INT, 0);
+  public void render(GLScene scene, GL gl) {
+    if (vpl.size() == 0 || vil.size() == 0) return;  //crashes if empty ???
+    gl.glUniform1i(scene.uUVMaps, maps.size());
+    gl.glDrawElements(type, vil.size(), GL.GL_UNSIGNED_INT, 0);
   }
-};
-
+  public GLUVMap createUVMap() {
+    GLUVMap map = new GLUVMap(maps.size());
+    maps.add(map);
+    return map;
+  }
+  public GLUVMap getUVMap(int idx) {
+    return maps.get(idx);
+  }
+  public GLUVMap getUVMap(String name) {
+    for(int a=0;a<maps.size();a++) {
+      GLUVMap map = maps.get(a);
+      if (map.name.equals(name)) return map;
+    }
+    return null;
+  }
+}

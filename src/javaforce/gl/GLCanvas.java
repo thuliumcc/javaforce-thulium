@@ -11,15 +11,20 @@ package javaforce.gl;
  */
 
 import java.awt.*;
+import javax.swing.*;
 
 import javaforce.*;
 
 public class GLCanvas extends Canvas {
   private GLInterface iface;
   private GL gl;
+
   public boolean init(GLInterface iface) {
+    return init(iface, null);
+  }
+  public boolean init(GLInterface iface, GL shared) {
     this.iface = iface;
-    gl = GL.createComponent(this, iface);
+    gl = GL.createComponent(this, iface, shared);
     if (gl == null) return false;
     gl.makeCurrent();
     iface.init(gl, this);

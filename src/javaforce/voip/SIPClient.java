@@ -789,13 +789,13 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
             reply(cd, cmd, 200, "OK", false, false);
             reply(cd, "INVITE", 487, "CANCELLED", false, false);
             //then should receive ACK
-//            setCallDetails(callid, null);
+//            setCallDetails(callid, null);  //need to wait for ACK
             break;
           }
           if (req.equals("BYE")) {
             reply(cd, cmd, 200, "OK", false, false);
             iface.onBye(this, callid);
-//            setCallDetails(callid, null);
+//            setCallDetails(callid, null);  //need to wait for ACK
             break;
           }
           if (req.equals("OPTIONS")) {
@@ -827,6 +827,9 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
               cd.dst.sdp = sdp;
             }
             iface.onAck(this, callid, sdp);
+            if (cmd.equals("BYE")) {
+              setCallDetails(callid, null);
+            }
             break;
           }
           break;
@@ -854,6 +857,10 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
 
             if (type == 200) issue(cd, "ACK", false, true);
             iface.onSuccess(this, callid, cd.dst.sdp, type == 200);
+          } else if (cmd.equals("BYE")) {
+            if (type == 183) break;  //not used in BYE command
+            //call leg ended
+            setCallDetails(callid, null);
           }
           break;
         case 202:
@@ -895,12 +902,19 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
             iface.onCancel(this, callid, type);
           }
           break;
+        case 404:  //no one there
+        case 486:  //busy
+          if (cd.dst.to != null) cd.src.to = cd.dst.to;
+          issue(cd, "ACK", false, true);
+          iface.onCancel(this, callid, type);
+          setCallDetails(callid, null);
+          break;
         default:
           //treat all other codes as a cancel
           if (cd.dst.to != null) cd.src.to = cd.dst.to;
           issue(cd, "ACK", false, true);
           iface.onCancel(this, callid, type);
-//          setCallDetails(callid, null);
+//          setCallDetails(callid, null);  //might not be done
           break;
       }
     } catch (Exception e) {

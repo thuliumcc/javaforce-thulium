@@ -5,46 +5,43 @@ import java.util.*;
 import javaforce.*;
 
 /** GLScene is a primitive 3D framework.
- *
- * - holds all GLModel's and can then render them.
- *
+ * Holds all loaded 3D meshes and related resources.
  */
 
 public class GLScene {
   private static final boolean DEBUG = false;
 
-  private int iwx, iwy; //window size (int)
-  private float dwx, dwy; //window size (float)
-  private float ratio;  //dwx / dwy
   private boolean needinittex = true;
 
-  private ArrayList<GLModel> ml;
-  private HashMap<String, GLTexture> tl; //texture list
-  private HashMap<String, GLModel> mtl; //model templates list
+  ArrayList<GLModel> ml;
+  HashMap<String, GLTexture> tl; //texture list
+  HashMap<String, GLModel> mtl; //model templates list
 
   private ArrayList<Integer> freeglidlist;
 
-  private GLTexture blankTexture;
+  GLTexture blankTexture;
 
   public GLScene() {
     freeglidlist = new ArrayList<Integer>();
     reset();
     texturePath = "";
-    blankTexture = new GLTexture();
+    blankTexture = new GLTexture(0);
     blankTexture.set(new int[] {-1},1,1);  //white pixel
   }
 
+  public boolean inited = false;
+
   public String texturePath;
-  public GLMatrix m_camera;  //camera matrix (rotation/translation)
-  public GLMatrix m_model;  //model matrix (translation only)
 
   public int fragShader, vertexShader, program;
-  public int vpa, tca;  //attribs
+  public int vpa;  //attribs
+  public int tca[] = new int[2];
+  public int uUVMaps;
   public int mpu, mmu, mvu;  //uniform matrix'es (perspective, model, view)
 
 //code
-  public void init(GL gl, int x, int y, String vertex, String fragment) {  //must give size of render window
-    gl.glFrontFace(GL.GL_CCW);  //3DS uses GL_CW
+  public void init(GL gl, String vertex, String fragment) {  //must give size of render window
+    gl.glFrontFace(GL.GL_CCW);  //3DS uses GL_CCW
     gl.glEnable(GL.GL_CULL_FACE);  //don't draw back sides
     gl.glEnable(GL.GL_DEPTH_TEST);
     gl.glDepthFunc(GL.GL_LEQUAL);
@@ -73,47 +70,44 @@ public class GLScene {
     JFLog.log("program log=" + gl.glGetProgramInfoLog(program));
     gl.glUseProgram(program);
 
-    tca = gl.glGetAttribLocation(program, "aTextureCoord");
-    gl.glEnableVertexAttribArray(tca);
     vpa = gl.glGetAttribLocation(program, "aVertexPosition");
     gl.glEnableVertexAttribArray(vpa);
+
+    tca[0] = gl.glGetAttribLocation(program, "aTextureCoord1");
+    gl.glEnableVertexAttribArray(tca[0]);
+    int uSampler1 = gl.glGetUniformLocation(program, "uSampler1");
+    gl.glUniform1i(uSampler1, 0);
+
+    tca[1] = gl.glGetAttribLocation(program, "aTextureCoord2");
+    gl.glEnableVertexAttribArray(tca[1]);
+    int uSampler2 = gl.glGetUniformLocation(program, "uSampler2");
+    gl.glUniform1i(uSampler2, 1);
 
     mpu = gl.glGetUniformLocation(program, "uPMatrix");
     mmu = gl.glGetUniformLocation(program, "uMMatrix");
     mvu = gl.glGetUniformLocation(program, "uVMatrix");
+    uUVMaps = gl.glGetUniformLocation(program, "uUVMaps");
 
-//    JFLog.log("vpa=" + vpa + ",tca=" + tca + ",mpu=" + mpu + ",mmu=" + mmu + ",mvu=" + mvu + ",program=" + program);
+//    JFLog.log("attribs=" + vpa + "," + tca[0] + "," + tca[1]);
+//    JFLog.log("uniforms=" + mpu + "," + mmu + "," + mvu + "," + uUVMaps + "," + uSampler1 + "," /*+ uSampler2*/);
 
     initTextures(gl);
 
-    resize(x,y);
+    inited = true;
   }
-  public void resize(int x, int y) {
-    iwx = x;
-    iwy = y;
-    dwx = (float)x;
-    dwy = (float)y;
-    ratio = dwx/dwy;
-  }
-  /** Creates a fog in the scene.<br>
-   * Note that when using fog the camera and model matrix'es must not include both a rotation and translation, <br>
-   * instead rotate the camera and translate the model only.<br>
-   */
   public void reset() {
     if (tl != null) releaseTextures();
     ml = new ArrayList<GLModel>();
     tl = new HashMap<String, GLTexture>();
     mtl = new HashMap<String, GLModel>();
-    m_camera = new GLMatrix();
-    m_model = new GLMatrix();
   }
   private void releaseTextures() {
     Set keyset = tl.keySet();
     Iterator iter = keyset.iterator();
-    int texidx;
+    String texidx;
     GLTexture tex;
     while (iter.hasNext()) {
-      texidx = (Integer)iter.next();
+      texidx = (String)iter.next();
       tex = tl.get(texidx);
       if (tex.glid != -1) {
         releaseTexture(tex.glid);
@@ -124,49 +118,34 @@ public class GLScene {
   private void releaseTexture(int glid) {
     freeglidlist.add(glid);
   }
-  public void cameraReset() {
-    m_camera.setIdentity();
-  }
-  public void cameraSet(float angle, float ax, float ay, float az, float tx, float ty, float tz) {
-    m_camera.setAATranslate(angle, ax, ay, az, tx, ty, tz);
-  }
-  public void cameraRotate(float angle, float ax, float ay, float az) {
-    m_camera.addRotate(angle, ax, ay, az);
-  }
-  public void cameraTranslate(float tx, float ty, float tz) {
-    m_camera.addTranslate(tx, ty, tz);
-  }
-  public void modelReset() {
-    m_model.setIdentity();
-  }
-/*
-  public void modelSet(float angle, float rx, float ry, float rz, float tx, float ty, float tz) {
-    m_model.setAATranslate(angle, rx, ry, rz, tx, ty, tz);
-  }
-  public void modelRotate(float angle, float ax, float ay, float az) {
-    m_model.addRotate(angle, ax, ay, az);
-  }
-*/
-  public void modelTranslate(float tx, float ty, float tz) {
-    m_model.addTranslate(tx, ty, tz);
-  }
 //load textures from disk to general-purpose memory
   public boolean loadTextures() {
     //scan thru object list and load them all
-    int size1 = ml.size();
+    boolean ret = true;
     GLObject obj;
-    for(int a=0;a<size1;a++) {
-      int size2 = ml.get(a).ol.size();
-      for(int b=0;b<size2;b++) {
-        obj = ml.get(a).ol.get(b);
-        if (obj.texloaded) continue;
-        if (!loadTexture(ml.get(a).ol.get(b).textureName)) return false;
-        obj.texloaded = true;
+    GLModel mod;
+    int modCnt = ml.size();
+    for(int a=0;a<modCnt;a++) {
+      mod = ml.get(a);
+      int objCnt = mod.ol.size();
+      for(int b=0;b<objCnt;b++) {
+        obj = mod.ol.get(b);
+        int mapCnt = obj.maps.size();
+        for(int m=0;m<mapCnt;m++) {
+          GLUVMap map = obj.maps.get(m);
+          if (map.texloaded) continue;
+          if (loadTexture(mod.getTexture(map.textureIndex), map.idx)) {
+            map.texloaded = true;
+          } else {
+            ret = false;
+          }
+        }
       }
     }
-    return true;
+    return ret;
   }
-  private boolean loadTexture(String fn) {
+  private boolean loadTexture(String fn, int idx) {
+    if (fn == null) return false;
     GLTexture tex;
 
     tex = tl.get(fn);
@@ -175,27 +154,34 @@ public class GLScene {
       return true;
     }
     needinittex = true;
-    tex = new GLTexture();
-    if (!tex.load(fn)) return false;
+    tex = new GLTexture(idx);
+    tex.name = fn;
+    if (!tex.load(fn)) {
+      JFLog.log("Error:Failed to load texture:" + fn);
+      return false;
+    }
     tex.refcnt = 1;
     tl.put(fn, tex);
     return true;
   }
   //directly load a texture
-  public boolean setTexture(String fn, int px[], int w, int h) {
+  public boolean setTexture(String fn, int px[], int w, int h, int idx) {
     GLTexture tex = tl.get(fn);
     if (tex == null) {
-      tex = new GLTexture();
+      tex = new GLTexture(idx);
       tl.put(fn, tex);
     } else {
-      tex.needload = true;
+      tex.loaded = false;
     }
     tex.set(px, w, h);
     needinittex = true;
     return false;
   }
 //load textures into video memory (texture objects)
-  private boolean initTextures(GL gl) {
+  boolean initTextures(GL gl) {
+    if (!needinittex) {
+      return true;
+    }
     //setup blankTexture
     if (blankTexture.glid == -1) initTexture(gl, blankTexture);
     //first uninit any that have been deleted
@@ -203,39 +189,16 @@ public class GLScene {
     //scan thru object list and load them all
     Set keyset = tl.keySet();
     Iterator iter = keyset.iterator();
-    int texidx;
+    String texidx;
     while (iter.hasNext()) {
-      texidx = (Integer)iter.next();
+      texidx = (String)iter.next();
       if (!initTexture(gl, tl.get(texidx))) return false;
     }
+    needinittex = false;
     return true;
   }
-  private boolean mipmaps = false;
   private boolean initTexture(GL gl, GLTexture tex) {
-    if (tex.glid == -1) {
-      int id[] = new int[1];
-      id[0] = -1;
-      gl.glGenTextures(1, id);
-      if (id[0] == -1) {
-        JFLog.log("glGenTextures failed:Error=0x" + Integer.toString(gl.glGetError(), 16));
-        return false;
-      }
-      tex.glid = id[0];
-    }
-    if (!tex.needload) return true;
-    gl.glBindTexture(GL.GL_TEXTURE_2D, tex.glid);
-    gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL.GL_REPEAT);
-    gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL.GL_REPEAT);
-    if (mipmaps) {
-      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST_MIPMAP_NEAREST);
-      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST_MIPMAP_NEAREST);
-    } else {
-      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER, GL.GL_NEAREST);
-      gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER, GL.GL_NEAREST);
-    }
-    gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, 4, tex.bitmap.getWidth(), tex.bitmap.getHeight(), 0, GL.GL_BGRA
-      , GL.GL_UNSIGNED_BYTE, tex.bitmap.getPixels());
-    return true;
+    return tex.load(gl);
   }
   private boolean uninitTextures(GL gl) {
     while (freeglidlist.size() > 0) {
@@ -253,12 +216,14 @@ public class GLScene {
   public void releaseUnusedTextures() {
     Set keyset = tl.keySet();
     Iterator iter = keyset.iterator();
-    int texidx;
+    String texidx;
     while (iter.hasNext()) {
-      texidx = (Integer)iter.next();
+      texidx = (String)iter.next();
       if (tl.get(texidx).refcnt == 0) releaseTexture(tl.get(texidx).glid);
     }
   }
+  /** Release a cloned model @ index.
+   */
   public void releaseModel(int idx) {
     GLModel mod;
     GLObject obj;
@@ -266,7 +231,10 @@ public class GLScene {
     int size = mod.ol.size();
     for(int a=0;a<size;a++) {
       obj = mod.ol.get(a);
-      tl.get(obj.textureName).refcnt--;
+      for(int m=0;m<obj.maps.size();m++) {
+        GLUVMap map = obj.maps.get(m);
+        tl.get(mod.getTexture(map.textureIndex)).refcnt--;
+      }
     }
     ml.remove(idx);
   }
@@ -281,56 +249,9 @@ public class GLScene {
   public void modelTranslate(int idx, float x, float y, float z) { ml.get(idx).translate(x,y,z); }
   public void modelRotate(int idx, float angle, float x, float y, float z) { ml.get(idx).rotate(angle,x,y,z); }
   public void modelScale(int idx, float x, float y, float z) { ml.get(idx).scale(x,y,z); }
-  public float fovy = 60.0f;
-  public float zNear = 0.1f;  //Do NOT use zero!!!
-  public float zFar = 10000.0f;
-  public void render(GL gl) {
-    if (needinittex) {
-      initTextures(gl);
-      needinittex = false;
-    }
-    GLModel mod;
-    GLObject obj;
-    GLMatrix mat = new GLMatrix();
-    //setup camera view
-    gl.glViewport(0, 0, iwx, iwy);
-    //setup model view
-    //setup background clr
-    gl.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT | GL.GL_STENCIL_BUFFER_BIT);
-    //render models
-    int size_ml = ml.size();
-    mat.setIdentity();
-    mat.perspective(fovy, ratio, zNear, zFar);
-    gl.glUniformMatrix4fv(mpu, 1, GL.GL_FALSE, mat.m);  //perspective matrix
-    for(int a=0;a<size_ml;a++) {
-      mod = ml.get(a);
-      if (!mod.visible) continue;
-      mat.setIdentity();
-      mat.mult4x4(m_camera);
-      gl.glUniformMatrix4fv(mvu, 1, GL.GL_FALSE, mat.m);  //view matrix
-      int size_ol = mod.ol.size();
-      for(int b=0;b<size_ol;b++) {
-        obj = mod.ol.get(b);
-        if (!obj.visible) continue;
-        mat.setIdentity();
-        mat.mult4x4(m_model);
-        mat.mult4x4(mod.m);
-        mat.mult4x4(obj.m);
-        gl.glUniformMatrix4fv(mmu, 1, GL.GL_FALSE, mat.m);  //model matrix
-        //setup rotate/translation/scale
-        if ((obj.textureName != null) && (tl.get(obj.textureName).glid != -1)) {
-          int glid = tl.get(obj.textureName).glid;
-          gl.glBindTexture(GL.GL_TEXTURE_2D, glid);
-        } else {
-          gl.glBindTexture(GL.GL_TEXTURE_2D, blankTexture.glid);
-        }
-        obj.bindBuffers(this, gl);
-        obj.render(gl);
-      }
-    }
-    gl.glFlush();
-  }
+  /** Loads a .3DS file into the template array.
+   * Use addModel() to add a clone into the render scene.
+   */
   public GLModel load3DS(String fn) {
     GLModel mod;
 
@@ -340,28 +261,81 @@ public class GLScene {
       return mod;
     }
 
-    mod = GL_3DS.load(fn);
+    GL_3DS loader = new GL_3DS();
+    mod = loader.load(fn);
     if (mod == null) return null;
     mtl.put(fn, mod);
     mod.refcnt = 1;
     mod = (GLModel)mod.clone();
+
     return mod;
   }
-  public void unload3DS(GLModel mod) {
+  /** Loads a .blend file into the template array.
+   * Use addModel() to add a clone into the render scene.
+   */
+  public GLModel loadBlend(String fn) {
+    GLModel mod;
+
+    mod = mtl.get(fn);
+    if (mod != null) {
+      mod.refcnt++;
+      return mod;
+    }
+
+    GL_BLEND loader = new GL_BLEND();
+    mod = loader.load(fn);
+    if (mod == null) return null;
+    mtl.put(fn, mod);
+    mod.refcnt = 1;
+    mod = (GLModel)mod.clone();
+
+    return mod;
+  }
+  /** Loads a .JF3D file into the template array.
+   * Use addModel() to add a clone into the render scene.
+   */
+  public GLModel loadJF3D(String fn) {
+    GLModel mod;
+
+    mod = mtl.get(fn);
+    if (mod != null) {
+      mod.refcnt++;
+      return mod;
+    }
+
+    GL_JF3D loader = new GL_JF3D();
+    mod = loader.load(fn);
+    if (mod == null) return null;
+    mtl.put(fn, mod);
+    mod.refcnt = 1;
+    mod = (GLModel)mod.clone();
+
+    return mod;
+  }
+  /** Clones a pre-loaded model.
+   * Use addModel() to add into the render scene.
+   */
+  public GLModel cloneModel(String fn) {
+    GLModel mod = mtl.get(fn);
+    if (mod == null) return null;
+    mod.refcnt++;
+    return (GLModel)mod.clone();
+  }
+  public void unloadModel(GLModel mod) {
     mod.refcnt--;
   }
-  //this will release all unused 3DS models
-  public void release3DS() {
+  //this will release all unused models
+  public void releaseModel() {
     Set keyset = mtl.keySet();
     Iterator iter = keyset.iterator();
-    int idx;
+    String idx;
     GLModel mod;
     while (iter.hasNext()) {
-      idx = (Integer)iter.next();
+      idx = (String)iter.next();
       mod = mtl.get(idx);
       if (mod.refcnt == 0) {
         mtl.remove(idx);
       }
     }
   }
-};
+}

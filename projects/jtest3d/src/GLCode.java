@@ -23,6 +23,7 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
   final int FPS = 65;
 
   GLScene scene = new GLScene();
+  GLRender render = new GLRender();
   GLModel mod;
   GLObject box;
 
@@ -34,6 +35,12 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
   float alpha = 0.5f, alphadir = -0.01f;
 
   boolean ready = false;
+
+  boolean doSwap = false;
+
+  public GLCode(boolean doSwap) {
+    this.doSwap = doSwap;
+  }
 
 //interface GLInterface
   public void init(GL gl, Component comp) {
@@ -95,11 +102,11 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
       fpsCounter++;
     }
     processMovement();
-    scene.render(gl);
-    gl.swap();
+    render.render(gl);
+    if (doSwap) gl.swap();  //only swap with GLCanvas, not GLJPanel
   }
   public void resize(GL gl, int width, int height) {
-    scene.resize(width, height);
+    render.resize(width, height);
   }
 //interface ActionListener
   public void actionPerformed(ActionEvent e) { }
@@ -149,7 +156,8 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
     int width = comp.getWidth();
     int height = comp.getHeight();
     System.out.println("size=" + width + "," + height);
-    scene.init(gl, width, height, VertexShader.source, FragmentShader.source);
+    scene.init(gl, GLVertexShader.source, GLFragmentShader.source);
+    render.init(scene, width, height);
     resetPosition();
 
     x = -0.5f;
@@ -157,7 +165,8 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
     z = -0.5f;
 
     box = new GLObject();
-    box.texidx = 0;
+    GLUVMap map = box.createUVMap();
+    map.textureName = "opengl.png";
 
     mod = new GLModel();
     mod.addObject(box);
@@ -191,7 +200,7 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
     };
     int off = obj.vpl.size() / 3;  //current vertex count
     int pts[] = null;
-    float tc[] = new float[8 * 2];
+    float uv[] = new float[8 * 2];
     switch (side) {
       case 1:  //top
         pts = new int[] {2,6,7,3};
@@ -212,17 +221,17 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
         pts = new int[] {3,1,0,2};
         break;
     }
-    float tx = 0.0f;
-    float ty = 0.0f;
+    float u = 0.0f;
+    float v = 0.0f;
     for(int a=0;a<4;a++) {
-      tc[pts[a] * 2 + 0] = tx;
-      tc[pts[a] * 2 + 1] = ty;
-      if (tx == 0.0f && ty == 0.0f) ty = 1.0f;
-      else if (tx == 0.0f && ty == 1.0f) tx = 1.0f;
-      else if (tx == 1.0f && ty == 1.0f) ty = 0.0f;
+      uv[pts[a] * 2 + 0] = u;
+      uv[pts[a] * 2 + 1] = v;
+      if (u == 0.0f && v == 0.0f) v = 1.0f;
+      else if (u == 0.0f && v == 1.0f) u = 1.0f;
+      else if (u == 1.0f && v == 1.0f) v = 0.0f;
 //      else if (tx == 0.0f && ty == 0.0f) tx = 0.0f;  //not needed - end of loop
     }
-    obj.addVertex(vp, tc);
+    obj.addVertex(vp, uv);
     obj.addPoly(new int[] {off + pts[0], off + pts[1], off + pts[2]});
     obj.addPoly(new int[] {off + pts[0], off + pts[2], off + pts[3]});
     return obj;
@@ -233,11 +242,11 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
   GLVector3 boxCenter = new GLVector3();
   public void processMovement() {
     viewpoint.set(0.0f, 0.0f, -1.0f);  //normally looking into monitor
-    scene.m_camera.mult(viewpoint);
+    render.m_camera.mult(viewpoint);
     uppoint.set(0.0f, 1.0f, 0.0f);  //normally up is along y axis
-    scene.m_camera.mult(uppoint);
+    render.m_camera.mult(uppoint);
     leftpoint.set(-1.0f, 0.0f, 0.0f);  //normally left is along x axis
-    scene.m_camera.mult(leftpoint);
+    render.m_camera.mult(leftpoint);
 
     if (keys[KeyEvent.VK_LEFT]) { rotateLR(-1.0f); }
     if (keys[KeyEvent.VK_RIGHT]) { rotateLR(1.0f); }
@@ -248,15 +257,15 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
 
     if (keys[KeyEvent.VK_Q]) { resetPosition(); }
 
-    if (keys[KeyEvent.VK_F1]) { scene.cameraRotate(10.0f, 1.0f, 0.0f, 0.0f); }
-    if (keys[KeyEvent.VK_F2]) { scene.cameraRotate(10.0f, 0.0f, 1.0f, 0.0f); }
-    if (keys[KeyEvent.VK_F3]) { scene.cameraRotate(10.0f, 0.0f, 0.0f, 1.0f); }
-    if (keys[KeyEvent.VK_F5]) { scene.cameraRotate(-10.0f, 1.0f, 0.0f, 0.0f); }
-    if (keys[KeyEvent.VK_F6]) { scene.cameraRotate(-10.0f, 0.0f, 1.0f, 0.0f); }
-    if (keys[KeyEvent.VK_F7]) { scene.cameraRotate(-10.0f, 0.0f, 0.0f, 1.0f); }
+    if (keys[KeyEvent.VK_F1]) { render.cameraRotate(10.0f, 1.0f, 0.0f, 0.0f); }
+    if (keys[KeyEvent.VK_F2]) { render.cameraRotate(10.0f, 0.0f, 1.0f, 0.0f); }
+    if (keys[KeyEvent.VK_F3]) { render.cameraRotate(10.0f, 0.0f, 0.0f, 1.0f); }
+    if (keys[KeyEvent.VK_F5]) { render.cameraRotate(-10.0f, 1.0f, 0.0f, 0.0f); }
+    if (keys[KeyEvent.VK_F6]) { render.cameraRotate(-10.0f, 0.0f, 1.0f, 0.0f); }
+    if (keys[KeyEvent.VK_F7]) { render.cameraRotate(-10.0f, 0.0f, 0.0f, 1.0f); }
 
-    if (keys[KeyEvent.VK_9]) { scene.fovy -= 10.0f; System.out.println("fovy = " + scene.fovy); }
-    if (keys[KeyEvent.VK_0]) { scene.fovy += 10.0f; System.out.println("fovy = " + scene.fovy); }
+    if (keys[KeyEvent.VK_9]) { render.fovy -= 10.0f; System.out.println("fovy = " + render.fovy); }
+    if (keys[KeyEvent.VK_0]) { render.fovy += 10.0f; System.out.println("fovy = " + render.fovy); }
 
     if (keys[KeyEvent.VK_S]) { move(1); }
     if (keys[KeyEvent.VK_W]) { move(-1); }
@@ -275,37 +284,37 @@ public class GLCode implements ActionListener, WindowListener, KeyListener, Mous
     box.color[3] = alpha;
   }
   public void rotateLR(float dir) {
-    scene.cameraRotate(speedRotate * uppoint.v[0], dir, 0.0f, 0.0f);
-    scene.cameraRotate(speedRotate * uppoint.v[1], 0.0f, dir, 0.0f);
-    scene.cameraRotate(speedRotate * uppoint.v[2], 0.0f, 0.0f, dir);
+    render.cameraRotate(speedRotate * uppoint.v[0], dir, 0.0f, 0.0f);
+    render.cameraRotate(speedRotate * uppoint.v[1], 0.0f, dir, 0.0f);
+    render.cameraRotate(speedRotate * uppoint.v[2], 0.0f, 0.0f, dir);
   }
   public void rotateUD(float dir) {
-    scene.cameraRotate(speedRotate * leftpoint.v[0], dir, 0.0f, 0.0f);
-    scene.cameraRotate(speedRotate * leftpoint.v[1], 0.0f, dir, 0.0f);
-    scene.cameraRotate(speedRotate * leftpoint.v[2], 0.0f, 0.0f, dir);
+    render.cameraRotate(speedRotate * leftpoint.v[0], dir, 0.0f, 0.0f);
+    render.cameraRotate(speedRotate * leftpoint.v[1], 0.0f, dir, 0.0f);
+    render.cameraRotate(speedRotate * leftpoint.v[2], 0.0f, 0.0f, dir);
   }
   public void spin(float dir) {
-    scene.cameraRotate(speedRotate * viewpoint.v[0], dir, 0.0f, 0.0f);
-    scene.cameraRotate(speedRotate * viewpoint.v[1], 0.0f, dir, 0.0f);
-    scene.cameraRotate(speedRotate * viewpoint.v[2], 0.0f, 0.0f, dir);
+    render.cameraRotate(speedRotate * viewpoint.v[0], dir, 0.0f, 0.0f);
+    render.cameraRotate(speedRotate * viewpoint.v[1], 0.0f, dir, 0.0f);
+    render.cameraRotate(speedRotate * viewpoint.v[2], 0.0f, 0.0f, dir);
   }
   public void move(float dir) {
-    scene.modelTranslate(
+    render.modelTranslate(
       viewpoint.v[0] * speedMove * dir,
       viewpoint.v[1] * speedMove * dir,
       viewpoint.v[2] * speedMove * dir
     );
   }
   public void stride(float dir) {
-    scene.modelTranslate(
+    render.modelTranslate(
       leftpoint.v[0] * speedMove * dir,
       leftpoint.v[1] * speedMove * dir,
       leftpoint.v[2] * speedMove * dir
     );
   }
   public void resetPosition() {
-    scene.cameraReset();
-    scene.modelReset();
-    scene.modelTranslate(0.0f, 0.0f, -20.0f);
+    render.cameraReset();
+    render.modelReset();
+    render.modelTranslate(0.0f, 0.0f, -20.0f);
   }
 }

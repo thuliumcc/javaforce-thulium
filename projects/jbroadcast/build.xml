@@ -5,7 +5,7 @@
   <property name="src" location="src"/>
   <property name="build" location="classes"/>
   <property name="classpath" location="javaforce.jar"/>
-  <property name="version" value="0.28"/>
+  <property name="version" value="0.29"/>
 
   <target name="depjars">
     <jar destfile="javaforce.jar">

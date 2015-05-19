@@ -1,5 +1,38 @@
 What's new...
 
+Apr 7/2015 : JF 7.46.0 released!
+  - GL framework improvements
+    - new : added support for multiple UV maps per object (GLUVMap)
+    - new : added support for sharing an OpenGL context between many GLCanvas/GLJPanel
+    - new : GLRender now renders a GLScene and there can be many GLRender each
+            with there own camera view.
+    - fix : 3DS loader
+      - some issues resolved
+    - new : Blender loader
+      - can now load .blend files
+    - new : JF3D file format
+      - a new 3D file format designed for JavaForce
+    - new : ModelConverter to convert 3ds/blend files to jf3d
+    - removed : GLWindow and GLFrame (unreliable)
+  - new app : jf3D
+    - started to build a 3D modeler since Blender didn't seem to suit my needs,
+      but after some persistent work on Blender I figured it out.
+      This app is incomplete but can be used to view 3D files for now.
+  - jfCraft/0.6 released!
+    - entities are now Blender models instead of hand coding them
+      - hundred to thousands of lines of code removed
+  - VoIP framework improvements
+    - started to fix the CallDetails memory leak
+      - freeing the CallDetails was never done before since I was not sure when to do it
+        - ex: freeing them after bye() will not work since a 200 is expected (or ACK in other cases)...
+      - they are small and was never a concern until someone said the autodialer was using a lot of memory
+      - this is not complete yet but should fix most leaks for now
+  - jPhoneLite/1.9.4
+    - some memory leaks fixed
+  - jfBroadcast/0.29
+    - some memory leaks fixed
+  - javaforce.jar is now > 1MB ;)
+
 Mar 26/2015 : JF 7.45.0 released!
   - jfBroadcast/0.28
     - new : added voicemail detection

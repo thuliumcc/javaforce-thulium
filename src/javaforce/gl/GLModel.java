@@ -13,6 +13,7 @@ import javaforce.*;
 
 public class GLModel implements Cloneable {
   public ArrayList<GLObject> ol;  //obj list
+  public ArrayList<String> textures;
   public GLMatrix m;  //translation, rotation, scale matrix for all sub-objects
   public boolean visible = true;
   public int refcnt;
@@ -21,8 +22,9 @@ public class GLModel implements Cloneable {
     m = new GLMatrix();
     m.setIdentity();
     ol = new ArrayList<GLObject>();
+    textures = new ArrayList<String>();
   }
-  public GLModel(GLMatrix m) {  //for clone()
+  private GLModel(GLMatrix m) {  //for clone()
     this.m = m;
     ol = new ArrayList<GLObject>();
   }
@@ -34,11 +36,21 @@ public class GLModel implements Cloneable {
     GLModel c = new GLModel((GLMatrix)m.clone());
     int objs = ol.size();
     for(int a=0;a<objs;a++) c.ol.add((GLObject)ol.get(a).clone());
+    c.textures = textures;
     return c;
   }
   public void setVisible(boolean state) {visible = state;}
   public void addObject(GLObject obj) {
     ol.add(obj);
+  }
+  public GLObject getObject(String name) {
+    for(int a=0;a<ol.size();a++) {
+      GLObject o = ol.get(a);
+      if (o.name.equals(name)) {
+        return o;
+      }
+    }
+    return null;
   }
   public void setIdentity() {
     m.setIdentity();
@@ -69,4 +81,15 @@ public class GLModel implements Cloneable {
       obj.setFrame(idx);
     }
   }
-};
+  /** Adds a texture filename and returns index. */
+  public int addTexture(String fn) {
+    for(int a=0;a<textures.size();a++) {
+      if (textures.get(a).equals(fn)) return a;
+    }
+    textures.add(fn);
+    return textures.size() - 1;
+  }
+  public String getTexture(int idx) {
+    return textures.get(idx);
+  }
+}

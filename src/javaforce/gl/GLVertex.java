@@ -4,19 +4,19 @@ package javaforce.gl;
 
 public class GLVertex {
   public float x,y,z;
-  public float tx,ty;  //texture coords
+  public float u,v;  //texture coords
   public GLVertex() { }
   public GLVertex(float x, float y, float z) {
     this.x = x;
     this.y = y;
     this.z = z;
   }
-  public GLVertex(float x, float y, float z, float tx, float ty) {
+  public GLVertex(float x, float y, float z, float u, float v) {
     this.x = x;
     this.y = y;
     this.z = z;
-    this.tx = tx;
-    this.ty = ty;
+    this.u = u;
+    this.v = v;
   }
   public GLVertex set(float x, float y, float z) {
     this.x = x;
@@ -24,12 +24,12 @@ public class GLVertex {
     this.z = z;
     return this;
   }
-  public GLVertex set(float x, float y, float z, float tx, float ty) {
+  public GLVertex set(float x, float y, float z, float u, float v) {
     this.x = x;
     this.y = y;
     this.z = z;
-    this.tx = tx;
-    this.ty = ty;
+    this.u = u;
+    this.v = v;
     return this;
   }
   /** this = a - b */

@@ -1,11 +1,11 @@
 JavaForce SDK
 =============
 
-Version 7.45.0
+Version 7.46.0
 
 What is it?
 ===========
-JavaForce is a central library extending the capabilities of Java.
+JavaForce is a Java library extending the capabilities of Java.
 
 The main library includes a VoIP stack and JNA bindings for FFMPEG, OpenGL, etc.
 
@@ -13,6 +13,7 @@ Includes many apps built around the library such as jPhoneLite, jfVideo Createor
 
 JF is also the core library in the Java infused Linux Operating system : http://jfLinux.org
 
+JF is also used to create jfCraft, a Minecraft clone : http://jfcraft.sourceforge.net
 
 Projects
 ========
@@ -82,7 +83,7 @@ pquiring@gmail.com
 
 http://javaforce.sourceforge.net
 
-Version 7.45.0
+Version 7.46.0
 
-Released : March 26 2015
+Released : April 7 2015
 

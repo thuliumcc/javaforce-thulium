@@ -14,7 +14,7 @@ import javaforce.gl.*;
 
 public class TestGLCanvas extends Frame {
 
-  GLCode common = new GLCode();
+  GLCode common = new GLCode(true);
 
   /**
    * Creates new form TestGLCanvas

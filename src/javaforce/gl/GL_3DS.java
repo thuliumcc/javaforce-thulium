@@ -5,7 +5,10 @@ import java.util.*;
 import javaforce.*;
 
 /**
- * Autodesk .3DS loader
+ * Autodesk .3DS reader
+ *
+ * Supports:
+ *   - Mesh, UVMap, animation data
  *
  *
  * @author pquiring
@@ -20,24 +23,44 @@ public class GL_3DS {
   private static final int _3DS_FLG_EASE_FROM   =  0x10;
   //*.3DS loading (loades meshes, textures and animation - lights are not supported)
   //You should now use GLSCene.load3DS() instead
-  public static GLModel load(String filename) {
-//System.out.println("load3DS:" + filename);
+  public byte data[];
+  public int datapos;
+
+  public static boolean debug = false;
+
+  public GLModel load(String filename) {
     try {
       return load3ds(new FileInputStream(filename));
     } catch (Exception e) {
-      System.out.println("Error:" + e);
+      e.printStackTrace();
       return null;
     }
   }
-  public static GLModel load(InputStream is) {
+  public GLModel load(InputStream is) {
     try {
       return load3ds(is);
     } catch (Exception e) {
-      System.out.println("Error:" + e);
+      e.printStackTrace();
       return null;
     }
   }
-  private static GLModel load3ds(InputStream is) throws Exception {
+  private boolean eof() {
+    return datapos >= data.length;
+  }
+  private int readuint16() {
+    int uint16 = LE.getuint16(data, datapos);
+    datapos += 2;
+    return uint16;
+  }
+  private int readuint32() {
+    int uint32 = LE.getuint32(data, datapos);
+    datapos += 4;
+    return uint32;
+  }
+  private float readfloat() {
+    return Float.intBitsToFloat(readuint32());
+  }
+  private GLModel load3ds(InputStream is) throws Exception {
     GLObject obj = null;
     int off = 0;
     int head_id;
@@ -47,7 +70,6 @@ public class GL_3DS {
     int _pts[];
     boolean done_vertex = false;
     boolean done_pts = false;
-    boolean done_texvertex = false;
     int vertexidx = -1;
     int vertexcnt = -1;
     String name;
@@ -60,30 +82,31 @@ public class GL_3DS {
     int a, b, keys, u32;
     boolean ok;
     int u16;
-    GLTranslate pos;
+    GLTranslate trans;
     GLRotate rot;
     GLScale scale;
     GLModel mod;
+    GLUVMap map;
+    int mapidx = -1;
     int skip=0;
     int parent;
     int frameno;
 
+    datapos = 0;
+    data = JF.readAll(is);
+
     matlist = new ArrayList<material>();
     objlist = new ArrayList<String>();
 
-    mod = new GLModel();  //you must add to scene with GLScene.addModel()
+    mod = new GLModel();
 
-    while (!JF.eof(is)) {
-      if (skip > 0) {
-        try { is.skip(skip); } catch (Exception e) {throw new Exception("skip() failed");}
-        skip = 0;
-      }
-      head_id = JF.readuint16(is);
-      head_len = JF.readuint32(is);
+    while (!eof()) {
+      head_id = readuint16();
+      head_len = readuint32();
       if (head_len == -1) break;  //this does happen in some files
       if (head_len < 6) throw new Exception("head_len < 6 (" + head_len + ")");  //bad file
       head_len -= 6;
-//System.out.println("id="+Integer.toString(head_id,16));
+//JFLog.log("id="+Integer.toString(head_id,16));
       switch (head_id) {
         case 0x4d4d:  //main chunk
           break;
@@ -93,20 +116,23 @@ public class GL_3DS {
           matname = "";
           break;
         case 0xa000:  //material chunk name
-          matname = readname(is, head_len);
+          matname = readname(head_len);
           break;
         case 0xa200:  //texture details
           break;
         case 0xa300:  //texture filename
           mat = new material();
-          fn = readname(is, head_len);
-//System.out.println("texture filename" + fn);
+          fn = readname(head_len);
+//JFLog.log("texture filename" + fn);
           mat.name = matname;
           mat.filename = fn;
           matlist.add(mat);
           break;
         case 0x4000:  //object chunk
-          objname = readname(is, -1);  //don't skip the whole chunk
+          objname = readname(-1);  //don't skip the whole chunk
+          if (debug) {
+            JFLog.log("obj=" + objname);
+          }
           done_vertex = false;
           done_pts = false;
           break;
@@ -114,11 +140,14 @@ public class GL_3DS {
           break;
         case 0x4110:  //vertex list of a polygon
           skip = head_len;
-          if (done_vertex) break;  //Warning : 2 vertex lists found for 1 object?
+          if (done_vertex) {JFLog.log("Warning : 2 vertex lists found for 1 object?");break;}
           obj = new GLObject();
+          obj.type = GL.GL_TRIANGLES;  //3ds only supports triangles
+          obj.name = objname;
+          mapidx = -1;
           mod.ol.add(obj);
           objlist.add(objname);
-          _siz = JF.readuint16(is);
+          _siz = readuint16();
           skip-=2;
           vertexidx = obj.vpl.size();
           vertexcnt = _siz;
@@ -126,86 +155,94 @@ public class GL_3DS {
           _float = new float[_siz * 3];
           for(a=0;a<_siz;a++) {
             for(b=0;b<3;b++) {
-              u32 = JF.readuint32(is);  //TODO : buffer this
-              _float[a*3+b] = Float.intBitsToFloat(u32);
+              _float[a*3+b] = readfloat();
               skip-=4;
             }
-//System.out.println("ver:v0=" + _float[a*3+0] + "v1=" + _float[a*3+1] + "v2=" + _float[a*3+2]);
+            if (debug) {
+              JFLog.log(String.format("v=%3.3f,%3.3f,%3.3f", _float[a*3+0] , _float[a*3+1] , _float[a*3+2]));
+            }
           }
           obj.addVertex(_float);
           _float = null;
           done_vertex = true;
           break;
         case 0x4120:  //Points list
-          _siz = JF.readuint16(is);
+          _siz = readuint16();
           skip = _siz * 2 * 4;
-          if (!done_vertex) break;  //Warning : pts list before vertex list?
-          if (done_pts) break; //Warning : 2 pts lists found for 1 object?
+          if (!done_vertex) {JFLog.log("Warning : pts list before vertex list?");break;}
+          if (done_pts) {JFLog.log("Warning : 2 pts lists found for 1 object?");break;}
           if (_siz == 0) break;
           _pts = new int[3];  //p1,p2,p3,flgs per triangle
           for(a=0;a<_siz;a++) {
             for(b=0;b<3;b++) {
-              _pts[b] = (short)JF.readuint16(is);
+              _pts[b] = (short)readuint16();
               skip -= 2;
             }
-//System.out.println("pts:p0=" + _pts[0] + "p1=" + _pts[1] + "p2=" + _pts[2]);
-            JF.readuint16(is);  //skip flgs
+            readuint16();  //skip flgs
             skip -= 2;
             obj.addPoly(_pts);
+            if (debug) {
+              JFLog.log("p=" + _pts[0] + "," + _pts[1] + "," + _pts[2]);
+            }
           }
           _pts = null;
           done_pts = true;
           break;
         case 0x4130:  //object material name
-          name = readname(is, head_len);
+          name = readname(head_len);
+          mapidx++;
+          map = obj.createUVMap();
+          map.name = "uvmap" + mapidx;
           if (obj != null) {
             //find name in matlist
             ok = false;
             for(a=0;a<matlist.size();a++) {
               if (matlist.get(a).name.equals(name)) {
-                obj.textureName = matlist.get(a).filename;
+                int idx = mod.addTexture(matlist.get(a).filename);
+                map.textureIndex = idx;
                 ok = true;
                 break;
               }
             }
 //            if (!ok) throw new Exception("0x4130 : object material name not found in list : " + name);
           }
+          if (debug) {
+            JFLog.log("mat=" + map.textureIndex);
+          }
           break;
-        case 0x4140:  //texture vertex list
-          _siz = JF.readuint16(is);
+        case 0x4140:  //texture vertex list (UV)
+          _siz = readuint16();
           skip = _siz * 2 * 4;
-          if (!done_vertex) {System.out.println("Warning:Texture list before vertex list");break;}
-          if (done_texvertex) {System.out.println("Warning:2 texture lists for 1 object found");break;}
-          if (_siz != vertexcnt) {System.out.println("Warning:texture list siz != vertex list siz");break;}
+          if (!done_vertex) {JFLog.log("Warning:Texture coords (UV) list before vertex list");break;}
+          if (_siz != vertexcnt) {JFLog.log("Warning:texture list siz != vertex list siz");break;}
           if (_siz == 0) break;
           _float = new float[2];
           for(a=0;a<_siz;a++) {
-            for(b=0;b<2;b++) {
-              u32 = JF.readuint32(is);  //TODO : buffer this
-              _float[b] = 1.0f - Float.intBitsToFloat(u32);  //3DS are inverted to what I expect
-              skip-=4;
+            _float[0] = readfloat();  //U is okay
+            skip-=4;
+            _float[1] = 1.0f - readfloat();  //V must be inverted
+            skip-=4;
+            obj.addText(_float, mapidx);
+            if (debug) {
+              JFLog.log(String.format("t=%3.3f,%3.3f", _float[0] , _float[1]));
             }
-//System.out.println("tex:f0=" + _float[0] + "f1=" + _float[1]);
-//            obj.tcl.get(vertexidx + a).tx = _float[0];
-//            obj.tcl.get(vertexidx + a).ty = _float[1];
-            obj.addText(new float[] {_float[0], _float[1]});
           }
           _float = null;
-          done_vertex = true;
           break;
         case 0x4160:  //obj matrix
-          //read in float[4][3] and show for now
-          for(a=0;a<3*3;a++) {  //don't need these
-            u32 = JF.readuint32(is);
-            obj.m.m[a] = Float.intBitsToFloat(u32);
+          //read in 3x3 matrix and show for now
+          int s = 0;  //padding to convert to 4x4 matrix
+          for(a=0;a<3*3;a++) {
+            u32 = readuint32();
+            if ((a > 0) && (a % 3 == 0)) s++;
+//not sure what this matrix is for??? But I don't seem to need it
+//            obj.m.m[a+s] = readfloat();
+//            if (debug) JFLog.log("m=" + obj.m.m[a+s]);
           }
-          u32 = JF.readuint32(is);
-          obj.org.x = Float.intBitsToFloat(u32);
-          u32 = JF.readuint32(is);
-          obj.org.y = Float.intBitsToFloat(u32);
-          u32 = JF.readuint32(is);
-          obj.org.z = Float.intBitsToFloat(u32);
-//System.out.println("org:"+obj.org.x+","+obj.org.y+","+obj.org.z);
+          obj.org.x = readfloat();
+          obj.org.y = readfloat();
+          obj.org.z = readfloat();
+          if (debug) JFLog.log("pos=" + obj.org.x + "," + obj.org.y + "," + obj.org.z);
           break;
         case 0xb000:  //keyframe header
           break;
@@ -213,10 +250,10 @@ public class GL_3DS {
           objidx = -1;
           break;
         case 0xb010:  //keyframe object name
-          name = readname(is, -1);
-          JF.readuint16(is);  //f1
-          JF.readuint16(is);  //f2
-          parent = JF.readuint16(is);  //parent
+          name = readname(-1);
+          readuint16();  //f1
+          readuint16();  //f2
+          parent = readuint16();  //parent
           //find name in objlist
           objidx = 0;
           ok = false;
@@ -234,25 +271,25 @@ public class GL_3DS {
             if (parent != 65535) obj.parent = parent;
             obj = null;
           }
-//System.out.println("0xb010 : name=" + name + ":objidx=" + objidx + ":parent=" + parent);
+//JFLog.log("0xb010 : name=" + name + ":objidx=" + objidx + ":parent=" + parent);
           break;
         case 0xb020:  //keyframe pos
           skip = head_len;
           if (objidx == -1) break;
           obj = mod.ol.get(objidx);
-          u16 = JF.readuint16(is);  //flgs
+          u16 = readuint16();  //flgs
           skip -= 2;
-          u32 = JF.readuint32(is);  //r1
+          u32 = readuint32();  //r1
           skip -= 4;
-          u32 = JF.readuint32(is);  //r2
+          u32 = readuint32();  //r2
           skip -= 4;
-          keys = JF.readuint32(is);  //keys
+          keys = readuint32();  //keys
           skip -= 4;
           _float = new float[3];
           for(a=0;a<keys;a++) {
-            frameno = JF.readuint32(is);  //frame #
+            frameno = readuint32();  //frame #
             skip -= 4;
-            u16 = JF.readuint16(is);  //flgs
+            u16 = readuint16();  //flgs
             skip -= 2;
             u32 = 0;
             if ((u16 & _3DS_FLG_TENSION) != 0) u32++;
@@ -261,20 +298,19 @@ public class GL_3DS {
             if ((u16 & _3DS_FLG_EASE_TO) != 0) u32++;
             if ((u16 & _3DS_FLG_EASE_FROM) != 0) u32++;
             if (u32 > 0) {
-              JF.read(is, u32 * 4);    //all ignored
+              datapos += u32 * 4;    //all ignored
               skip -= u32 * 4;
             }
-            pos = new GLTranslate();
+            trans = new GLTranslate();
             for(b=0;b<3;b++) {
-              u32 = JF.readuint32(is);  //TODO : buffer this
-              _float[b] = Float.intBitsToFloat(u32);
+              _float[b] = readfloat();
               skip -= 4;
             }
-            pos.x = _float[0];
-            pos.y = _float[1];
-            pos.z = _float[2];
-//System.out.println("pos["+frameno+"]:"+pos.x+","+pos.y+","+pos.z+":flgs="+u16);
-            obj.tl.put(frameno, pos);
+            trans.x = _float[0];
+            trans.y = _float[1];
+            trans.z = _float[2];
+//JFLog.log("pos["+frameno+"]:"+pos.x+","+pos.y+","+pos.z+":flgs="+u16);
+            obj.tl.put(frameno, trans);
             if (obj.maxframeCount < frameno) obj.maxframeCount = frameno;
           }
           _float = null;
@@ -284,19 +320,19 @@ public class GL_3DS {
           skip = head_len;
           if (objidx == -1) break;
           obj = mod.ol.get(objidx);
-          u16 = JF.readuint16(is);  //flgs
+          u16 = readuint16();  //flgs
           skip -= 2;
-          u32 = JF.readuint32(is);  //r1
+          u32 = readuint32();  //r1
           skip -= 4;
-          u32 = JF.readuint32(is);  //r2
+          u32 = readuint32();  //r2
           skip -= 4;
-          keys = JF.readuint32(is);  //keys
+          keys = readuint32();  //keys
           skip -= 4;
           _float = new float[4];
           for(a=0;a<keys;a++) {
-            frameno = JF.readuint32(is);  //frame #
+            frameno = readuint32();  //frame #
             skip -= 4;
-            u16 = JF.readuint16(is);  //flgs
+            u16 = readuint16();  //flgs
             skip -= 2;
             u32 = 0;
             if ((u16 & _3DS_FLG_TENSION) != 0) u32++;
@@ -305,20 +341,19 @@ public class GL_3DS {
             if ((u16 & _3DS_FLG_EASE_TO) != 0) u32++;
             if ((u16 & _3DS_FLG_EASE_FROM) != 0) u32++;
             if (u32 > 0) {
-              JF.read(is, u32 * 4);    //all ignored
+              datapos += u32 * 4;    //all ignored
               skip -= u32 * 4;
             }
             rot = new GLRotate();
             for(b=0;b<4;b++) {
-              u32 = JF.readuint32(is);  //TODO : buffer this
-              _float[b] = Float.intBitsToFloat(u32);
+              _float[b] = readfloat();
               skip -= 4;
             }
             rot.angle = _float[0] * 57.2957795f;  //convert to degrees
             rot.x = _float[1];
             rot.y = _float[2];
             rot.z = _float[3];
-//System.out.println("rot["+frameno+"]:"+rot.angle+","+rot.x+","+rot.y+","+rot.z+":flgs="+u16);
+//JFLog.log("rot["+frameno+"]:"+rot.angle+","+rot.x+","+rot.y+","+rot.z+":flgs="+u16);
             obj.rl.put(frameno, rot);
             if (obj.maxframeCount < frameno) obj.maxframeCount = frameno;
           }
@@ -329,19 +364,19 @@ public class GL_3DS {
           skip = head_len;
           if (objidx == -1) break;
           obj = mod.ol.get(objidx);
-          u16 = JF.readuint16(is);  //flgs
+          u16 = readuint16();  //flgs
           skip -= 2;
-          u32 = JF.readuint32(is);  //r1
+          u32 = readuint32();  //r1
           skip -= 4;
-          u32 = JF.readuint32(is);  //r2
+          u32 = readuint32();  //r2
           skip -= 4;
-          keys = JF.readuint32(is);  //keys
+          keys = readuint32();  //keys
           skip -= 4;
           _float = new float[3];
           for(a=0;a<keys;a++) {
-            frameno = JF.readuint32(is);  //frame #
+            frameno = readuint32();  //frame #
             skip -= 4;
-            u16 = JF.readuint16(is);  //flgs
+            u16 = readuint16();  //flgs
             skip -= 2;
             u32 = 0;
             if ((u16 & _3DS_FLG_TENSION) != 0) u32++;
@@ -350,19 +385,18 @@ public class GL_3DS {
             if ((u16 & _3DS_FLG_EASE_TO) != 0) u32++;
             if ((u16 & _3DS_FLG_EASE_FROM) != 0) u32++;
             if (u32 > 0) {
-              JF.read(is, u32 * 4);    //all ignored
+              datapos += u32 * 4;    //all ignored
               skip -= u32 * 4;
             }
             scale = new GLScale();
             for(b=0;b<3;b++) {
-              u32 = JF.readuint32(is);  //TODO : buffer this
-              _float[b] = Float.intBitsToFloat(u32);
+              _float[b] = readfloat();
               skip -= 4;
             }
             scale.x = _float[0];
             scale.y = _float[1];
             scale.z = _float[2];
-//System.out.println("scale["+frameno+"]:"+scale.x+","+scale.y+","+scale.z+":flgs="+u16);
+//JFLog.log("scale["+frameno+"]:"+scale.x+","+scale.y+","+scale.z+":flgs="+u16);
             obj.sl.put(frameno, scale);
             if (obj.maxframeCount < frameno) obj.maxframeCount = frameno;
           }
@@ -372,6 +406,10 @@ public class GL_3DS {
         default:
           skip = head_len;
           break;
+      }
+      if (skip > 0) {
+        datapos += skip;
+        skip = 0;
       }
     }
     //setup any lights
@@ -385,11 +423,11 @@ public class GL_3DS {
     return mod;
   }
   //for load3DS()
-  private static String readname(InputStream is, int maxread) {
+  private String readname(int maxread) {
     String ret = "";
     char ch;
-    while (!JF.eof(is)) {
-      ch = (char)JF.read(is);
+    while (!eof()) {
+      ch = (char)data[datapos++];
       if (maxread != -1) {
         maxread--;
         if (maxread == 0) break;
@@ -397,7 +435,7 @@ public class GL_3DS {
       if (ch == 0) break;
       ret += ch;
     }
-    while (maxread > 0) {JF.read(is); maxread--;}
+    if (maxread > 0) {datapos+=maxread;}
     return ret;
   }
   //private class for load3DS()

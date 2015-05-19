@@ -363,6 +363,10 @@ public class Hex extends JComponent implements KeyListener {
     return selectStart != -1;
   }
 
+  public long getOffset() {
+    return cy * 16 + cx;
+  }
+
 //interface KeyListener
   public void keyPressed(KeyEvent e) {
     int keyCode = e.getKeyCode();

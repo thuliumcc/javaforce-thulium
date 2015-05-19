@@ -86,7 +86,7 @@ public class TestGLJPanel extends javax.swing.JFrame {
   private javax.swing.JPanel panel;
   // End of variables declaration//GEN-END:variables
 
-  GLCode common = new GLCode();
+  GLCode common = new GLCode(false);
 
   public void init() {
     setSize(640, 480);

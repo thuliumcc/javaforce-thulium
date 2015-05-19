@@ -1,6 +1,9 @@
 ChangeLog
 =========
 
+4-7-2015 : version 0.29
+  - fixed some memory leaks
+
 3-26-2015 : version 0.28
  - new : added voicemail detection
  - fix : some options where not saved to disk

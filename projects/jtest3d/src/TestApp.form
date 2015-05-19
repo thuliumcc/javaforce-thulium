@@ -32,11 +32,9 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                  <Component id="glwindow" alignment="0" max="32767" attributes="0"/>
-                  <Component id="glframe" alignment="0" max="32767" attributes="0"/>
-                  <Component id="glcanvas" alignment="0" max="32767" attributes="0"/>
-                  <Component id="gljpanel" max="32767" attributes="0"/>
+              <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="glcanvas" min="-2" pref="107" max="-2" attributes="0"/>
+                  <Component id="gljpanel" alignment="0" min="-2" pref="107" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -47,11 +45,7 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="glcanvas" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="glwindow" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-              <Component id="glframe" min="-2" max="-2" attributes="0"/>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Component id="gljpanel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -65,22 +59,6 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="glcanvasActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="glwindow">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Test GLWindow"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="glwindowActionPerformed"/>
-      </Events>
-    </Component>
-    <Component class="javax.swing.JButton" name="glframe">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Test GLFrame"/>
-      </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="glframeActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JButton" name="gljpanel">

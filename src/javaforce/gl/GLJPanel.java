@@ -22,10 +22,12 @@ public class GLJPanel extends JPanel {
   private GLInterface iface;
   private GL gl;
   public boolean init(GLInterface iface) {
+    return init(iface, null);
+  }
+  public boolean init(GLInterface iface, GL shared) {
     this.iface = iface;
-    gl = GL.createOffscreen(SwingUtilities.getWindowAncestor(this), this, iface);
+    gl = GL.createOffscreen(SwingUtilities.getWindowAncestor(this), this, iface, shared);
     if (gl == null) return false;
-    gl.setRenderOffscreen(true);
     gl.makeCurrent();
     iface.init(gl, this);
     return true;

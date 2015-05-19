@@ -12,8 +12,6 @@ package javaforce.gl;
  *   - only call GL functions from the EDT (event dispatching thread)
  *   - doesn't work on Ubuntu unless you install 'libgl1-mesa-dev' package
  *      - the GL.so is not in the ld path until this package installs???
- *   - GLFrame doesn't work on Linux ???
- *      - recommend GLCanvas, GLJPanel only (GLJPanel is slow and requires OpenGL 3.0)
  *   - Supports Windows, Linux and MacOSX.VI or better (aka SnowLeopard)
  *   - if there are functions or constants missing feel free to add them
  *     - add constants to end of "GL Constants" list
@@ -25,10 +23,8 @@ import com.sun.jna.*;
 import com.sun.jna.ptr.*;
 import com.sun.jna.win32.*;
 import java.awt.*;
-import java.awt.event.*;
 import java.lang.reflect.*;
 import java.util.*;
-import java.security.*;
 
 import javaforce.*;
 import javaforce.jna.objc.*;
@@ -130,50 +126,40 @@ public class GL {
     return true;
   }
 
-  /** Creates an OpenGL context in a Window.
+  /** Creates an OpenGL context in a Canvas.
    */
-  public static GL createWindow(Window w, GLInterface iface) {
-    GL gl = new GL(iface);
-    if (os == OS.WINDOWS) {
-      gl.whwnd = Native.getWindowPointer(w);
-      createWindows(gl);
-    } else if (os == OS.MAC) {
-      if (!createMac(gl, w)) return null;
-    } else {
-      gl.x11id = (int)Native.getWindowID(w);
-      createLinux(gl);
-    }
-    return gl;
-  }
-
-  /** Creates an OpenGL context in a sub-component of a Window.
-   */
-  public static GL createComponent(Component c, GLInterface iface) {
+  public static GL createComponent(Canvas c, GLInterface iface, GL shared) {
     GL gl = new GL(iface);
     if (os == OS.WINDOWS) {
       gl.whwnd = Native.getComponentPointer(c);
-      createWindows(gl);
+      createWindows(gl, shared);
+      getWindowsAPI();
     } else if (os == OS.MAC) {
-      if (!createMac(gl, c)) return null;
+      if (!createMac(gl, c, shared)) return null;
+      getMacAPI();
     } else {
       gl.x11id = (int)Native.getComponentID(c);
-      createLinux(gl);
+      createLinux(gl, shared);
+      getLinuxAPI();
     }
     return gl;
   }
 
   /** Creates an OpenGL context that renders to offscreen image.
    */
-  static GL createOffscreen(Window w, Component c, GLInterface iface) {
+  static GL createOffscreen(Window w, Component c, GLInterface iface, GL shared) {
     GL gl = new GL(iface);
     if (os == OS.WINDOWS) {
       gl.whwnd = Native.getWindowPointer(w);
-      createWindows(gl);
+      createWindows(gl, shared);
+      getWindowsAPI();
     } else if (os == OS.MAC) {
-      if (!createMac(gl, w)) return null;
+      if (!createMac(gl, w, shared)) return null;
+      getMacAPI();
     } else {
       gl.x11id = (int)Native.getWindowID(w);
-      createLinux(gl);
+      createLinux(gl, shared);
+      getLinuxAPI();
     }
     gl.createOffscreen(c.getWidth(), c.getHeight());
     return gl;
@@ -186,7 +172,7 @@ public class GL {
   private static final int PFD_TYPE_RGBA = 0x00;
   private static final int PFD_MAIN_PLANE = 0x00;
 
-  private static void createWindows(GL gl) {
+  private static void createWindows(GL gl, GL shared) {
     //gl.whwnd already obtained
     gl.whdc = user32.GetDC(gl.whwnd);
     PIXELFORMATDESCRIPTOR pfd = new PIXELFORMATDESCRIPTOR();
@@ -200,37 +186,43 @@ public class GL {
     pfd.iLayerType = PFD_MAIN_PLANE;
     int pixelFormat = gdi32.ChoosePixelFormat(gl.whdc, pfd);
     gdi32.SetPixelFormat(gl.whdc, pixelFormat, pfd);
-    gl.wctx = wgl.wglCreateContext(gl.whdc);
-//JFLog.log("wnd=" + gl.whwnd + ",dc=" + gl.whdc + ",ctx=" + gl.wctx + ",pf=" + pixelFormat);
+    if (shared == null) {
+      gl.wctx = wgl.wglCreateContext(gl.whdc);
+    } else {
+      gl.wctx = (Pointer)shared.wctx;
+    }
     wgl.wglMakeCurrent(gl.whdc, gl.wctx);
-    if (api == null) {
-      api = new GLFuncs();
-      NativeLibrary glLibrary = NativeLibrary.getInstance("opengl32");
-      try {
-        Field fields[] = api.getClass().getFields();
-        for(int a=0;a<fields.length;a++) {
-          String name = fields[a].getName();
-          Pointer ptr = wgl.wglGetProcAddress(name);
-          if (ptr == null) {
-            //OpenGL 1.1 function
-            try {
-              fields[a].set(api, glLibrary.getFunction(name));
-            } catch (Throwable t) {
-              JFLog.log("OpenGL:Warning:Function not found:" + name);
-            }
-          } else {
-            //OpenGL 2.0+ function
-            fields[a].set(api, Function.getFunction(ptr));
+  }
+
+  private static void getWindowsAPI() {
+    if (api != null) return;
+    api = new GLFuncs();
+    NativeLibrary glLibrary = NativeLibrary.getInstance("opengl32");
+    try {
+      Field fields[] = api.getClass().getFields();
+      for(int a=0;a<fields.length;a++) {
+        String name = fields[a].getName();
+        Pointer ptr = wgl.wglGetProcAddress(name);
+        if (ptr == null) {
+          //OpenGL 1.1 function
+          try {
+            fields[a].set(api, glLibrary.getFunction(name));
+          } catch (Throwable t) {
+            JFLog.log("OpenGL:Warning:Function not found:" + name);
           }
+        } else {
+          //OpenGL 2.0+ function
+          fields[a].set(api, Function.getFunction(ptr));
         }
-      } catch (Exception e) {
-        JFLog.log(e);
       }
+    } catch (Exception e) {
+      JFLog.log(e);
     }
   }
 
-  private static synchronized boolean createMac(GL gl, Component c) {
+  private static synchronized boolean createMac(GL gl, Component c, GL shared) {
     final GL _gl = gl;
+    final GL _shared = shared;
     final Component _c = c;
 
     NSAutoreleasePool pool = new NSAutoreleasePool();
@@ -241,44 +233,31 @@ public class GL {
     _gl.nsobj.register(new Runnable() {public void run() {
       _gl.nsview = new NSView();
       _gl.nsview.obj = Native.getComponentPointer(_c);
-      NSOpenGLPixelFormat fmt = new NSOpenGLPixelFormat();
-      fmt.alloc();
-      fmt.initWithAttributes(new int[] {
-        NSOpenGLPFAWindow,
-  //      NSOpenGLPFAAccelerated,  //is not available on my test system
-        NSOpenGLPFADoubleBuffer,
-        NSOpenGLPFAColorSize,24,
-        NSOpenGLPFADepthSize,16,
-          0  //zero terminate list
-        }
-      );
-      if (fmt.obj == null) {
-        JFLog.log("NSOpenGLPixelFormat initWithAttributes failed");
-        return;
-      }
 
-      _gl.nsopenglcontext = new NSOpenGLContext();
-      _gl.nsopenglcontext.alloc();
-      _gl.nsopenglcontext.initWithFormat(fmt);
-      _gl.nsopenglcontext.setView(_gl.nsview);
-
-      _gl.nsopenglcontext.makeCurrentContext();
-      if (api != null) return;
-      api = new GLFuncs();
-      NativeLibrary glLibrary = NativeLibrary.getInstance("OpenGL");
-      try {
-        Field fields[] = api.getClass().getFields();
-        for(int a=0;a<fields.length;a++) {
-          String name = fields[a].getName();
-          try {
-            fields[a].set(api, glLibrary.getFunction(name));
-          } catch (Throwable t) {
-            JFLog.log("OpenGL:Warning:Function not found:" + name);
+      if (_shared == null) {
+        NSOpenGLPixelFormat fmt = new NSOpenGLPixelFormat();
+        fmt.alloc();
+        fmt.initWithAttributes(new int[] {
+          NSOpenGLPFAWindow,
+    //      NSOpenGLPFAAccelerated,  //is not available on my test system
+          NSOpenGLPFADoubleBuffer,
+          NSOpenGLPFAColorSize,24,
+          NSOpenGLPFADepthSize,16,
+            0  //zero terminate list
           }
+        );
+        if (fmt.obj == null) {
+          JFLog.log("NSOpenGLPixelFormat initWithAttributes failed");
+          return;
         }
-      } catch (Exception e) {
-        JFLog.log(e);
+        _gl.nsopenglcontext = new NSOpenGLContext();
+        _gl.nsopenglcontext.alloc();
+        _gl.nsopenglcontext.initWithFormat(fmt);
+      } else {
+        _gl.nsopenglcontext = _shared.nsopenglcontext;
       }
+      _gl.nsopenglcontext.setView(_gl.nsview);
+      _gl.nsopenglcontext.makeCurrentContext();
       synchronized(nslock) {
         nslock.notify();
       }
@@ -297,42 +276,66 @@ public class GL {
     return true;
   }
 
+  private static void getMacAPI() {
+    if (api != null) return;
+    api = new GLFuncs();
+    NativeLibrary glLibrary = NativeLibrary.getInstance("OpenGL");
+    try {
+      Field fields[] = api.getClass().getFields();
+      for(int a=0;a<fields.length;a++) {
+        String name = fields[a].getName();
+        try {
+          fields[a].set(api, glLibrary.getFunction(name));
+        } catch (Throwable t) {
+          JFLog.log("OpenGL:Warning:Function not found:" + name);
+        }
+      }
+    } catch (Exception e) {
+      JFLog.log(e);
+    }
+  }
+
   private static final int GLX_RGBA = 4;
   private static final int GLX_DEPTH_SIZE = 12;
   private static final int GLX_DOUBLEBUFFER = 5;
   private static final int None = 0;
 
-  private static void createLinux(GL gl) {
+  private static void createLinux(GL gl, GL shared) {
     //x11id is already obtained
     gl.xd = x11.XOpenDisplay(null);
     int atts[] = new int[] {GLX_RGBA, GLX_DEPTH_SIZE, 32, GLX_DOUBLEBUFFER, None};
     gl.xvi = glx.glXChooseVisual(gl.xd, 0, atts);
-    gl.xctx = glx.glXCreateContext(gl.xd, gl.xvi, null, GL_TRUE);
+    if (shared == null) {
+      gl.xctx = glx.glXCreateContext(gl.xd, gl.xvi, null, GL_TRUE);
+    } else {
+      gl.xctx = shared.xctx;
+    }
     glx.glXMakeCurrent(gl.xd, gl.x11id, gl.xctx);
+  }
 
-    if (api == null) {
-      api = new GLFuncs();
-      NativeLibrary glLibrary = NativeLibrary.getInstance("GL");
-      try {
-        Field fields[] = api.getClass().getFields();
-        for(int a=0;a<fields.length;a++) {
-          String name = fields[a].getName();
-          Pointer ptr = glx.glXGetProcAddress(name);
-          if (ptr == null) {
-            //OpenGL 1.1 function
-            try {
-              fields[a].set(api, glLibrary.getFunction(name));
-            } catch (Throwable t) {
-              JFLog.log("OpenGL:Warning:Function not found:" + name);
-            }
-          } else {
-            //OpenGL 2.0+ function
-            fields[a].set(api, Function.getFunction(ptr));
+  private static void getLinuxAPI() {
+    if (api != null) return;
+    api = new GLFuncs();
+    NativeLibrary glLibrary = NativeLibrary.getInstance("GL");
+    try {
+      Field fields[] = api.getClass().getFields();
+      for(int a=0;a<fields.length;a++) {
+        String name = fields[a].getName();
+        Pointer ptr = glx.glXGetProcAddress(name);
+        if (ptr == null) {
+          //OpenGL 1.1 function
+          try {
+            fields[a].set(api, glLibrary.getFunction(name));
+          } catch (Throwable t) {
+            JFLog.log("OpenGL:Warning:Function not found:" + name);
           }
+        } else {
+          //OpenGL 2.0+ function
+          fields[a].set(api, Function.getFunction(ptr));
         }
-      } catch (Exception e) {
-        JFLog.log(e);
       }
+    } catch (Exception e) {
+      JFLog.log(e);
     }
   }
 
@@ -462,6 +465,7 @@ public class GL {
     if (os == OS.WINDOWS) {
       wgl.wglMakeCurrent(whdc, wctx);
     } else if (os == OS.MAC) {
+      nsopenglcontext.setView(nsview);
       nsopenglcontext.makeCurrentContext();
     } else {
       glx.glXMakeCurrent(xd, x11id, xctx);
@@ -495,7 +499,6 @@ public class GL {
     lock();
     makeCurrent();
     iface.render(this);
-//    if (!renderOffscreen) swap();
     unlock();
   }
 
@@ -509,20 +512,13 @@ public class GL {
     } else {
       makeCurrent();
       iface.render(this);
-//      if (!renderOffscreen) swap();
     }
-  }
-
-  /** Renders to offscreen (just skips calling swap() during render call) */
-  public void setRenderOffscreen(boolean state) {
-    renderOffscreen = state;
   }
 
   //common data
   private GLInterface iface;
   private enum OS {WINDOWS, LINUX, MAC};
   private static OS os;
-  private boolean renderOffscreen;
 
   //Windows data
   private Pointer wctx, whwnd, whdc;
@@ -620,6 +616,11 @@ public class GL {
   public static final int GL_DEPTH_ATTACHMENT = 0x8d00;
   public static final int GL_RENDERBUFFER = 0x8d41;
 
+  //glCullFace constants
+  public static final int GL_FRONT = 0x0404;
+  public static final int GL_BACK = 0x0405;
+  public static final int GL_FRONT_AND_BACK = 0x0408;
+
   /** Returns OpenGL version. ie: {3,3,0} */
   public int[] getVersion() {
     String str = glGetString(GL_VERSION);
@@ -653,6 +654,20 @@ public class GL {
     printError("err");
   }
 
+  /** Clears viewport */
+  public void clear(int clr, int width, int height) {
+    float r = (clr & 0xff0000) >> 16;
+    r /= 256.0f;
+    float g = (clr & 0xff00) >> 8;
+    g /= 256.0f;
+    float b = (clr & 0xff);
+    b /= 256.0f;
+    glViewport(0, 0, width, height);
+    glClearColor(r, g, b, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    swap();
+  }
+
   private static class GLFuncs {
     public Function glActiveTexture;
     public Function glAttachShader;
@@ -668,12 +683,14 @@ public class GL {
     public Function glCompileShader;
     public Function glCreateProgram;
     public Function glCreateShader;
+    public Function glCullFace;
     public Function glDepthFunc;
     public Function glDepthMask;
     public Function glDeleteBuffers;
     public Function glDeleteFramebuffers;
     public Function glDeleteRenderbuffers;
     public Function glDeleteTextures;
+    public Function glDisable;
     public Function glDrawElements;
     public Function glEnable;
     public Function glEnableVertexAttribArray;
@@ -767,6 +784,9 @@ public class GL {
   public int glCreateShader(int type) {
     return api.glCreateShader.invokeInt(new Object[] {type});
   }
+  public void glCullFace(int id) {
+    api.glCullFace.invoke(new Object[]{id});
+  }
   public void glDeleteBuffers(int i1, int i2[]) {
     api.glDeleteBuffers.invoke(new Object[]{i1,i2});
   }
@@ -784,6 +804,9 @@ public class GL {
   }
   public void glDepthFunc(int i1) {
     api.glDepthFunc.invoke(new Object[]{i1});
+  }
+  public void glDisable(int id) {
+    api.glDisable.invoke(new Object[]{id});
   }
   public void glDepthMask(boolean state) {
     api.glDepthMask.invoke(new Object[]{state});

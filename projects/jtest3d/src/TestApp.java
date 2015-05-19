@@ -27,8 +27,6 @@ public class TestApp extends javax.swing.JFrame {
 
     jButton3 = new javax.swing.JButton();
     glcanvas = new javax.swing.JButton();
-    glwindow = new javax.swing.JButton();
-    glframe = new javax.swing.JButton();
     gljpanel = new javax.swing.JButton();
 
     jButton3.setText("jButton3");
@@ -39,20 +37,6 @@ public class TestApp extends javax.swing.JFrame {
     glcanvas.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
         glcanvasActionPerformed(evt);
-      }
-    });
-
-    glwindow.setText("Test GLWindow");
-    glwindow.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        glwindowActionPerformed(evt);
-      }
-    });
-
-    glframe.setText("Test GLFrame");
-    glframe.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        glframeActionPerformed(evt);
       }
     });
 
@@ -69,11 +53,9 @@ public class TestApp extends javax.swing.JFrame {
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
-        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-          .addComponent(glwindow, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-          .addComponent(glframe, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-          .addComponent(glcanvas, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-          .addComponent(gljpanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+          .addComponent(glcanvas, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(gljpanel, javax.swing.GroupLayout.PREFERRED_SIZE, 107, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
     layout.setVerticalGroup(
@@ -81,11 +63,7 @@ public class TestApp extends javax.swing.JFrame {
       .addGroup(layout.createSequentialGroup()
         .addContainerGap()
         .addComponent(glcanvas)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-        .addComponent(glwindow)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-        .addComponent(glframe)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(gljpanel)
         .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
     );
@@ -99,20 +77,6 @@ public class TestApp extends javax.swing.JFrame {
     w.setVisible(true);
     w.init();
   }//GEN-LAST:event_glcanvasActionPerformed
-
-  private void glwindowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_glwindowActionPerformed
-//    dispose();  //crashes
-    TestGLWindow w = new TestGLWindow(null);
-    w.setVisible(true);
-    w.init();
-  }//GEN-LAST:event_glwindowActionPerformed
-
-  private void glframeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_glframeActionPerformed
-    dispose();
-    TestGLFrame w = new TestGLFrame();
-    w.setVisible(true);
-    w.init();
-  }//GEN-LAST:event_glframeActionPerformed
 
   private void gljpanelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gljpanelActionPerformed
     dispose();
@@ -138,9 +102,7 @@ public class TestApp extends javax.swing.JFrame {
   }
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton glcanvas;
-  private javax.swing.JButton glframe;
   private javax.swing.JButton gljpanel;
-  private javax.swing.JButton glwindow;
   private javax.swing.JButton jButton3;
   // End of variables declaration//GEN-END:variables
 }
