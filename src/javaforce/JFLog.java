@@ -45,7 +45,9 @@ public class JFLog {
         return false;
       }
     }
-    list.put(id, log);
+    synchronized(list) {
+      list.put(id, log);
+    }
     return true;
   }
 
@@ -70,7 +72,9 @@ public class JFLog {
     if (log == null) {
       return false;
     }
-    list.remove(id);
+    synchronized(list) {
+      list.remove(id);
+    }
     try {
       if (log.fos != null) {
         log.fos.close();

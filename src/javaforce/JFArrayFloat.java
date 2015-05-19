@@ -13,9 +13,11 @@ public class JFArrayFloat {
   private float buf[];
   private int count;
 
+  public static int initSize = 64;
+
   public JFArrayFloat() {
     count = 0;
-    buf = new float[0];
+    buf = new float[initSize];
   }
 
   public int size() {
@@ -24,7 +26,7 @@ public class JFArrayFloat {
 
   public void clear() {
     count = 0;
-    buf = new float[0];
+    if (buf.length != initSize) buf = new float[initSize];
   }
 
   public void append(float f) {

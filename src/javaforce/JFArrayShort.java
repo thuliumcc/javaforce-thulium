@@ -13,9 +13,11 @@ public class JFArrayShort {
   private short buf[];
   private int count;
 
+  public static int initSize = 64;
+
   public JFArrayShort() {
     count = 0;
-    buf = new short[0];
+    buf = new short[initSize];
   }
 
   public int size() {
@@ -24,7 +26,7 @@ public class JFArrayShort {
 
   public void clear() {
     count = 0;
-    buf = new short[0];
+    if (buf.length != initSize) buf = new short[initSize];
   }
 
   public void append(short s) {

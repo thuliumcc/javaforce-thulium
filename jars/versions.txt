@@ -1,3 +1,6 @@
-derby = 10.10.2.0
+derby = 10.11.1.1
 bouncycastle = bcprov-jdk15on-150
-jna = 4.1.0
+jna = 4.1.0 (custom)
+  - custom JNA @ github.com/pquiring/jna
+  - see pull request @ https://github.com/twall/jna/pull/438
+

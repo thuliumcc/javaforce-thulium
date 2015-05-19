@@ -1,5 +1,16 @@
 What's new...
 
+May 7/2015 : JF 7.50.0 released!
+  - javaforce.gl.GL
+    - more optz to reduce creating short lived Object[] arrays
+  - Updated /jars/jna.jar to custom build
+    - a modified version of JNA that reduces short lived Object[] arrays
+    - see https://github.com/twall/jna/pull/438
+    - full source available @ github.com/pquiring/jna
+    - greatly reduces GC churn and burn which translates to better FPS
+  - jfCraft/0.11 released!
+    - new blocks, dynamic IDs and many fixes
+
 Apr 30/2015 : JF 7.49.0 released!
   - GLMatrix
     - just some optz needed for jfCraft

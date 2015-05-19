@@ -4,20 +4,20 @@ package javaforce;
  *
  * @author pquiring
  *
- * Created : Sept 17, 2013
+ * Created : May 4, 2015
  */
 
 import java.util.*;
 
-public class JFArrayInt {
-  private int buf[];
+public class JFArrayDouble {
+  private double buf[];
   private int count;
 
   public static int initSize = 64;
 
-  public JFArrayInt() {
+  public JFArrayDouble() {
     count = 0;
-    buf = new int[initSize];
+    buf = new double[initSize];
   }
 
   public int size() {
@@ -26,33 +26,33 @@ public class JFArrayInt {
 
   public void clear() {
     count = 0;
-    if (buf.length != initSize) buf = new int[initSize];
+    if (buf.length != initSize) buf = new double[initSize];
   }
 
-  public void append(int s) {
+  public void append(double f) {
     int newcount = count + 1;
     if (newcount > buf.length) {
       buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
     }
-    buf[count] = s;
+    buf[count] = f;
     count = newcount;
   }
 
-  public void append(int s[]) {
-    int newcount = count + s.length;
+  public void append(double f[]) {
+    int newcount = count + f.length;
     if (newcount > buf.length) {
       buf = Arrays.copyOf(buf, Math.max(buf.length << 1, newcount));
     }
-    System.arraycopy(s, 0, buf, count, s.length);
+    System.arraycopy(f, 0, buf, count, f.length);
     count = newcount;
   }
 
-  public int[] toArray() {
+  public double[] toArray() {
     return Arrays.copyOf(buf, count);
   }
 
   //returns the backing buffer (size may be larger than expected)
-  public int[] getBuffer() {
+  public double[] getBuffer() {
     return buf;
   }
 }
