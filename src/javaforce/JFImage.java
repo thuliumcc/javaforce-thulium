@@ -24,7 +24,9 @@ public class JFImage extends JComponent implements Icon {
   private int imageType;  //BufferedImage.TYPE_INT_...
 
   public enum ResizeOperation {
-    CLEAR, CHOP, SCALE
+    CLEAR, //reset image
+    CHOP,  //copy/chop image
+    SCALE  //scale image
   };
 
   public JFImage() {
@@ -77,17 +79,24 @@ public class JFImage extends JComponent implements Icon {
       BufferedImage oldbi = bi;
       int oldw = getWidth();
       int oldh = getHeight();
+      Composite org;
       switch (resizeOperation) {
         case CLEAR:
           initImage(w, h);
           break;
         case CHOP:
           initImage(w, h);
+          org = g2d.getComposite();
+          g2d.setComposite(AlphaComposite.Src);
           g2d.drawImage(oldbi, 0, 0, null);
+          g2d.setComposite(org);
           break;
         case SCALE:
           initImage(w, h);
+          org = g2d.getComposite();
+          g2d.setComposite(AlphaComposite.Src);
           g2d.drawImage(oldbi, 0, 0, w, h, 0, 0, oldw, oldh, null);
+          g2d.setComposite(org);
           break;
       }
     } else {

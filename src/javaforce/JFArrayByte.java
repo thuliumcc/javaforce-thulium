@@ -69,4 +69,9 @@ public class JFArrayByte {
   public byte[] toArray(int pos, int length) {
     return Arrays.copyOfRange(buf, pos, pos + length);
   }
+
+  //returns the backing buffer (size may be larger than expected)
+  public byte[] getBuffer() {
+    return buf;
+  }
 }

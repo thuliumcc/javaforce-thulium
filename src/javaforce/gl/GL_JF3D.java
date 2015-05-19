@@ -143,7 +143,10 @@ public class GL_JF3D {
             case GL.GL_QUADS:
               pcnt *= 4;
               break;
-          }
+            default:
+              JFLog.log("GL_JF3D:Error Unknown GL Type:" + obj.type);
+              return null;
+           }
           for(int p=0;p<pcnt;p++) {
             int pt = readuint32();
             obj.addPoly(new int[] {pt});
@@ -267,13 +270,13 @@ public class GL_JF3D {
       for(int m=0;m<maps;m++) {
         GLUVMap map = obj.maps.get(m);
         writeuint32(ID_UVMAP);
-        int uvcnt = map.tcl.size();
+        int uvcnt = map.uvl.size();
         size = map.name.length() + 1 + 4 + (4 + (uvcnt * 4));
         writeuint32(size);
         writeString(map.name);
         writeuint32(map.textureIndex);
         writeuint32(uvcnt/2);
-        float uv[] = map.tcl.toArray();
+        float uv[] = map.uvl.toArray();
         for(int a=0;a<uvcnt;a++) {
           writefloat(uv[a]);
         }

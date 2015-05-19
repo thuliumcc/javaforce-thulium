@@ -33,9 +33,16 @@ public class TestBrowser extends javax.swing.JFrame {
     jButton1 = new javax.swing.JButton();
     jButton2 = new javax.swing.JButton();
     canvas1 = new java.awt.Canvas();
+    url = new javax.swing.JTextField();
+    go = new javax.swing.JButton();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
     setTitle("Test Browser");
+    addMouseListener(new java.awt.event.MouseAdapter() {
+      public void mousePressed(java.awt.event.MouseEvent evt) {
+        formMousePressed(evt);
+      }
+    });
 
     jButton1.setText("Start");
     jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -53,6 +60,15 @@ public class TestBrowser extends javax.swing.JFrame {
 
     canvas1.setMinimumSize(new java.awt.Dimension(640, 480));
 
+    url.setText("http://google.com");
+
+    go.setText("Go");
+    go.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        goActionPerformed(evt);
+      }
+    });
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -65,7 +81,10 @@ public class TestBrowser extends javax.swing.JFrame {
             .addComponent(jButton1)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addComponent(jButton2)
-            .addGap(0, 0, Short.MAX_VALUE)))
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+            .addComponent(url)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(go)))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -74,7 +93,9 @@ public class TestBrowser extends javax.swing.JFrame {
         .addContainerGap()
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jButton1)
-          .addComponent(jButton2))
+          .addComponent(jButton2)
+          .addComponent(url, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+          .addComponent(go))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(canvas1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         .addContainerGap())
@@ -87,7 +108,7 @@ public class TestBrowser extends javax.swing.JFrame {
     if (wwb != null) return;
     wwb = new WinWebBrowser();
     wwb.create(Guid.CLSID_WebBrowser  //or CLSID_MozillaBrowser (not tested)
-      , canvas1);
+      , canvas1, url.getText());
   }//GEN-LAST:event_jButton1ActionPerformed
 
   private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -95,6 +116,17 @@ public class TestBrowser extends javax.swing.JFrame {
     wwb.dispose();
     wwb = null;
   }//GEN-LAST:event_jButton2ActionPerformed
+
+  private void goActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goActionPerformed
+    if (wwb == null) return;
+    wwb.navigate(url.getText());
+  }//GEN-LAST:event_goActionPerformed
+
+  private void formMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_formMousePressed
+    if (wwb == null) return;
+    System.out.println("deactivate");
+    wwb.deactivate();
+  }//GEN-LAST:event_formMousePressed
 
   /**
    * @param args the command line arguments
@@ -110,8 +142,10 @@ public class TestBrowser extends javax.swing.JFrame {
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private java.awt.Canvas canvas1;
+  private javax.swing.JButton go;
   private javax.swing.JButton jButton1;
   private javax.swing.JButton jButton2;
+  private javax.swing.JTextField url;
   // End of variables declaration//GEN-END:variables
 
   private WinWebBrowser wwb;

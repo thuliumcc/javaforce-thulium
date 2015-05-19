@@ -1,7 +1,7 @@
 JavaForce SDK
 =============
 
-Version 7.46.0
+Version 7.47.0
 
 What is it?
 ===========
@@ -83,7 +83,7 @@ pquiring@gmail.com
 
 http://javaforce.sourceforge.net
 
-Version 7.46.0
+Version 7.47.0
 
-Released : April 7 2015
+Released : April 20 2015
 

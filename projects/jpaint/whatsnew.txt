@@ -1,5 +1,9 @@
 Whatsnew ...
 
+Apr 20, 2015 - v0.18 released!
+  - new : fill tool now uses threshold
+  - fix : undo/redo issues
+
 Feb 9, 2015 - v0.17 released!
   - new : support for image layers added (layered images are saved to *.jfpaint files)
 

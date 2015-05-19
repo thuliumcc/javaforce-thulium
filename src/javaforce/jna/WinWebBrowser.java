@@ -70,9 +70,10 @@ public class WinWebBrowser {
   }
 
   //clsid = Guid.CLSID_WebBrowser | Guid.CLSID_MozillaBrowser
-  public boolean create(Guid.CLSID clsid, Canvas comp) {
+  public boolean create(Guid.CLSID clsid, Canvas comp, String url) {
     this.clsid = clsid;
     this.canvas = comp;
+    this.url = url;
     new Thread() {
       public void run() {
         create2();
@@ -284,6 +285,14 @@ public class WinWebBrowser {
           return HRESULT.S_OK;
         }
       });
+      myDocHost.setMethod(16, new Callback() {
+        //TranslateUrl
+        public int callback(Pointer _this, int dwTranslate, Pointer urlin, PointerByReference urlout) {
+          System.out.println("TranslateUrl");
+          urlout.setValue(urlin);
+          return HRESULT.S_OK;
+        }
+      });
 
       myDispatch = new InterfaceBuilder();
       myDispatch.alloc(7, "IDispatch");
@@ -424,11 +433,22 @@ public class WinWebBrowser {
 
       moved();
 
-      navigate("http://google.com");
+      navigate(url);
 
       //now process message queue for child window
       active = true;
       while (active) {
+        if (_do_deactivate) {
+          webOIPO.UIDeactivate();
+          webOIPO.InPlaceDeactivate();
+          _do_deactivate = false;
+        }
+        if (_do_navigate) {
+          Pointer bstr_url = bstr_alloc(url);
+          webBrowser.Navigate(bstr_url);
+          bstr_free(bstr_url);
+          _do_navigate = false;
+        }
         ww.processMessage();
       }
       dispose2();
@@ -475,18 +495,24 @@ public class WinWebBrowser {
     }
   }
 
-  public void show() {
+  private void show() {
     webBrowser.put_Visible(true);
   }
 
-  public void hide() {
+  private void hide() {
     webBrowser.put_Visible(false);
   }
 
   public void navigate(String url) {
-    Pointer bstr_url = bstr_alloc(url);
-    webBrowser.Navigate(bstr_url);
-    bstr_free(bstr_url);
+    this.url = url;
+    _do_navigate = true;
+    ww.postMessage();  //wake message queue handler
+  }
+
+  /** You MUST call this to force the browser object to lose keyboard focus.
+   */
+  public void deactivate() {
+    _do_deactivate = true;
   }
 
   private void moved() {
@@ -517,6 +543,7 @@ public class WinWebBrowser {
   private Callback qicb;  //QueryInterface Callback
   private Pointer qi;  //QueryInterface function ptr
   private int token;  //Advise token
+  private String url;
 
   //other side
   private IUnknown webUnknown;
@@ -533,4 +560,7 @@ public class WinWebBrowser {
   private InterfaceBuilder myOleInPlaceSite;
 //  private InterfaceBuilder myOleInPlaceUIWindow;
   private InterfaceBuilder myOleInPlaceFrame;
+
+  private boolean _do_deactivate;
+  private boolean _do_navigate;
 }

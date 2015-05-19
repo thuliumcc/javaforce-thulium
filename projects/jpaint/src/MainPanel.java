@@ -20,27 +20,33 @@ import javaforce.*;
 
 public class MainPanel extends javax.swing.JPanel implements MouseListener, MouseMotionListener, KeyListener, KeyEventDispatcher, ActionListener {
 
-  public static String version = "0.17";
+  public static String version = "0.18";
 
   /**
    * Creates new form PaintPanel
    */
   public MainPanel(JFrame frame, JApplet applet) {
-    this.frame = frame;
-    this.applet = applet;
-    PaintCanvas.mainPanel = this;
-    Border.panel = this;
-    initComponents();
-    setLayout(new PanelLayout());  //can't make netbeans work properly
-    addTab("untitled");
-    updateClr(foreColor, foreClr);
-    updateClr(backColor, backClr);
-    selBox.setSelected(true);
-    javax.swing.Timer timer = new javax.swing.Timer(250, this);
-    timer.start();
-    KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
-    selBox.doClick();
-    currentPath = JF.getUserPath() + "/Pictures";
+    try {
+      this.frame = frame;
+      this.applet = applet;
+      PaintCanvas.mainPanel = this;
+      Border.panel = this;
+      initComponents();
+      setLayout(new PanelLayout());  //can't make netbeans work properly
+      addTab("untitled");
+      updateClr(foreColor, foreClr);
+      updateClr(backColor, backClr);
+      selBox.setSelected(true);
+      javax.swing.Timer timer = new javax.swing.Timer(250, this);
+      timer.start();
+      KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(this);
+      selBox.doClick();
+      currentPath = JF.getUserPath() + "/Pictures";
+      thresholdSliderStateChanged(null);
+      alphaSliderStateChanged(null);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   /**
@@ -64,21 +70,22 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     box = new javax.swing.JToggleButton();
     circle = new javax.swing.JToggleButton();
     sub = new javax.swing.JToggleButton();
-    subThreshold = new javax.swing.JSpinner();
+    jLabel3 = new javax.swing.JLabel();
     rotateCW = new javax.swing.JButton();
     rotateCCW = new javax.swing.JButton();
     flipVert = new javax.swing.JButton();
     flipHorz = new javax.swing.JButton();
     scaleSize = new javax.swing.JButton();
+    jLabel4 = new javax.swing.JLabel();
     fillMode = new javax.swing.JToggleButton();
     fillAlpha = new javax.swing.JToggleButton();
     fillEdge = new javax.swing.JToggleButton();
-    selectFont = new javax.swing.JButton();
-    changeSize = new javax.swing.JButton();
     round = new javax.swing.JToggleButton();
     selkeyclr = new javax.swing.JToggleButton();
+    jLabel5 = new javax.swing.JLabel();
+    selectFont = new javax.swing.JButton();
+    changeSize = new javax.swing.JButton();
     backswap = new javax.swing.JButton();
-    tabs = new javax.swing.JTabbedPane();
     toolbar2 = new javax.swing.JToolBar();
     foreColor = new javax.swing.JButton();
     swap = new javax.swing.JButton();
@@ -86,9 +93,16 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     zoom = new javax.swing.JComboBox();
     width = new javax.swing.JComboBox();
     paintMode = new javax.swing.JComboBox();
-    alphaLevel = new javax.swing.JSpinner();
     colorLayer = new javax.swing.JComboBox();
     layersButton = new javax.swing.JButton();
+    toolbar3 = new javax.swing.JToolBar();
+    jLabel1 = new javax.swing.JLabel();
+    threshold = new javax.swing.JLabel();
+    thresholdSlider = new javax.swing.JSlider();
+    jLabel2 = new javax.swing.JLabel();
+    alpha = new javax.swing.JLabel();
+    alphaSlider = new javax.swing.JSlider();
+    tabs = new javax.swing.JTabbedPane();
     status = new javax.swing.JTextField();
 
     toolbar1.setFloatable(false);
@@ -109,7 +123,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
 
     group.add(fill);
     fill.setIcon(new javax.swing.ImageIcon(getClass().getResource("/fill.png"))); // NOI18N
-    fill.setToolTipText("Fill");
+    fill.setToolTipText("Fill (uses threshold)");
     fill.setFocusable(false);
     fill.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     fill.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -213,7 +227,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
 
     group.add(sub);
     sub.setIcon(new javax.swing.ImageIcon(getClass().getResource("/sub.png"))); // NOI18N
-    sub.setToolTipText("Substitute Box - \nChanges backColor to foreColor within drawn Box.");
+    sub.setToolTipText("Substitute Box -  Changes backColor to foreColor within drawn Box (uses threshold)");
     sub.setFocusable(false);
     sub.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     sub.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -224,10 +238,8 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     });
     toolbar1.add(sub);
 
-    subThreshold.setModel(new javax.swing.SpinnerNumberModel(128, 0, 255, 1));
-    subThreshold.setToolTipText("Substitute threshold\n(0=exact match : \n255=everything)");
-    subThreshold.setMaximumSize(new java.awt.Dimension(60, 28));
-    toolbar1.add(subThreshold);
+    jLabel3.setText(":");
+    toolbar1.add(jLabel3);
 
     rotateCW.setIcon(new javax.swing.ImageIcon(getClass().getResource("/rotatecw.png"))); // NOI18N
     rotateCW.setToolTipText("Rotate CW");
@@ -289,6 +301,9 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     });
     toolbar1.add(scaleSize);
 
+    jLabel4.setText(":");
+    toolbar1.add(jLabel4);
+
     fillMode.setIcon(new javax.swing.ImageIcon(getClass().getResource("/fillmode.png"))); // NOI18N
     fillMode.setToolTipText("Fill Mode");
     fillMode.setFocusable(false);
@@ -297,7 +312,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     toolbar1.add(fillMode);
 
     fillAlpha.setIcon(new javax.swing.ImageIcon(getClass().getResource("/fillAlpha.png"))); // NOI18N
-    fillAlpha.setToolTipText("Fill using Alpha Level");
+    fillAlpha.setToolTipText("Fill setting Transparent Level (Alpha)");
     fillAlpha.setFocusable(false);
     fillAlpha.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     fillAlpha.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
@@ -309,6 +324,28 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     fillEdge.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
     fillEdge.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
     toolbar1.add(fillEdge);
+
+    round.setIcon(new javax.swing.ImageIcon(getClass().getResource("/round.png"))); // NOI18N
+    round.setToolTipText("Rounded Box");
+    round.setFocusable(false);
+    round.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    round.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    round.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        roundActionPerformed(evt);
+      }
+    });
+    toolbar1.add(round);
+
+    selkeyclr.setIcon(new javax.swing.ImageIcon(getClass().getResource("/keyclr.png"))); // NOI18N
+    selkeyclr.setToolTipText("Place selection box except for background color pixels.");
+    selkeyclr.setFocusable(false);
+    selkeyclr.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+    selkeyclr.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
+    toolbar1.add(selkeyclr);
+
+    jLabel5.setText(":");
+    toolbar1.add(jLabel5);
 
     selectFont.setIcon(new javax.swing.ImageIcon(getClass().getResource("/font.png"))); // NOI18N
     selectFont.setToolTipText("Select Font");
@@ -334,25 +371,6 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     });
     toolbar1.add(changeSize);
 
-    round.setIcon(new javax.swing.ImageIcon(getClass().getResource("/round.png"))); // NOI18N
-    round.setToolTipText("Rounded Box");
-    round.setFocusable(false);
-    round.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    round.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    round.addActionListener(new java.awt.event.ActionListener() {
-      public void actionPerformed(java.awt.event.ActionEvent evt) {
-        roundActionPerformed(evt);
-      }
-    });
-    toolbar1.add(round);
-
-    selkeyclr.setIcon(new javax.swing.ImageIcon(getClass().getResource("/keyclr.png"))); // NOI18N
-    selkeyclr.setToolTipText("Place selection box except for background color pixels.");
-    selkeyclr.setFocusable(false);
-    selkeyclr.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-    selkeyclr.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
-    toolbar1.add(selkeyclr);
-
     backswap.setIcon(new javax.swing.ImageIcon(getClass().getResource("/backswap.png"))); // NOI18N
     backswap.setToolTipText("Alternate background checker pattern.");
     backswap.setFocusable(false);
@@ -364,13 +382,6 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       }
     });
     toolbar1.add(backswap);
-
-    tabs.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
-    tabs.addChangeListener(new javax.swing.event.ChangeListener() {
-      public void stateChanged(javax.swing.event.ChangeEvent evt) {
-        tabsStateChanged(evt);
-      }
-    });
 
     toolbar2.setFloatable(false);
     toolbar2.setRollover(true);
@@ -439,11 +450,6 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     });
     toolbar2.add(paintMode);
 
-    alphaLevel.setModel(new javax.swing.SpinnerNumberModel(255, 0, 255, 1));
-    alphaLevel.setToolTipText("Transparent Mode Alpha Level (0=fully transparent : 255=opaque)");
-    alphaLevel.setMaximumSize(new java.awt.Dimension(60, 28));
-    toolbar2.add(alphaLevel);
-
     colorLayer.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "ARGB", "A---", "-R--", "--G-", "---B" }));
     colorLayer.setToolTipText("Color Layer");
     colorLayer.setLightWeightPopupEnabled(false);
@@ -467,16 +473,75 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     });
     toolbar2.add(layersButton);
 
+    toolbar3.setFloatable(false);
+    toolbar3.setRollover(true);
+
+    jLabel1.setText("Threshold:");
+    jLabel1.setToolTipText("0=match exact : 100=match all");
+    toolbar3.add(jLabel1);
+
+    threshold.setText("0%");
+    threshold.setToolTipText("0=match exact : 100=match all");
+    threshold.setMaximumSize(new java.awt.Dimension(30, 14));
+    threshold.setMinimumSize(new java.awt.Dimension(25, 14));
+    threshold.setPreferredSize(new java.awt.Dimension(25, 14));
+    toolbar3.add(threshold);
+
+    thresholdSlider.setMaximum(255);
+    thresholdSlider.setToolTipText("0=match exact : 100=match all");
+    thresholdSlider.setValue(0);
+    thresholdSlider.setMaximumSize(new java.awt.Dimension(120, 23));
+    thresholdSlider.setMinimumSize(new java.awt.Dimension(100, 23));
+    thresholdSlider.setPreferredSize(new java.awt.Dimension(100, 23));
+    thresholdSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+      public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        thresholdSliderStateChanged(evt);
+      }
+    });
+    toolbar3.add(thresholdSlider);
+
+    jLabel2.setText("Transparent:");
+    jLabel2.setToolTipText("0=opaque : 100=transparent");
+    toolbar3.add(jLabel2);
+
+    alpha.setText("0%");
+    alpha.setToolTipText("0=transparent : 100=opaque");
+    alpha.setMaximumSize(new java.awt.Dimension(30, 14));
+    alpha.setMinimumSize(new java.awt.Dimension(25, 14));
+    alpha.setPreferredSize(new java.awt.Dimension(25, 14));
+    toolbar3.add(alpha);
+
+    alphaSlider.setMaximum(255);
+    alphaSlider.setToolTipText("0=transparent : 100=opaque");
+    alphaSlider.setValue(0);
+    alphaSlider.setMaximumSize(new java.awt.Dimension(120, 23));
+    alphaSlider.setMinimumSize(new java.awt.Dimension(100, 23));
+    alphaSlider.setPreferredSize(new java.awt.Dimension(100, 23));
+    alphaSlider.addChangeListener(new javax.swing.event.ChangeListener() {
+      public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        alphaSliderStateChanged(evt);
+      }
+    });
+    toolbar3.add(alphaSlider);
+
+    tabs.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
+    tabs.addChangeListener(new javax.swing.event.ChangeListener() {
+      public void stateChanged(javax.swing.event.ChangeEvent evt) {
+        tabsStateChanged(evt);
+      }
+    });
+
     status.setText("status");
 
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
     this.setLayout(layout);
     layout.setHorizontalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-      .addComponent(tabs)
-      .addComponent(toolbar2, javax.swing.GroupLayout.DEFAULT_SIZE, 1138, Short.MAX_VALUE)
+      .addComponent(toolbar2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
       .addComponent(toolbar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
       .addComponent(status)
+      .addComponent(tabs)
+      .addComponent(toolbar3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
     );
     layout.setVerticalGroup(
       layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -485,7 +550,9 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(toolbar2, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-        .addComponent(tabs, javax.swing.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
+        .addComponent(toolbar3, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addComponent(tabs, javax.swing.GroupLayout.PREFERRED_SIZE, 423, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(status, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
     );
@@ -692,8 +759,17 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     }
   }//GEN-LAST:event_layersButtonActionPerformed
 
+  private void thresholdSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_thresholdSliderStateChanged
+    threshold.setText("" + getThresholdPercent() + "%");
+  }//GEN-LAST:event_thresholdSliderStateChanged
+
+  private void alphaSliderStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_alphaSliderStateChanged
+    alpha.setText("" + getAlphaPercent() + "%");
+  }//GEN-LAST:event_alphaSliderStateChanged
+
   // Variables declaration - do not modify//GEN-BEGIN:variables
-  private javax.swing.JSpinner alphaLevel;
+  private javax.swing.JLabel alpha;
+  private javax.swing.JSlider alphaSlider;
   private javax.swing.JButton backColor;
   private javax.swing.JButton backswap;
   private javax.swing.JToggleButton box;
@@ -709,6 +785,11 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   private javax.swing.JButton flipVert;
   private javax.swing.JButton foreColor;
   private javax.swing.ButtonGroup group;
+  private javax.swing.JLabel jLabel1;
+  private javax.swing.JLabel jLabel2;
+  private javax.swing.JLabel jLabel3;
+  private javax.swing.JLabel jLabel4;
+  private javax.swing.JLabel jLabel5;
   private javax.swing.JButton layersButton;
   private javax.swing.JToggleButton line;
   private javax.swing.JComboBox paintMode;
@@ -723,12 +804,14 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   private javax.swing.JToggleButton selkeyclr;
   private javax.swing.JTextField status;
   private javax.swing.JToggleButton sub;
-  private javax.swing.JSpinner subThreshold;
   private javax.swing.JButton swap;
   private javax.swing.JTabbedPane tabs;
   private javax.swing.JToggleButton text;
+  private javax.swing.JLabel threshold;
+  private javax.swing.JSlider thresholdSlider;
   private javax.swing.JToolBar toolbar1;
   private javax.swing.JToolBar toolbar2;
+  private javax.swing.JToolBar toolbar3;
   private javax.swing.JComboBox width;
   private javax.swing.JComboBox zoom;
   // End of variables declaration//GEN-END:variables
@@ -822,18 +905,23 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
 
     public void layoutContainer(Container c) {
       //assumes images are added Center,East,South
-      Dimension d1, d2, ds;
-      int cnt = c.getComponentCount();
-      if (cnt != 4) return;
-      int x = c.getWidth();
-      int y = c.getHeight();
-      d1 = toolbar1.getPreferredSize();
-      toolbar1.setBounds(0, 0, x, d1.height);
-      d2 = toolbar2.getPreferredSize();
-      toolbar2.setBounds(0, d1.height, x, d2.height);
-      ds = status.getPreferredSize();
-      tabs.setBounds(0, d1.height + d2.height, x, y - (d1.height + d2.height + ds.height));
-      status.setBounds(0, y - ds.height, x, ds.height);
+      try {
+        Dimension d1, d2, d3, ds;
+        int cnt = c.getComponentCount();
+        int x = c.getWidth();
+        int y = c.getHeight();
+        d1 = toolbar1.getPreferredSize();
+        toolbar1.setBounds(0, 0, x, d1.height);
+        d2 = toolbar2.getPreferredSize();
+        toolbar2.setBounds(0, d1.height, x, d2.height);
+        d3 = toolbar3.getPreferredSize();
+        toolbar3.setBounds(0, d1.height + d2.height, x, d3.height);
+        ds = status.getPreferredSize();
+        tabs.setBounds(0, d1.height + d2.height + d3.height, x, y - (d1.height + d2.height + d3.height + ds.height));
+        status.setBounds(0, y - ds.height, x, ds.height);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     }
   }
 
@@ -959,7 +1047,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     imageTabs.add(tab);
     tabs.addTab(title, tab.scroll);
     tabs.setSelectedComponent(tab.scroll);
-    tab.pc.grabFocus();
+    tab.pc.requestFocus();
     if (layers != null) {
       layers.setup(tab.pc);
     }
@@ -1075,18 +1163,24 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     repaint();
   }
 
-  public void closeTab(boolean exiting) {
+  public boolean closeTab(boolean exiting) {
     int idx = getidx();
-    if (tabs.getTabCount() == 0) return;
+    if (tabs.getTabCount() == 0) return true;
     if (imageTabs.get(idx).pc.dirty) {
-      if (JF.showConfirm("Save?", "Save first?")) {
-        if (!saveTab()) return;
+      switch (JF.showConfirm3("Save?", "Save first?")) {
+        case JF.YES:
+          if (!saveTab()) return false;
+        case JF.CANCEL:
+          return false;
+        case JF.NO:
+          break;
       }
     }
     tabs.remove(idx);
     imageTabs.remove(idx);
-    if (exiting) return;
+    if (exiting) return true;
     if (tabs.getTabCount() == 0) addTab("untitled");
+    return true;
   }
 
   public boolean saveTab() {
@@ -1488,12 +1582,9 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
     int idx = paintMode.getSelectedIndex();
     if (idx == 0) {
       fillAlpha.setEnabled(true);
-      fillEdge.setEnabled(true);
     } else {
       fillAlpha.setEnabled(false);
       fillAlpha.setSelected(false);
-      fillEdge.setEnabled(false);
-      fillEdge.setSelected(false);
     }
     switch (idx) {
       case 0:  //normal
@@ -1533,7 +1624,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       round.setEnabled(false);
       selectFont.setEnabled(false);
       sub.setEnabled(false);
-      subThreshold.setEnabled(false);
+      thresholdSlider.setEnabled(false);
       rotateCW.setEnabled(false);
       rotateCCW.setEnabled(false);
       flipVert.setEnabled(false);
@@ -1551,7 +1642,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       round.setEnabled(true);
       selectFont.setEnabled(true);
       sub.setEnabled(true);
-      subThreshold.setEnabled(true);
+      thresholdSlider.setEnabled(true);
       rotateCW.setEnabled(true);
       rotateCCW.setEnabled(true);
       flipVert.setEnabled(true);
@@ -1561,10 +1652,27 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
   }
 
   private int getAlphaLevel() {
-    int al = (Integer)alphaLevel.getValue();
+    int al = alphaSlider.getValue();
+    return 255 - al;
+  }
+
+  private int getAlphaPercent() {
+    int al = alphaSlider.getValue();
+    return al * 100 / 255;
+  }
+
+  private int getThresholdLevel() {
+    int al = thresholdSlider.getValue();
     if (al < 0) al = 0;
     if (al > 255) al = 255;
     return al;
+  }
+
+  private int getThresholdPercent() {
+    int al = thresholdSlider.getValue();
+    if (al < 0) al = 0;
+    if (al > 255) al = 255;
+    return al * 100 / 255;
   }
 
   private float gradRadius() {
@@ -1872,12 +1980,12 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
         switch (paintMode.getSelectedIndex()) {
           case 0:
             if (fillAlpha.isSelected())
-              pc.fillFast(x, y, clr | getAlphaLevel() << 24, true, fillEdge.isSelected());
+              pc.fillFast(x, y, clr | getAlphaLevel() << 24, true, fillEdge.isSelected(), getThresholdLevel());
             else
-              pc.fillFast(x, y, clr, false, fillEdge.isSelected());
+              pc.fillFast(x, y, clr, false, fillEdge.isSelected(), getThresholdLevel());
             break;
           default:
-            pc.fillSlow(x, y, fillEdge.isSelected());
+            pc.fillSlow(x, y, fillEdge.isSelected(), getThresholdLevel());
             break;
         }
         break;
@@ -1981,10 +2089,10 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       case sub:
         switch (paintMode.getSelectedIndex()) {
           case 0:
-            pc.subBoxFast(pc.sx, pc.sy, x, y, backClr, foreClr, (Integer)subThreshold.getValue());
+            pc.subBoxFast(pc.sx, pc.sy, x, y, backClr, foreClr, getThresholdLevel());
             break;
           default:
-            pc.subBoxSlow(pc.sx, pc.sy, x, y, backClr, (Integer)subThreshold.getValue());
+            pc.subBoxSlow(pc.sx, pc.sy, x, y, backClr, getThresholdLevel());
             break;
         }
         pc.foreClear();
@@ -2172,7 +2280,7 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       paintMode.setEnabled(false);
       selBox.setEnabled(false);
       sub.setEnabled(false);
-      subThreshold.setEnabled(false);
+      thresholdSlider.setEnabled(false);
       rotateCW.setEnabled(false);
       rotateCCW.setEnabled(false);
       flipVert.setEnabled(false);
@@ -2180,28 +2288,26 @@ public class MainPanel extends javax.swing.JPanel implements MouseListener, Mous
       selkeyclr.setEnabled(false);
       fillAlpha.setSelected(false);
       fillAlpha.setEnabled(false);
-      fillEdge.setSelected(false);
-      fillEdge.setEnabled(false);
     } else {
       paintMode.setEnabled(true);
       selBox.setEnabled(true);
       sub.setEnabled(true);
-      subThreshold.setEnabled(true);
+      thresholdSlider.setEnabled(true);
       rotateCW.setEnabled(true);
       rotateCCW.setEnabled(true);
       flipVert.setEnabled(true);
       flipHorz.setEnabled(true);
       selkeyclr.setEnabled(true);
       fillAlpha.setEnabled(true);
-      fillEdge.setEnabled(true);
     }
     repaint();
     pc.repaint();
   }
-  public void closeAll() {
+  public boolean closeAll() {
     while (tabs.getTabCount() > 0) {
-      closeTab(true);
+      if (!closeTab(true)) return false;
     }
+    return true;
   }
   public void addLayer() {
     int idx = getidx();

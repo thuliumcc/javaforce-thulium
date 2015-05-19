@@ -46,8 +46,6 @@ public class Server extends javax.swing.JFrame implements ActionListener {
     if (sslValid()) {
       service = new RDP();
       service.start(webPassword.getText(), rdpPassword.getText());
-    } else {
-      setVisible(true);
     }
   }
 
@@ -57,9 +55,47 @@ public class Server extends javax.swing.JFrame implements ActionListener {
       FileInputStream fis = new FileInputStream(JF.getUserPath() + "/.jrdp.cfg");
       p.load(fis);
       fis.close();
+      String apass = p.getProperty("adminPassword");
+      if (apass == null) {
+        apass = p.getProperty("adminEncodedPassword");
+        if (apass == null) {
+          apass = "";
+        } else {
+          try {
+            apass = decodePassword(apass);
+          } catch (Exception e) {
+            apass = "";
+          }
+        }
+      }
+      adminPassword.setText(apass);
       String wpass = p.getProperty("webPassword");
+      if (wpass == null) {
+        wpass = p.getProperty("webEncodedPassword");
+        if (wpass == null) {
+          wpass = "";
+        } else {
+          try {
+            wpass = decodePassword(wpass);
+          } catch (Exception e) {
+            wpass = "";
+          }
+        }
+      }
       webPassword.setText(wpass);
       String rpass = p.getProperty("rdpPassword");
+      if (rpass == null) {
+        rpass = p.getProperty("rdpEncodedPassword");
+        if (rpass == null) {
+          rpass = "";
+        } else {
+          try {
+            rpass = decodePassword(rpass);
+          } catch (Exception e) {
+            rpass = "";
+          }
+        }
+      }
       rdpPassword.setText(rpass);
     } catch (Exception e) {
       JFLog.log(e);
@@ -69,8 +105,9 @@ public class Server extends javax.swing.JFrame implements ActionListener {
   public void writeConfig() {
     try {
       Properties p = new Properties();
-      p.setProperty("webPassword", webPassword.getText());
-      p.setProperty("rdpPassword", rdpPassword.getText());
+      p.setProperty("adminEncodedPassword", encodePassword(adminPassword.getText()));
+      p.setProperty("webEncodedPassword", encodePassword(webPassword.getText()));
+      p.setProperty("rdpEncodedPassword", encodePassword(rdpPassword.getText()));
       FileOutputStream fos = new FileOutputStream(JF.getUserPath() + "/.jrdp.cfg");
       p.store(fos, "#jfRDP");
       fos.close();
@@ -98,6 +135,21 @@ public class Server extends javax.swing.JFrame implements ActionListener {
     }
     if (o == show) {
       readConfig();
+      if (adminPassword.getText().length() > 0) {
+        while (true) {
+          GetPassword dialog = new GetPassword(this, true);
+          dialog.setVisible(true);
+          if (!dialog.accepted) {
+            return;
+          }
+          if (!dialog.getPassword().equals(adminPassword.getText())) {
+            JF.showError("Error", "Incorrect password");
+            continue;
+          } else {
+            break;
+          }
+        }
+      }
       setVisible(true);
     }
   }
@@ -121,6 +173,8 @@ public class Server extends javax.swing.JFrame implements ActionListener {
     generateSSL = new javax.swing.JButton();
     status = new javax.swing.JLabel();
     donate = new javax.swing.JButton();
+    jLabel4 = new javax.swing.JLabel();
+    adminPassword = new javax.swing.JTextField();
 
     setTitle("jfRDP Server");
 
@@ -160,6 +214,8 @@ public class Server extends javax.swing.JFrame implements ActionListener {
       }
     });
 
+    jLabel4.setText("Admin Password");
+
     javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
     getContentPane().setLayout(layout);
     layout.setHorizontalGroup(
@@ -183,10 +239,14 @@ public class Server extends javax.swing.JFrame implements ActionListener {
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addComponent(rdpPassword)
               .addComponent(webPassword)))
+          .addComponent(status, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
           .addGroup(layout.createSequentialGroup()
             .addComponent(jLabel1)
             .addGap(0, 0, Short.MAX_VALUE))
-          .addComponent(status, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+          .addGroup(layout.createSequentialGroup()
+            .addComponent(jLabel4)
+            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+            .addComponent(adminPassword)))
         .addContainerGap())
     );
     layout.setVerticalGroup(
@@ -196,15 +256,19 @@ public class Server extends javax.swing.JFrame implements ActionListener {
         .addComponent(jLabel1)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+          .addComponent(jLabel4)
+          .addComponent(adminPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel2)
           .addComponent(webPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel3)
           .addComponent(rdpPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-        .addComponent(status, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        .addComponent(status)
+        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(save)
           .addComponent(Cancel)
@@ -249,11 +313,13 @@ public class Server extends javax.swing.JFrame implements ActionListener {
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
   private javax.swing.JButton Cancel;
+  private javax.swing.JTextField adminPassword;
   private javax.swing.JButton donate;
   private javax.swing.JButton generateSSL;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
+  private javax.swing.JLabel jLabel4;
   private javax.swing.JTextField rdpPassword;
   private javax.swing.JButton save;
   private javax.swing.JLabel status;
@@ -285,13 +351,86 @@ public class Server extends javax.swing.JFrame implements ActionListener {
   }
 
   private boolean sslValid() {
-    try {
-      if (new File(getSSLfile()).exists()) {
-        status.setText("Status : Ready");
-        return true;
-      }
-    } catch (Exception e) {}
+    if (new File(getSSLfile()).exists()) {
+      status.setText("Status : Ready");
+      return true;
+    }
     status.setText("Status : SSL Certficate not found");
     return false;
+  }
+
+  /** Encodes a password with some simple steps. */
+  public static String encodePassword(String password) {
+    char ca[] = password.toCharArray();
+    int sl = ca.length;
+    if (sl == 0) return "";
+    char tmp;
+    for(int p=0;p<sl/2;p++) {
+      tmp = ca[p];
+      ca[p] = ca[sl-p-1];
+      ca[sl-p-1] = tmp;
+    }
+    StringBuffer out = new StringBuffer();
+    for(int p=0;p<sl;p++) {
+      ca[p] ^= 0xaa;
+      if (ca[p] < 0x10) out.append("0");
+      out.append(Integer.toString(ca[p], 16));
+    }
+//System.out.println("e1=" + out.toString());
+    Random r = new Random();
+    char key = (char)(r.nextInt(0xef) + 0x10);
+    char outkey = key;
+    ca = out.toString().toCharArray();
+    sl = ca.length;
+    for(int p=0;p<sl;p++) {
+      ca[p] ^= key;
+      key ^= ca[p];
+    }
+    out = new StringBuffer();
+    for(int a=0;a<4;a++) {
+      out.append(Integer.toString(r.nextInt(0xef) + 0x10, 16));
+    }
+    out.append(Integer.toString(outkey, 16));
+    for(int p=0;p<sl;p++) {
+      if (ca[p] < 0x10) out.append("0");
+      out.append(Integer.toString(ca[p], 16));
+    }
+    for(int a=0;a<4;a++) {
+      out.append(Integer.toString(r.nextInt(0xef) + 0x10, 16));
+    }
+    return out.toString();
+  }
+  /** Decodes a password. */
+  public static String decodePassword(String crypto) {
+    int sl = crypto.length();
+    if (sl < 10) return null;
+    char key = (char)(int)Integer.valueOf(crypto.substring(8,10), 16);
+    char newkey;
+    crypto = crypto.substring(10, sl - 8);
+    int cl = (sl - 18) / 2;
+    char ca[] = new char[cl];
+    for(int p=0;p<cl;p++) {
+      ca[p] = (char)(int)Integer.valueOf(crypto.substring(p*2, p*2+2), 16);
+      newkey = (char)(key ^ ca[p]);
+      ca[p] ^= key;
+      key = newkey;
+    }
+    crypto = new String(ca);
+//System.out.println("d1=" + crypto);
+    cl = crypto.length() / 2;
+    ca = new char[cl];
+    for(int p=0;p<cl;p++) {
+      ca[p] = (char)(int)Integer.valueOf(crypto.substring(p*2, p*2+2), 16);
+    }
+    for(int p=0;p<cl;p++) {
+      ca[p] ^= 0xaa;
+    }
+    char tmp;
+    for(int p=0;p<cl/2;p++) {
+      tmp = ca[p];
+      ca[p] = ca[cl-p-1];
+      ca[cl-p-1] = tmp;
+    }
+    return new String(ca);
   }
 }

@@ -29,7 +29,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+                      <Component id="connect" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -40,7 +40,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="rdpPassword" max="32767" attributes="0"/>
-                          <Component id="password" pref="195" max="32767" attributes="0"/>
+                          <Component id="webPassword" pref="195" max="32767" attributes="0"/>
                           <Component id="host" max="32767" attributes="0"/>
                       </Group>
                   </Group>
@@ -61,7 +61,7 @@
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="password" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="webPassword" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -71,7 +71,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="error" min="-2" pref="23" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
-              <Component id="jButton1" min="-2" max="-2" attributes="0"/>
+              <Component id="connect" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -88,16 +88,16 @@
         <Property name="text" type="java.lang.String" value="Web Password:"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JPasswordField" name="password">
+    <Component class="javax.swing.JPasswordField" name="webPassword">
     </Component>
     <Component class="javax.swing.JTextField" name="host">
     </Component>
-    <Component class="javax.swing.JButton" name="jButton1">
+    <Component class="javax.swing.JButton" name="connect">
       <Properties>
         <Property name="text" type="java.lang.String" value="Connect"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="connectActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="error">

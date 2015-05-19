@@ -19,8 +19,8 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
   public JFImage limg;  //alpha, color layers
   public JFImage cimg;  //current color layer
   public boolean dirty = false, undoDirty = false;
-  public Vector<JFImage> undos = new Vector<JFImage>();
-  public int undoPos = -1;
+  public ArrayList<Undo> undos = new ArrayList<Undo>();
+  public int undoPos = 0;
   public static int MAX_UNDO_SIZE = 7;
   public Border border_east, border_south, border_corner;
   public JPanel parentPanel;
@@ -312,11 +312,35 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
   private static final byte TODO = 0;
   private static final byte DONE = 1;
   private static final byte PAINT = 2;
-  public void fillFast(int x1,int y1,int clr, boolean hasAlpha, boolean edge) {
+  private int match_threshold;
+  private int match_target;
+  private boolean match(int px) {
+    if (match_threshold > 0) {
+      //check RGB values against threshold
+      int c1, c2, diff;
+      c1 = (px & 0xff0000) >> 16;
+      c2 = (match_target & 0xff0000) >> 16;
+      diff = Math.abs(c1-c2);
+      c1 = (px & 0xff00) >> 8;
+      c2 = (match_target & 0xff00) >> 8;
+      diff += Math.abs(c1-c2);
+      c1 = px & 0xff;
+      c2 = match_target & 0xff;
+      diff += Math.abs(c1-c2);
+      diff /= 3;
+      return (diff <= match_threshold);
+    } else {
+      //must be exact match
+      return (px & JFImage.RGB_MASK) == match_target;
+    }
+  }
+  public void fillFast(int x1,int y1,int clr, boolean hasAlpha, boolean edge, int threshold) {
+    //threshold : 0=exact 255=everything
+    this.match_threshold = threshold;
+    match_target = cimg.getPixel(x1,y1) & JFImage.RGB_MASK;
+    if (match_target == (clr & JFImage.RGB_MASK)) return;
     int w = cimg.getWidth();
     int h = cimg.getHeight();
-    int target = cimg.getPixel(x1,y1) & JFImage.RGB_MASK;
-    if (target == (clr & JFImage.RGB_MASK)) return;
     int px[] = cimg.getBuffer();
     byte done[] = new byte[w * h];  //to keep track of what has been filled in already
     Vector<Point> pts = new Vector<Point>();
@@ -333,14 +357,14 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
       bottom = false;
       while ((x >= 0) && (x < w)) {
         p = y * w + x;
-        if (done[p] != TODO || (px[p] & JFImage.RGB_MASK) != target) {
+        if (done[p] != TODO || (!match(px[p]))) {
           break;
         }
         if (edge) {
-          if ( (x > 0 && (px[p-1] & JFImage.RGB_MASK) != target)
-          || (x < w-1 && (px[p+1] & JFImage.RGB_MASK) != target)
-          || (y > 0 && (px[p-w] & JFImage.RGB_MASK) != target)
-          || (y < h-1 && (px[p+w] & JFImage.RGB_MASK) != target) )
+          if ( (x > 0 && (!match(px[p-1])))
+          || (x < w-1 && (!match(px[p+1])))
+          || (y > 0 && (!match(px[p-w])))
+          || (y < h-1 && (!match(px[p+w]))) )
           {
             done[p] = PAINT;
           } else {
@@ -357,24 +381,24 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
         }
         if (y > 0) {
           if (!top) {
-            if (done[p-w] == TODO && (px[p-w] & JFImage.RGB_MASK) == target) {
+            if (done[p-w] == TODO && (match(px[p-w]))) {
               top=true;
               pts.add(new Point(x,y-1,1));
               if (x > 0) pts.add(new Point(x-1,y-1,-1));
             }
           } else {
-            if (done[p-w] == TODO && (px[p-w] & JFImage.RGB_MASK) != target) top=false;
+            if (done[p-w] == TODO && (!match(px[p-w]))) top=false;
           }
         }
         if (y < h-1) {
           if (!bottom) {
-            if (done[p+w] == TODO && (px[p+w] & JFImage.RGB_MASK) == target) {
+            if (done[p+w] == TODO && (match(px[p+w]))) {
               bottom=true;
               pts.add(new Point(x,y+1,1));
               if (x > 0) pts.add(new Point(x-1,y+1,-1));
             }
           } else {
-            if (done[p+w] == TODO && (px[p+w] & JFImage.RGB_MASK) != target) bottom=false;
+            if (done[p+w] == TODO && (!match(px[p+w]))) bottom=false;
           }
         }
         x += dir;
@@ -395,11 +419,12 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
       }
     }
   }
-  public void fillSlow(int x1,int y1, boolean edge) {
+  public void fillSlow(int x1,int y1, boolean edge, int threshold) {
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
     Graphics2D g = img[imageLayer].getGraphics2D();
-    int target = img[imageLayer].getPixel(x1,y1) & JFImage.RGB_MASK;
+    match_target = img[imageLayer].getPixel(x1,y1) & JFImage.RGB_MASK;
+    match_threshold = threshold;
     int px[] = cimg.getBuffer();
     byte done[] = new byte[w * h];  //to keep track of what has been filled in already
     Vector<Point> pts = new Vector<Point>();
@@ -416,14 +441,14 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
       bottom = false;
       while ((x >= 0) && (x < w)) {
         p = y * w + x;
-        if (((px[p] & JFImage.RGB_MASK) != target) || (done[p] != TODO)) {
+        if ((!match(px[p])) || (done[p] != TODO)) {
           break;
         }
         if (edge) {
-          if ( (x > 0 && (px[p-1] & JFImage.RGB_MASK) != target)
-          || (x < w-1 && (px[p+1] & JFImage.RGB_MASK) != target)
-          || (y > 0 && (px[p-w] & JFImage.RGB_MASK) != target)
-          || (y < h-1 && (px[p+w] & JFImage.RGB_MASK) != target) )
+          if ( (x > 0 && (!match(px[p-1])))
+          || (x < w-1 && (!match(px[p+1])))
+          || (y > 0 && (!match(px[p-w])))
+          || (y < h-1 && (!match(px[p+w]))) )
           {
             done[p] = PAINT;
           } else {
@@ -435,24 +460,24 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
         }
         if (y > 0) {
           if (!top) {
-            if (((px[p-w] & JFImage.RGB_MASK) == target) && (done[p-w] == TODO)) {
+            if ((match(px[p-w])) && (done[p-w] == TODO)) {
               top=true;
               pts.add(new Point(x,y-1,1));
               if (x > 0) pts.add(new Point(x-1,y-1,-1));
             }
           } else {
-            if ((px[p-w] & JFImage.RGB_MASK) != target) top=false;
+            if (!match(px[p-w])) top=false;
           }
         }
         if (y < h-1) {
           if (!bottom) {
-            if (((px[p+w] & JFImage.RGB_MASK) == target) && (done[p+w] == TODO)) {
+            if ((match(px[p+w])) && (done[p+w] == TODO)) {
               bottom=true;
               pts.add(new Point(x,y+1,1));
               if (x > 0) pts.add(new Point(x-1,y+1,-1));
             }
           } else {
-            if ((px[p+w] & JFImage.RGB_MASK) != target) bottom=false;
+            if (!match(px[p+w])) bottom=false;
           }
         }
         x += dir;
@@ -477,7 +502,7 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
     int px[] = img[imageLayer].getBuffer();
-    int x,y,p,diff,c1,c2;
+    int x,y,p;
     //do clipping
     int tmp;
     if (x1 > x2) {tmp=x1; x1=x2; x2=tmp;}
@@ -490,25 +515,12 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     if (y1 >= h) y1 = h-1;
     if (x2 >= w) x2 = w-1;
     if (y2 >= h) y2 = h-1;
+    match_threshold = threshold;
+    match_target = clr;
     for(y=y1;y<=y2;y++) {
       p = y * w + x1;
       for(x=x1;x<=x2;x++,p++) {
-        if (threshold == 0) {
-          if ((px[p] & JFImage.RGB_MASK) != clr) continue;
-        } else {
-          //check RGB values against threshold
-          tmp = px[p] & JFImage.RGB_MASK;
-          c1 = (tmp & 0xff0000) >> 16;
-          c2 = (clr & 0xff0000) >> 16;
-          diff = Math.abs(c1-c2);
-          c1 = (tmp & 0xff00) >> 8;
-          c2 = (clr & 0xff00) >> 8;
-          diff += Math.abs(c1-c2);
-          c1 = tmp & 0xff;
-          c2 = clr & 0xff;
-          diff += Math.abs(c1-c2);
-          if (diff/3 > threshold) continue;
-        }
+        if (!match(px[p])) continue;
         px[p] &= JFImage.ALPHA_MASK;
         px[p] |= clr2;
       }
@@ -516,11 +528,13 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
   }
   public void subBoxSlow(int x1, int y1, int x2, int y2, int clr1, int threshold) {
     int clr = clr1 & JFImage.RGB_MASK;
+    match_threshold = threshold;
+    match_target = clr;
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
     int px[] = img[imageLayer].getPixels();
     Graphics2D g = img[imageLayer].getGraphics2D();
-    int x,y,p,diff,c1,c2;
+    int x,y,p;
     //do clipping
     int tmp;
     if (x1 > x2) {tmp=x1; x1=x2; x2=tmp;}
@@ -536,22 +550,7 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     for(y=y1;y<=y2;y++) {
       p = y * w + x1;
       for(x=x1;x<=x2;x++,p++) {
-        if (threshold == 0) {
-          if ((px[p] & JFImage.RGB_MASK) != clr) continue;
-        } else {
-          //check RGB values against threshold
-          tmp = px[p] & JFImage.RGB_MASK;
-          c1 = (tmp & 0xff0000) >> 16;
-          c2 = (clr & 0xff0000) >> 16;
-          diff = Math.abs(c1-c2);
-          c1 = (tmp & 0xff00) >> 8;
-          c2 = (clr & 0xff00) >> 8;
-          diff += Math.abs(c1-c2);
-          c1 = tmp & 0xff;
-          c2 = clr & 0xff;
-          diff += Math.abs(c1-c2);
-          if (diff/3 > threshold) continue;
-        }
+        if (!match(px[p])) continue;
         g.fillRect(x,y,1,1);  //slow
       }
     }
@@ -745,72 +744,91 @@ public class PaintCanvas extends JComponent implements MouseListener, MouseMotio
     }
   }
   public void createUndo() {
+    createUndo("undo");
+  }
+  public void createUndo(String type) {
+//    JFLog.log("create:" + type);
     int w = getUnscaledWidth();
     int h = getUnscaledHeight();
     try {
-      JFImage undo = new JFImage();
-      undo.setImageSize(w, h);
+      Undo undo = new Undo();
+      undo.img.setImageSize(w, h);
       applyColorLayer();
       int px[] = img[imageLayer].getPixels();
-      undo.putPixels(px, 0, 0, w, h, 0);
-      while (undoPos != undos.size()-1) {
+      undo.img.putPixels(px, 0, 0, w, h, 0);
+      undo.imageLayer = imageLayer;
+      undoPos++;
+      undos.add(undo);
+      while(undos.size() > undoPos) {
         undos.remove(undos.size()-1);  //remove redos
       }
-      undos.add(undo);
-      if (undos.size() > MAX_UNDO_SIZE) undos.remove(0);
-      undoPos = undos.size()-1;
+      if (undos.size() > MAX_UNDO_SIZE) {
+        undos.remove(0);
+        undoPos--;
+      }
+//      JFLog.log("undoSize=" + undos.size() + ",undoPos=" + undoPos);
     } catch (Exception e) {
-      System.out.println("createUndo:" + e);  //most likely out of memory
       JFLog.log(e);
     }
   }
   public void clearUndo() {
-    undoPos = -1;
+    undoPos = 0;
     undos.clear();
   }
   public void undo() {
     if (undoPos <= 0) return;
+//    JFLog.log("undo");
     try {
-      if ((undoPos == undos.size()-1) && (undoDirty)) {
+      if (undoDirty) {
         //createRedo
-        createUndo();
+        createUndo("redo");
         undoDirty = false;
+        undoPos--;
       }
       undoPos--;
-      JFImage undo = undos.get(undoPos);
+      Undo undo = undos.get(undoPos);
       int orgLayer = colorLayer;
       changeColorLayer(0);
-      int w = undo.getWidth();
-      int h = undo.getHeight();
+      int w = undo.img.getWidth();
+      int h = undo.img.getHeight();
       setImageSize(w, h);
       backClear();
       foreClear();
-      int px[] = undo.getPixels();
-      img[imageLayer].putPixels(px, 0, 0, w, h, 0);
+      int px[] = undo.img.getPixels();
+      img[undo.imageLayer].putPixels(px, 0, 0, w, h, 0);
       resizeBorder();
       changeColorLayer(orgLayer);
       repaint();
+//      JFLog.log("undoSize=" + undos.size() + ",undoPos=" + undoPos);
     } catch (Exception e) {
-      System.out.println("undo:" + e);  //most likely out of memory
+      JFLog.log(e);
     }
   }
   public void redo() {
     if (undos.isEmpty()) return;
     if (undoPos == undos.size()-1) return;
+    if (undoDirty) {
+      while(undos.size() > undoPos) {
+        undos.remove(undos.size()-1);  //remove redos
+      }
+      return;
+    }
+//    JFLog.log("redo");
     try {
       undoPos++;
-      JFImage undo = undos.get(undoPos);
-      int w = undo.getWidth();
-      int h = undo.getHeight();
+      Undo undo = undos.get(undoPos);
+      int w = undo.img.getWidth();
+      int h = undo.img.getHeight();
       setImageSize(w, h);
       backClear();
       foreClear();
-      int px[] = undo.getPixels();
-      img[imageLayer].putPixels(px, 0, 0, w, h, 0);
+      int px[] = undo.img.getPixels();
+      img[undo.imageLayer].putPixels(px, 0, 0, w, h, 0);
       resizeBorder();
       repaint();
+//      JFLog.log("undoSize=" + undos.size() + ",undoPos=" + undoPos);
     } catch (Exception e) {
-      System.out.println("redo:" + e);  //most likely out of memory
+      JFLog.log(e);
     }
   }
   public void setDirty() {

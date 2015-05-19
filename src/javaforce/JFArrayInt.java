@@ -48,4 +48,9 @@ public class JFArrayInt {
   public int[] toArray() {
     return Arrays.copyOf(buf, count);
   }
+
+  //returns the backing buffer (size may be larger than expected)
+  public int[] getBuffer() {
+    return buf;
+  }
 }

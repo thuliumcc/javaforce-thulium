@@ -23,12 +23,13 @@ public class PaintApp extends JFrame implements WindowListener {
   private PaintApp() {
     panel = new MainPanel(this, null);
     addWindowListener(this);
+    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
     setContentPane(panel);
     setSize(800, 600);  //TODO : settings
     setPosition();
-    setTitle("jPaint");
-    setVisible(true);
     setTitle("jfPaint/" + MainPanel.version);
+    setVisible(true);
+    revalidate();
     JFImage icon = new JFImage();
     icon.loadPNG(this.getClass().getClassLoader().getResourceAsStream("jpaint.png"));
     setIconImage(icon.getImage());
@@ -37,7 +38,11 @@ public class PaintApp extends JFrame implements WindowListener {
   }
 //interface WindowListener
   public void windowOpened(WindowEvent e) { }
-  public void windowClosing(WindowEvent e) { panel.closeAll(); System.exit(0); }
+  public void windowClosing(WindowEvent e) {
+    if (panel.closeAll()) {
+      System.exit(0);
+    }
+  }
   public void windowClosed(WindowEvent e) { }
   public void windowIconified(WindowEvent e) { }
   public void windowDeiconified(WindowEvent e) { }

@@ -221,7 +221,7 @@ public class GL_BLEND {
     }
 
     String version = new String(data, 9, 3);
-    JFLog.log("Blender file version:" + version);
+//    JFLog.log("Blender file version:" + version);
     int ver = Integer.valueOf(version);
     if (ver < 263) {
       throw new Exception("Error:Blender file too old, can not read.");
@@ -316,8 +316,8 @@ public class GL_BLEND {
         ArrayList<Vertex> vertexList = new ArrayList<Vertex>();
         ArrayList<Integer> loopList = new ArrayList<Integer>();
         raw = chunkArray[i];
-        bObject bObj = new bObject();
         setData(raw.raw);
+        bObject bObj = new bObject();
         bObj.read();
 //        JFLog.log("object.type=" + bObj.type);
         if (bObj.type != 1) continue;  //not a mesh object (could be camera, light, etc.)

@@ -1,6 +1,9 @@
 ChangeLog
 =========
 
+4-20-2015 : version 0.30
+  - fix : if SIP init failed all gui elements were left disabled
+
 4-7-2015 : version 0.29
   - fixed some memory leaks
 

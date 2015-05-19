@@ -50,6 +50,7 @@ public class GLModel implements Cloneable {
         return o;
       }
     }
+    JFLog.log("GLModel:Could not find object:" + name);
     return null;
   }
   public void setIdentity() {
@@ -91,5 +92,11 @@ public class GLModel implements Cloneable {
   }
   public String getTexture(int idx) {
     return textures.get(idx);
+  }
+  public void print() {
+    System.out.println("Model data");
+    for(int a=0;a<ol.size();a++) {
+      ol.get(a).print(this);
+    }
   }
 }

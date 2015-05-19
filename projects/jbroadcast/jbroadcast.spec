@@ -1,6 +1,6 @@
 Buildroot: /.
 Name: jbroadcast
-Version: 0.29
+Version: 0.30
 Release: 1
 Summary: Autodialer System
 License: LGPL

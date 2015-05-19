@@ -1,5 +1,20 @@
 What's new...
 
+Apr 20/2015 : JF 7.47.0 released!
+  - jfPaint/0.18 released!
+    - fill tool now uses threshold
+    - fixed undo/redo
+  - jfRDP/0.2 released!
+    - improved client connection
+    - added amin password
+    - encoded passwords in cfg file
+  - jfBroadcast/0.30 released!
+    - fixed minor gui bug
+  - jfCraft/0.7 released!
+    - more complex blocks are now blender files
+    - added skeleton, fence and gate
+    - more bugs fixed
+
 Apr 7/2015 : JF 7.46.0 released!
   - GL framework improvements
     - new : added support for multiple UV maps per object (GLUVMap)

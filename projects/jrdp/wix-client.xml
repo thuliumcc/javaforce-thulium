@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Id="*" UpgradeCode="{FBDBD80E-2A4E-418A-97D3-309B711B36F0}" Version="1.4.2" Language="1033" Name="jfRDP Client" Manufacturer="Peter Quiring">
+  <Product Id="*" UpgradeCode="{FBDBD80E-2A4E-418A-97D3-309B711B36F0}" Version="0.2" Language="1033" Name="jfRDP Client" Manufacturer="Peter Quiring">
     <Package InstallerVersion="300" Compressed="yes"/>
     <Media Id="1" Cabinet="files.cab" EmbedCab="yes" />
 

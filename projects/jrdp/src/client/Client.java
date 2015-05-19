@@ -7,6 +7,7 @@ package client;
 
 import java.io.*;
 import java.net.*;
+import javax.net.ssl.*;
 
 import javaforce.*;
 import javaforce.jna.*;
@@ -35,9 +36,9 @@ public class Client extends javax.swing.JFrame {
 
     jLabel1 = new javax.swing.JLabel();
     jLabel2 = new javax.swing.JLabel();
-    password = new javax.swing.JPasswordField();
+    webPassword = new javax.swing.JPasswordField();
     host = new javax.swing.JTextField();
-    jButton1 = new javax.swing.JButton();
+    connect = new javax.swing.JButton();
     error = new javax.swing.JLabel();
     jLabel3 = new javax.swing.JLabel();
     rdpPassword = new javax.swing.JPasswordField();
@@ -49,10 +50,10 @@ public class Client extends javax.swing.JFrame {
 
     jLabel2.setText("Web Password:");
 
-    jButton1.setText("Connect");
-    jButton1.addActionListener(new java.awt.event.ActionListener() {
+    connect.setText("Connect");
+    connect.addActionListener(new java.awt.event.ActionListener() {
       public void actionPerformed(java.awt.event.ActionEvent evt) {
-        jButton1ActionPerformed(evt);
+        connectActionPerformed(evt);
       }
     });
 
@@ -67,7 +68,7 @@ public class Client extends javax.swing.JFrame {
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
           .addGroup(layout.createSequentialGroup()
             .addGap(0, 0, Short.MAX_VALUE)
-            .addComponent(jButton1))
+            .addComponent(connect))
           .addGroup(layout.createSequentialGroup()
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addComponent(jLabel2)
@@ -76,7 +77,7 @@ public class Client extends javax.swing.JFrame {
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
               .addComponent(rdpPassword)
-              .addComponent(password, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+              .addComponent(webPassword, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
               .addComponent(host)))
           .addComponent(error, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         .addContainerGap())
@@ -91,7 +92,7 @@ public class Client extends javax.swing.JFrame {
         .addGap(18, 18, 18)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel2)
-          .addComponent(password, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+          .addComponent(webPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
           .addComponent(jLabel3)
@@ -99,16 +100,16 @@ public class Client extends javax.swing.JFrame {
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
         .addComponent(error, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        .addComponent(jButton1)
+        .addComponent(connect)
         .addContainerGap())
     );
 
     pack();
   }// </editor-fold>//GEN-END:initComponents
 
-  private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+  private void connectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectActionPerformed
     connect();
-  }//GEN-LAST:event_jButton1ActionPerformed
+  }//GEN-LAST:event_connectActionPerformed
 
   /**
    * @param args the command line arguments
@@ -124,24 +125,137 @@ public class Client extends javax.swing.JFrame {
   }
 
   // Variables declaration - do not modify//GEN-BEGIN:variables
+  private javax.swing.JButton connect;
   private javax.swing.JLabel error;
   private javax.swing.JTextField host;
-  private javax.swing.JButton jButton1;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
-  private javax.swing.JPasswordField password;
   private javax.swing.JPasswordField rdpPassword;
+  private javax.swing.JPasswordField webPassword;
   // End of variables declaration//GEN-END:variables
 
   private String encodePassword() {
-    String pass = new String(password.getPassword());
+    String pass = new String(webPassword.getPassword());
     String u_p = ":" + pass;
     String base64_u_p = new String(javaforce.Base64.encode(u_p.getBytes()));
     return base64_u_p;
   }
 
   private void connect() {
+    host.setEnabled(false);
+    connect.setEnabled(false);
+    webPassword.setEnabled(false);
+    rdpPassword.setEnabled(false);
+    new Thread() {
+      public void run() {
+        connect2();
+      }
+    }.start();
+  }
+
+  private String errmsg;
+
+  private void connect2() {
+    errmsg = null;
+    String xml = connect_raw();
+    if (xml == null) {
+      java.awt.EventQueue.invokeLater(new Runnable() {
+        public void run() {
+          JF.showError("Error", errmsg);
+          host.setEnabled(true);
+          connect.setEnabled(true);
+          webPassword.setEnabled(true);
+          rdpPassword.setEnabled(true);
+        }
+      });
+      return;
+    }
+    dispose();
+    viewer = new Viewer();
+    viewer.setVisible(true);
+    viewer.setSize(640, 480);
+    JF.centerWindow(viewer);
+    rdp = new WinRDPClient();
+    rdp.create(xml, "Viewer", new String(rdpPassword.getPassword()), viewer.getCanvas());
+  }
+
+  /** Connect using SSLSocket */
+  private String connect_raw() {
+    String server = host.getText();
+    try {
+      int port = 33001;
+      int idx = server.indexOf(":");
+      if (idx != -1) {
+        server = server.substring(0, idx);
+        port = Integer.valueOf(server.substring(idx+1));
+      }
+      TrustManager[] trustAllCerts = new TrustManager[] {
+        new X509TrustManager() {
+          public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+            return null;
+          }
+          public void checkClientTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
+          public void checkServerTrusted(java.security.cert.X509Certificate[] certs, String authType) {}
+        }
+      };
+      // Let us create the factory where we can set some parameters for the connection
+      SSLContext sc = SSLContext.getInstance("SSL");
+      sc.init(null, trustAllCerts, new java.security.SecureRandom());
+      SSLSocketFactory sslsocketfactory = (SSLSocketFactory) sc.getSocketFactory();  //this method will work with untrusted certs
+      Socket s = sslsocketfactory.createSocket(server, port);
+      s.setSoTimeout(10 * 1000);
+
+      StringBuilder sb = new StringBuilder();
+      sb.append("GET /invite HTTP/1.0\r\n");
+      sb.append("Host: " + server + "\r\n");
+      sb.append("Authorization: Basic " + encodePassword() + "\r\n");
+      sb.append("\r\n");
+
+      OutputStream os = s.getOutputStream();
+      InputStream is = s.getInputStream();
+      os.write(sb.toString().getBytes());
+      sb = new StringBuilder();
+      byte buf[] = new byte[1024];
+      String xml = null;
+      while (s.isConnected() || is.available() > 0) {
+        int read = is.read(buf);
+        if (read == -1) break;
+        if (read > 0) {
+          sb.append(new String(buf, 0, read));
+
+          String response = sb.toString();
+          idx = response.indexOf("\r\n\r\n");
+          if (idx == -1) continue;
+          String headers[] = response.substring(0, idx).split("\r\n");
+          idx += 4;
+          xml = response.substring(idx);
+          int length = -1;
+          for(int a=0;a<headers.length;a++) {
+            if (headers[a].startsWith("Content-Length:")) {
+              length = Integer.valueOf(headers[a].substring(16));
+              break;
+            }
+          }
+          if (xml.length() < length) {
+            xml = null;
+            continue;
+          }
+          break;
+
+        }
+      }
+      s.close();
+      return xml;
+    } catch (Exception e) {
+      e.printStackTrace();
+      errmsg = e.toString();
+      return null;
+    }
+  }
+
+  /** Connect using URLConnection : Hangs too often. */
+  private String connect_url() {
     error.setText("");
     try {
       String server = host.getText();
@@ -151,7 +265,8 @@ public class Client extends javax.swing.JFrame {
       URL url = new URL("https://" + server + "/invite");
       URLConnection conn = url.openConnection();
       conn.addRequestProperty("Authorization", "Basic " + encodePassword());
-      conn.setAllowUserInteraction(true);
+      //conn.setAllowUserInteraction(true);
+      conn.connect();
       String xml = null;
       if (true) {
         InputStream is = conn.getInputStream();
@@ -168,16 +283,11 @@ public class Client extends javax.swing.JFrame {
       } else {
         xml = (String)conn.getContent();
       }
-      dispose();
-      viewer = new Viewer();
-      viewer.setVisible(true);
-      viewer.setSize(640, 480);
-      JF.centerWindow(viewer);
-      rdp = new WinRDPClient();
-      rdp.create(xml, "Viewer", new String(rdpPassword.getPassword()), viewer.getCanas());
+      return xml;
     } catch (Exception e) {
       e.printStackTrace();
       error.setText(e.toString());
+      return null;
     }
   }
 

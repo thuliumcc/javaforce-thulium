@@ -115,20 +115,20 @@ public class GLObject implements Cloneable {
   }
   public void addVertex(float xyz[], float uv[]) {
     vpl.append(xyz);
-    maps.get(0).tcl.append(uv);
+    maps.get(0).uvl.append(uv);
   }
   public void addVertex(float xyz[], float uv1[], float uv2[]) {
     vpl.append(xyz);
-    maps.get(0).tcl.append(uv1);
-    maps.get(1).tcl.append(uv2);
+    maps.get(0).uvl.append(uv1);
+    maps.get(1).uvl.append(uv2);
   }
   public void addVertex(GLVertex v) {
     vpl.append(v.x);
     vpl.append(v.y);
     vpl.append(v.z);
     GLUVMap map = maps.get(0);
-    map.tcl.append(v.u);
-    map.tcl.append(v.v);
+    map.uvl.append(v.u);
+    map.uvl.append(v.v);
   }
   public void addText(float uv[]) {
     maps.get(0).addText(uv);
@@ -190,5 +190,34 @@ public class GLObject implements Cloneable {
       if (map.name.equals(name)) return map;
     }
     return null;
+  }
+  public void print(GLModel model) {
+    System.out.println("Object:" + name);
+    //print vertex data
+    float vp[] = vpl.toArray();
+    for(int a=0;a<vp.length;) {
+      System.out.println(String.format("v[%d]=%6.3f,%6.3f,%6.3f", a/3, vp[a++], vp[a++], vp[a++]));
+    }
+    //print poly data
+    int vi[] = vil.toArray();
+    for(int a=0;a<vi.length;) {
+      switch (type) {
+        case GL.GL_TRIANGLES:
+          System.out.println(String.format("i[%d]=%d,%d,%d", a/3, vi[a++], vi[a++], vi[a++]));
+          break;
+        case GL.GL_QUADS:
+          System.out.println(String.format("i[%d]=%d,%d,%d,%d", a/4, vi[a++], vi[a++], vi[a++], vi[a++]));
+          break;
+      }
+    }
+    //print uv maps
+    for(int m=0;m<maps.size();m++) {
+      GLUVMap map = maps.get(m);
+      System.out.println("UVMap:" + map.name + ",texture=" + model.textures.get(map.textureIndex));
+      float uv[] = map.uvl.toArray();
+      for(int a=0;a<uv.length;) {
+        System.out.println(String.format("uv[%d]=%6.3f,%6.3f", a/2, uv[a++], uv[a++]));
+      }
+    }
   }
 }

@@ -24,7 +24,7 @@ import javaforce.voip.*;
 
 public class Broadcast extends javax.swing.JFrame implements SIPClientInterface, RTPInterface, ActionListener {
 
-  public final String version = "0.29";
+  public final String version = "0.30";
 
   public String startList = null;
   public String cfgSuffix = "";
@@ -2313,6 +2313,7 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       fail++;
       if (fail == 10) {
         setStatus("Error:SIP init failed");
+        setState(true);
         state = states.STOPPED;
         start.setText("Start!");
         return;
@@ -2343,10 +2344,8 @@ public class Broadcast extends javax.swing.JFrame implements SIPClientInterface,
       JF.sleep(delayms);
       processUpdateList();
       if (!inCallingTime()) {
-//        JFLog.log("not in calling time");
+        JF.sleep(250);
         continue;
-      } else {
-//        JFLog.log("in calling time");
       }
       String number = nextAvailableNumber();  //NOTE:this keeps sql connection established (keep alive)
       if (!registered) continue;

@@ -29,6 +29,7 @@
   <SyntheticProperties>
     <SyntheticProperty name="menuBar" type="java.lang.String" value="menuBar"/>
     <SyntheticProperty name="formSizePolicy" type="int" value="1"/>
+    <SyntheticProperty name="generateCenter" type="boolean" value="false"/>
   </SyntheticProperties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
@@ -48,7 +49,7 @@
           <Group type="102" attributes="0">
               <Component id="home" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="url" max="32767" attributes="0"/>
+              <Component id="url" pref="236" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="go" min="-2" max="-2" attributes="0"/>
           </Group>
@@ -64,7 +65,7 @@
                   <Component id="home" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="htmlScroll" pref="582" max="32767" attributes="0"/>
+              <Component id="htmlScroll" pref="408" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

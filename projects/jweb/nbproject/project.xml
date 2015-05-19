@@ -11,14 +11,15 @@
             <properties/>
             <folders>
                 <source-folder>
-                    <label>Source Packages</label>
+                    <label>src</label>
                     <type>java</type>
-                    <location>.</location>
+                    <location>src</location>
                     <encoding>UTF-8</encoding>
                 </source-folder>
                 <source-folder>
-                    <label>Source Packages</label>
+                    <label>jweb</label>
                     <location>.</location>
+                    <encoding>UTF-8</encoding>
                 </source-folder>
             </folders>
             <ide-actions>
@@ -36,8 +37,8 @@
             <view>
                 <items>
                     <source-folder style="packages">
-                        <label>Source Packages</label>
-                        <location>.</location>
+                        <label>src</label>
+                        <location>src</location>
                     </source-folder>
                     <source-file>
                         <location>build.xml</location>
@@ -49,11 +50,12 @@
                     <ide-action name="clean"/>
                 </context-menu>
             </view>
+            <subprojects/>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/1">
             <compilation-unit>
-                <package-root>.</package-root>
-                <classpath mode="compile">../../classes</classpath>
+                <package-root>src</package-root>
+                <classpath mode="compile">javaforce.jar</classpath>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
