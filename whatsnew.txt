@@ -1,5 +1,11 @@
 What's new...
 
+Apr 30/2015 : JF 7.49.0 released!
+  - GLMatrix
+    - just some optz needed for jfCraft
+  - jfCraft/0.10 released!
+    - lots of under the hood changes for performance
+
 Apr 24/2015 : JF 7.48.0 released!
   - SIPServer
     - fix : issues when client is 127.0.0.1

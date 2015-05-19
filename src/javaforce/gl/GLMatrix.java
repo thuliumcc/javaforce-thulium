@@ -1,14 +1,21 @@
 package javaforce.gl;
 
 /** 4x4 matrix */
-
 public class GLMatrix implements Cloneable {
   public float m[] = new float[16];
+  private float r[];  //result temp
 
-  private GLMatrix tmp;
+  private GLMatrix mat;  //only need m[], setAA(), setTranslate(), setScale(), set(), get()
   private GLVector3 vec;
 
   public GLMatrix() {
+    setIdentity();
+    mat = new GLMatrix(false);  //do not need mat,vec,r in mat
+    vec = new GLVector3();
+    r = new float[16];
+  }
+  //this ctor does not create tmp,vec,r
+  private GLMatrix(boolean dummy) {
     setIdentity();
   }
   public Object clone() {
@@ -137,40 +144,34 @@ public class GLMatrix implements Cloneable {
 
   /** Adds rotation assuming there is currently no translation. */
   public void addRotate(float angle, float ax, float ay, float az) {
-    if (tmp == null) tmp = new GLMatrix();
-    tmp.setAA(angle, ax, ay, az);
-    mult3x3(tmp);
+    mat.setAA(angle, ax, ay, az);
+    mult3x3(mat);
   }
 
   /** Adds rotation with current translation. */
   public void addRotate2(float angle, float ax, float ay, float az) {
-    if (tmp == null) tmp = new GLMatrix();
-    tmp.setAA(angle, ax, ay, az);
-    mult4x4(tmp);
+    mat.setAA(angle, ax, ay, az);
+    mult4x4(mat);
   }
 
   /** Adds rotation adjusted to current rotation but assuming there is currently no translation. */
   public void addRotate3(float angle, float ax, float ay, float az) {
-    if (tmp == null) tmp = new GLMatrix();
-    if (vec == null) vec = new GLVector3();
     vec.v[0] = ax;
     vec.v[1] = ay;
     vec.v[2] = az;
     mult(vec);
-    tmp.setAA(angle, vec.v[0], vec.v[1], vec.v[2]);
-    mult3x3(tmp);
+    mat.setAA(angle, vec.v[0], vec.v[1], vec.v[2]);
+    mult3x3(mat);
   }
 
   /** Adds rotation adjusted to current rotation with current translation. */
   public void addRotate4(float angle, float ax, float ay, float az) {
-    if (tmp == null) tmp = new GLMatrix();
-    if (vec == null) vec = new GLVector3();
     vec.v[0] = ax;
     vec.v[1] = ay;
     vec.v[2] = az;
     mult(vec);
-    tmp.setAA(angle, vec.v[0], vec.v[1], vec.v[2]);
-    mult4x4(tmp);
+    mat.setAA(angle, vec.v[0], vec.v[1], vec.v[2]);
+    mult4x4(mat);
   }
 
   /** Adds translation assuming there is currently no rotation. */
@@ -187,23 +188,20 @@ public class GLMatrix implements Cloneable {
 
   /** Adds translation with current rotation. */
   public void addTranslate2(float tx, float ty, float tz) {
-    if (tmp == null) tmp = new GLMatrix();
-    tmp.setTranslate(tx, ty, tz);
-    mult4x4(tmp);
+    mat.setTranslate(tx, ty, tz);
+    mult4x4(mat);
   }
 
   /** Adds scale using full matrix multiple. */
   public void addScale(float sx, float sy, float sz) {
-    if (tmp == null) tmp = new GLMatrix();
-    tmp.setScale(sx, sy, sz);
-    mult4x4(tmp);
+    mat.setScale(sx, sy, sz);
+    mult4x4(mat);
   }
 
   /** Multiply this matrix with another */
   public void mult4x4(GLMatrix src) {
     //64 mult
     float a0, a1, a2, a3;
-    float r[] = new float[16];
     for(int col=0;col<4;col++) {
       a0 = m[col+0*4];
       a1 = m[col+1*4];
@@ -214,14 +212,17 @@ public class GLMatrix implements Cloneable {
       r[col+2*4] = a0 * src.m[0+2*4] + a1 * src.m[1+2*4] + a2 * src.m[2+2*4] + a3 * src.m[3+2*4];
       r[col+3*4] = a0 * src.m[0+3*4] + a1 * src.m[1+3*4] + a2 * src.m[2+3*4] + a3 * src.m[3+3*4];
     }
+    //swap m/r
+    float x[];
+    x = m;
     m = r;
+    r = x;
   }
 
   /** Multiply this matrix with another (rotation/scale only) */
   public void mult3x3(GLMatrix src) {
     //27 mult
     float a0, a1, a2;
-    float r[] = new float[16];
     for(int i=0;i<3;i++) {
       a0 = m[i+0*4];
       a1 = m[i+1*4];
@@ -231,7 +232,11 @@ public class GLMatrix implements Cloneable {
       r[i+2*4] = a0 * src.m[0+2*4] + a1 * src.m[1+2*4] + a2 * src.m[2+2*4];
     }
     for(int a=0;a<4;a++) r[a+3*4] = m[a+3*4];
+    //swap m/r
+    float x[];
+    x = m;
     m = r;
+    r = x;
   }
 
   /** 3x3 matrix multiple (rotation only) */
@@ -299,21 +304,20 @@ public class GLMatrix implements Cloneable {
     if (det == 0.0f) return false;
 
     // Form cofactor matrix
-    if (tmp == null) tmp = new GLMatrix();
-    tmp.set(0, 0, get(1, 1) * get(2, 2) - get(2, 1) * get(1, 2));
-    tmp.set(0, 1, get(2, 0) * get(1, 2) - get(1, 0) * get(2, 2));
-    tmp.set(0, 2, get(1, 0) * get(2, 1) - get(2, 0) * get(1, 1));
-    tmp.set(1, 0, get(2, 1) * get(0, 2) - get(0, 1) * get(2, 2));
-    tmp.set(1, 1, get(0, 0) * get(2, 2) - get(2, 0) * get(0, 2));
-    tmp.set(1, 2, get(2, 0) * get(0, 1) - get(0, 0) * get(2, 1));
-    tmp.set(2, 0, get(0, 1) * get(1, 2) - get(1, 1) * get(0, 2));
-    tmp.set(2, 1, get(1, 0) * get(0, 2) - get(0, 0) * get(1, 2));
-    tmp.set(2, 2, get(0, 0) * get(1, 1) - get(1, 0) * get(0, 1));
+    mat.set(0, 0, get(1, 1) * get(2, 2) - get(2, 1) * get(1, 2));
+    mat.set(0, 1, get(2, 0) * get(1, 2) - get(1, 0) * get(2, 2));
+    mat.set(0, 2, get(1, 0) * get(2, 1) - get(2, 0) * get(1, 1));
+    mat.set(1, 0, get(2, 1) * get(0, 2) - get(0, 1) * get(2, 2));
+    mat.set(1, 1, get(0, 0) * get(2, 2) - get(2, 0) * get(0, 2));
+    mat.set(1, 2, get(2, 0) * get(0, 1) - get(0, 0) * get(2, 1));
+    mat.set(2, 0, get(0, 1) * get(1, 2) - get(1, 1) * get(0, 2));
+    mat.set(2, 1, get(1, 0) * get(0, 2) - get(0, 0) * get(1, 2));
+    mat.set(2, 2, get(0, 0) * get(1, 1) - get(1, 0) * get(0, 1));
 
     // Now copy back transposed
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
-        set(i, j, tmp.get(j, i) / det);
+        set(i, j, mat.get(j, i) / det);
     return true;
   }
 

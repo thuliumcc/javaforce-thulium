@@ -4,8 +4,10 @@ package javaforce.utils;
 
  Find & Replace utility.
 
- Usage : "oldstr" "newstr" filespec [-i]
+ Usage : "oldstr" "newstr" filespec [-i] [-asis] [-r]
  -i = case-insensitive
+ -asis = no C-ctyle string processing
+ -r = recursive
 
  Strings may contain C-style chars : \n\t\r \xHH \DDD \\
 
@@ -21,9 +23,9 @@ public class jfr {
     jfr x = new jfr();
     x.main2(args);
   }
-  boolean b_rec = false;
   boolean b_icmp = false;
   boolean b_asis = false;
+  boolean b_recursive = false;
   final int BUFSIZE = (64 * 1024); //buffer size
   final int THSIZE = (32 * 1024);  //thresh hold size
   String oldstr, newstr;
@@ -36,6 +38,7 @@ public class jfr {
     System.out.println(" place \"quotes\" around str if it starts with '-' or spaces");
     System.out.println(" -asis = do not process C-style codes");
     System.out.println(" -i = case insensitive comparison");
+    System.out.println(" -r = recursive (use filespec of '.' to do everything, wildcards are not supported)");
     System.exit(0);
   }
   byte ibuf[];
@@ -58,6 +61,10 @@ public class jfr {
       }
       if (pa.arg_opts.get(a).equals("asis")) {
         b_asis = true;
+        continue;
+      }
+      if (pa.arg_opts.get(a).equals("r")) {
+        b_recursive = true;
         continue;
       }
       System.out.println("Option ignored : " + pa.arg_opts.get(a));
@@ -83,6 +90,19 @@ public class jfr {
   }
 
   void dofile(File fi) {
+    if (!fi.exists()) {
+      error("file not found:" + fi.getAbsolutePath());
+      return;
+    }
+    if (fi.isDirectory()) {
+      if (b_recursive) {
+        File files[] = fi.listFiles();
+        for(int a=0;a<files.length;a++) {
+          dofile(files[a]);
+        }
+      }
+      return;
+    }
     File fo;  //out filename
     Random r = new Random();
     JF.randomize(r);
