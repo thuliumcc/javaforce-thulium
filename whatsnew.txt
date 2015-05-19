@@ -1,5 +1,13 @@
 What's new...
 
+Apr 24/2015 : JF 7.48.0 released!
+  - SIPServer
+    - fix : issues when client is 127.0.0.1
+  - jPBXLite/0.22 released!
+    - fix : reinvites would drop calls with 404
+  - jfCraft/0.9 released!
+    - added in-game comms system similar to TeamSpeak (a VoIP Conference - code borrowed from jPhoneLite and jPBXlite)
+
 Apr 20/2015 : JF 7.47.0 released!
   - jfPaint/0.18 released!
     - fill tool now uses threshold

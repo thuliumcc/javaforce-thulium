@@ -145,7 +145,7 @@ public class Queues implements Plugin, DialChain, PBXEventHandler {
       cd.pbxsrc.sdp.getFirstAudioStream().codecs = cd.src.sdp.getFirstAudioStream().codecs;
       cd.sip.buildsdp(cd, cd.pbxsrc);
       api.reply(cd, 200, "OK", null, true, true);
-      return -1;
+      return pid;
     }
     cd.pbxsrc.to = cd.src.to.clone();
     cd.pbxsrc.from = cd.src.from.clone();

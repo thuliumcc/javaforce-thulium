@@ -84,6 +84,11 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
       }
       findlocalhost();
       JFLog.log("localhost = " + localhost + " for remotehost = " + remotehost);
+      if (this.remotehost.equals("127.0.0.1")) {
+        this.remotehost = localhost;
+        remoteip = resolve(this.remotehost);
+        JFLog.log("changed 127.0.0.1 to " + this.remotehost + " " + this.remoteip);
+      }
       if (nat == NAT.STUN || nat == NAT.ICE) {
         stopSTUN();
       }
@@ -347,7 +352,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
     try {
       InetAddress local = InetAddress.getLocalHost();
       localhost = local.getHostAddress();
-      JFLog.log("Detected IP using Java");
+      JFLog.log("Detected IP using Java:" + localhost);
       return true;
     } catch (Exception e) {
       return false;
@@ -671,6 +676,9 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
    */
   public void packet(String msg[], String remoteip, int remoteport) {
     try {
+      if (remoteip.equals("127.0.0.1")) {
+        remoteip = localhost;
+      }
       if (!remoteip.equals(this.remoteip) || remoteport != this.remoteport) {
         JFLog.log("Ignoring packet from unknown host:" + remoteip + ":" + remoteport);
         return;
@@ -848,6 +856,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
               iface.onRegister(this, true);
             } else {
               registered = false;
+              //iface.onRegister() ???
             }
           } else if (cmd.equals("INVITE")) {
             cd.dst.sdp = getSDP(msg);

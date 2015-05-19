@@ -41,12 +41,12 @@ public class Trunks implements Plugin, DialChain {
       }
       cd.sip.buildsdp(cd, src ? cd.pbxdst : cd.pbxsrc);
       api.issue(cd, null, true, !src);
-      return -1;
+      return pid;
     }
     //dial outbound from extension
     if (!cd.authorized) {
-      if (cd.route) route_call(cd, sql);
-      return -1;
+      if (cd.route) route_call(cd, sql);  //TODO : route call from one trunk to another ???
+      return -1;  //??? pid ???
     }
     if ((cd.user == null) || (cd.user.length() == 0)) return -1;
     String ext = sql.select1value("SELECT ext FROM exts WHERE ext=" + sql.quote(cd.user));

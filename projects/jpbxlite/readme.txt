@@ -1,4 +1,4 @@
-jpbxlite/0.21
+jpbxlite/0.22
 =============
 
 Welcome to jpbxlite.
@@ -8,7 +8,7 @@ Supports:
   - voicemail
   - trunks
   - IVR
-  - conferences (video now supported)
+  - conferences (video supported)
   - queues (ACD)
 
 Notes

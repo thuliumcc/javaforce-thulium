@@ -356,12 +356,12 @@ public class Sound {
           RTPChannel channel = lines[line].audioRTP.getDefaultChannel();
           int rate = channel.coder.getSampleRate();
           switch (rate) {
-            case 8000:
+            case 8000:  //G729, G711
               if (channel.getSamples(indata8)) {
                 mix(mixed, indata8, 9);
               }
               break;
-            case 16000:
+            case 16000:  //G722
               if (channel.getSamples(indata16)) {
                 mix(mixed, indata16, 9);
               }

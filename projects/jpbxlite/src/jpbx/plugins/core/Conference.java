@@ -12,9 +12,10 @@ public class Conference {
     CONF_TALK,  //in session
     CONF_DROP   //admin has left, drop all regular users
   }
+  public static final int bufs = 5;
   public static class Member {
     public boolean dropped, admin;
-    public short buf[][] = new short[3][160];
+    public short buf[][] = new short[bufs][160];
     public int idx;  //points to head buffer in 3 buffers (0-2) (last buffer is always volatile)
     public int idxs[];  // = new int[memberList.size()];
     public CallDetailsPBX cd;

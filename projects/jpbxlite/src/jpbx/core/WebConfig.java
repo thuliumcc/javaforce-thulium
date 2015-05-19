@@ -177,7 +177,7 @@ public class WebConfig implements WebHandler {
     StringBuilder html = new StringBuilder();
 
     html.append("<center>");
-    html.append("<div style='background-color: #dddddd; width: 300px;'>");
+    html.append("<div style='background-color: #dddddd; width: 320px;'>");
     if (msg.length() > 0) {
       html.append("<font color=#ff0000>");
       html.append(msg);
@@ -237,7 +237,7 @@ public class WebConfig implements WebHandler {
     StringBuilder html = new StringBuilder();
     html.append("<center>");
     html.append("Change Admin Password:<br>");
-    html.append("<div style='background-color: #dddddd; width: 300px;'>");
+    html.append("<div style='background-color: #dddddd; width: 320px;'>");
     if (msg.length() > 0) {
       html.append("<font color=#ff0000>");
       html.append(msg + "<br>");
@@ -246,9 +246,9 @@ public class WebConfig implements WebHandler {
     html.append(form("core", "admin"));
     html.append("<input type=hidden name=verb value='changepass'>");
     html.append("<table>");
-    html.append("<tr><td>Current Password: </td><td> <input type=password name=current></td></tr>");
-    html.append("<tr><td>New Password : </td><td> <input type=password name=p1></td></tr>");
-    html.append("<tr><td>Confirm Password : </td><td> <input type=password name=p2></td></tr>");
+    html.append("<tr><td nowrap>Current Password: </td><td> <input type=password name=current></td></tr>");
+    html.append("<tr><td nowrap>New Password : </td><td> <input type=password name=p1></td></tr>");
+    html.append("<tr><td nowrap>Confirm Password : </td><td> <input type=password name=p2></td></tr>");
     html.append("</table>");
     html.append("<input type=submit value=Change>");
     html.append("</form>");

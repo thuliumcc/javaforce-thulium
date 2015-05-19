@@ -43,7 +43,7 @@ public class Extensions implements Plugin, DialChain {
       }
       cd.sip.buildsdp(cd, src ? cd.pbxdst : cd.pbxsrc);
       api.issue(cd, null, true, !src);
-      return -1;
+      return pid;
     }
     if (!src) return -1;
     if (!cd.authorized) {

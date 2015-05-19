@@ -1,5 +1,8 @@
 CHANGELOG
 =========
+4-24-2015 : v0.22 released
+ - fix : support localhost phone better
+ - fix : reinvites would drop calls with 404
 9-15-2014 : v0.21 released
  - new : tray icon (Windows 7 theme)
 7-8-2014 : v0.20 released

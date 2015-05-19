@@ -52,8 +52,8 @@ public class RTP implements STUN.Listener {
       Class.forName("org.bouncycastle.crypto.tls.TlsServer");
       hasBouncyCastle = true;
     } catch (Exception e) {
-      JFLog.log(e);
-      JFLog.log("Warning:BouncyCastle not found, SRTP not available");
+//      JFLog.log(e);
+      JFLog.log("Warning:BouncyCastle not found, SRTP/DTLS not available");
     }
   }
 
@@ -315,6 +315,7 @@ public class RTP implements STUN.Listener {
    * Create a new RTP channel with a specified ssrc id.
    */
   public RTPChannel createChannel(int ssrc, SDP.Stream stream) {
+    JFLog.log("RTP.createChannel()" + stream.getIP() + ":" + stream.port);
     RTPChannel channel = null;
     switch (stream.profile) {
       case AVP:
@@ -372,7 +373,7 @@ public class RTP implements STUN.Listener {
   }
 
   /**
-   * Sets global RTP port range to use (should be set before during init).
+   * Sets global RTP port range to use (should be set before calling init()).
    */
   public static void setPortRange(int min, int max) {
     rtpmin = min;
@@ -405,17 +406,18 @@ public class RTP implements STUN.Listener {
           }
           String remoteip = pack.getAddress().getHostAddress();
           int remoteport = pack.getPort();
+//          JFLog.log("RTP:receive:" + remoteip + ":" + remoteport);  //test
           if (rtcp) {
             RTPChannel channel = findChannel(remoteip, remoteport-1);
             if (channel == null) {
-              JFLog.log("No channel found:" + remoteip + ":" + remoteport);
+              JFLog.log("RTP:No channel found:" + remoteip + ":" + remoteport);
               continue;
             }
             channel.processRTCP(data, 0, len);
           } else {
             RTPChannel channel = findChannel(remoteip, remoteport);
             if (channel == null) {
-              JFLog.log("No channel found:" + remoteip + ":" + remoteport);
+              JFLog.log("RTP:No channel found:" + remoteip + ":" + remoteport);
               continue;
             }
             if (channel.stream.port == -1) {

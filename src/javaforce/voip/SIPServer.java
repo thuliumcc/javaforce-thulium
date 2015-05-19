@@ -195,16 +195,12 @@ public class SIPServer extends SIP implements SIPInterface {
       return publicip;
     }
     try {
-      BufferedReader reader = new BufferedReader(new InputStreamReader(
-        new URL("http://checkip.dyndns.org").openStream()));
-      String line = reader.readLine();
-      int idx = line.indexOf(':');
-      line = line.substring(idx + 1);
-      idx = line.indexOf('<');
-      publicip = line.substring(0, idx).trim();
-      JFLog.log("Detected Public IP=" + publicip);
-    } catch (Exception e3) {
-      JFLog.log(e3);
+      Socket s = new Socket();
+      s.connect(new InetSocketAddress("google.com", 80), 3000);
+      publicip = s.getInetAddress().getHostAddress();
+      s.close();
+    } catch (Exception e) {
+      JFLog.log(e);
     }
     return publicip;
   }
@@ -258,6 +254,9 @@ public class SIPServer extends SIP implements SIPInterface {
 
   public void packet(String msg[], String remoteip, int remoteport) {
     try {
+      if (remoteip.equals("127.0.0.1")) {
+        remoteip = getlocalhost(remoteip);
+      }
       String tmp, req = null, epass;
       String callid = getHeader("Call-ID:", msg);
       if (callid == null) callid = getHeader("i:", msg);

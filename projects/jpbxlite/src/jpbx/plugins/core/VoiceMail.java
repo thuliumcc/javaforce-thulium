@@ -69,7 +69,7 @@ public class VoiceMail implements Plugin, DialChain, PBXEventHandler {
       cd.pbxsrc.sdp.getFirstAudioStream().codecs = cd.src.sdp.getFirstAudioStream().codecs;
       cd.sip.buildsdp(cd, cd.pbxsrc);
       api.reply(cd, 200, "OK", null, true, true);
-      return -1;
+      return pid;
     }
     String value = sql.select1value("SELECT value FROM extopts WHERE ext=" + sql.quote(cd.dialed) + " AND id='vm'");
     if ((value == null) || (!value.equals("true"))) {

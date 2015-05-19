@@ -11,7 +11,7 @@ import javaforce.jbus.*;
 
 public class Service implements SIPServerInterface, PBXAPI {
   public static String getVersion() {
-    return "0.21";
+    return "0.22";
   }
 
   private SIPServer ss;
@@ -183,6 +183,7 @@ public class Service implements SIPServerInterface, PBXAPI {
         }
       }
     }
+    JFLog.log("Dest not found:" + cd.dialed);
     reply(cd, 404, "NOT ONLINE", null, false, true);
     return -1;
   }

@@ -60,7 +60,7 @@ public class IVR implements Plugin, DialChain, PBXEventHandler {
       cd.pbxsrc.sdp.getFirstAudioStream().codecs = astream.codecs;
       cd.sip.buildsdp(cd, cd.pbxsrc);
       api.reply(cd, 200, "OK", null, true, true);
-      return -1;
+      return pid;
     }
     String script = api.convertString(sql.select1value("SELECT script FROM ivrs WHERE ext=" + sql.quote(cd.dialed)));
     cd.ivrscript = script.replaceAll("\r", " ").replaceAll("\n", " ").replaceAll("\t", " ").replaceAll(">", " > ").replaceAll("<", " < ").replaceAll("=", " = ")
@@ -255,7 +255,7 @@ public class IVR implements Plugin, DialChain, PBXEventHandler {
             member = memberList.get(a);
             if (member == myMember) continue;  //don't want to hear yourself
             if (myMember.idxs[a] == inc(member.idx)) {
-              myMember.idxs[a] = member.idx;  //reset to head
+              myMember.idxs[a] = dec(member.idx);  //reset to head-1
             }
             mix(sam, member.buf[myMember.idxs[a]]);
             myMember.idxs[a] = inc(myMember.idxs[a]);
@@ -273,11 +273,20 @@ public class IVR implements Plugin, DialChain, PBXEventHandler {
 
   /* Increment buffer index */
   private int inc(int in) {
-    if (in == 2) {
-      return 0;
-    } else {
-      return in + 1;
+    in++;
+    if (in == Conference.bufs) {
+      in = 0;
     }
+    return in;
+  }
+
+  /* Decrement buffer index */
+  private int dec(int in) {
+    in--;
+    if (in == -1) {
+      in = Conference.bufs-1;
+    }
+    return in;
   }
 
   private void mix(short out[], short in[]) {
