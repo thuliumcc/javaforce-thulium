@@ -186,7 +186,7 @@ public class Queues implements Plugin, DialChain, PBXEventHandler {
             }
           }
           if (idx == -1) {
-            JFLog.log(pid, "Lost track of agents???");
+            JFLog.log("Lost track of agents???");
             return;
           }
 
