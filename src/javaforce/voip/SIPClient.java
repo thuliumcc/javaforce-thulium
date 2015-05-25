@@ -466,7 +466,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
     req.append("Call-ID: " + cd.callid + "\r\n");
     req.append("Cseq: " + cdsd.cseq + " " + cmd + "\r\n");
     req.append("Allow: INVITE, ACK, CANCEL, BYE, REFER, NOTIFY, OPTIONS\r\n");
-    req.append("User-Agent: JavaForce\r\n");
+    req.append("User-Agent: " + useragent + "\r\n");
     if ((cd.sdp != null) && (sdp)) {
       req.append("Content-Type: application/sdp\r\n");
       req.append("Content-Length: " + cd.sdp.length() + "\r\n\r\n");
