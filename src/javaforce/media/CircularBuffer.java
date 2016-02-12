@@ -25,11 +25,8 @@ public class CircularBuffer {
     }
 
     private void addNoCheck(short in[], int pos, int len) {
-        boolean wrap = false;
         int newEnd = end + len;
-        if (newEnd > maxElements) {
-            wrap = true;
-        }
+        boolean wrap = newEnd > maxElements;
         if (newEnd >= maxElements) {
             newEnd -= maxElements;
         }
@@ -53,7 +50,7 @@ public class CircularBuffer {
         if (size() < len) {
             return false;
         }
-        boolean wrap = start + len >= maxElements;
+        boolean wrap = start + len > maxElements;
         if (wrap) {
             int p1 = maxElements - start;
             int p2 = len - p1;
