@@ -15,7 +15,7 @@ public class Record extends Thread {
   private int length;
   private byte buf8[] = new byte[882 * 2];
   private static final int rate = 44100;
-  private AudioBuffer buffer = new AudioBuffer(44100, 1, 2);
+  private CircularBuffer buffer = new CircularBuffer(44100 * 1 * 2);
   private boolean active, done;
   private Object lock = new Object();
 

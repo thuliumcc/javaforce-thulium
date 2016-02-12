@@ -706,7 +706,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
     JFLog.log("" + System.currentTimeMillis() + ":" + msg);
   }
 
-  private AudioBuffer audio_buffer;
+  private CircularBuffer audio_buffer;
   private VideoBuffer video_buffer;
   final int audio_bufsiz = 1024;
   final int chs = 2;  //currently all formats are converted to stereo
@@ -737,7 +737,7 @@ public class MainPanel extends javax.swing.JPanel implements ActionListener {
       frameCount = 0;
       audioCount = 0;
       seekPosition = -1;
-      audio_buffer = new AudioBuffer(44100, chs, buffer_seconds);
+      audio_buffer = new CircularBuffer(44100 * chs * buffer_seconds);
       video_buffer = null;
       width = -1;
       height = -1;

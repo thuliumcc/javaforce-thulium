@@ -23,7 +23,7 @@ public class RTPChannel {
   private int h263_2000_id = -1;
   private char dtmfChar;
   private boolean dtmfSent = false;
-  private AudioBuffer buffer = new AudioBuffer(8000, 1, 2);  //freq, chs, seconds
+  private IAudioBuffer buffer;
   private DTMF dtmf;
   private static short silence8[] = new short[160];
   private static short silence16[] = new short[320];
@@ -37,10 +37,15 @@ public class RTPChannel {
   public Coder coder_g711u, coder_g711a, coder_g722, coder_g729a;
   public Coder coder;  //selected audio encoder
 
-  protected RTPChannel(RTP rtp, int ssrc, SDP.Stream stream) {
+  protected RTPChannel(RTP rtp, int ssrc, SDP.Stream stream, IAudioBuffer audioBuffer) {
     this.rtp = rtp;
     this.ssrc_src = ssrc;
     this.stream = stream;
+    this.buffer = audioBuffer;
+  }
+
+  protected RTPChannel(RTP rtp, int ssrc, SDP.Stream stream) {
+    this(rtp, ssrc, stream, new AudioBufferImpl(8000, 1, 2));
   }
 
   public int getVP8id() {
@@ -337,6 +342,7 @@ public class RTPChannel {
       return;
     }
     int id = data[off + 1] & 0x7f;  //payload id
+    int seqnum = getseqnum(data, off);
     if (id < 96) {
       switch (id) {
         case 0:
@@ -345,7 +351,7 @@ public class RTPChannel {
             JFLog.log("RTP:Bad g711u length");
             break;
           }
-          addSamples(coder_g711u.decode(data, off));
+          addSamples(seqnum, coder_g711u.decode(data, off));
           rtp.iface.rtpSamples(this);
           break;
         case 8:
@@ -354,7 +360,7 @@ public class RTPChannel {
             JFLog.log("RTP:Bad g711a length");
             break;
           }
-          addSamples(coder_g711a.decode(data, off));
+          addSamples(seqnum, coder_g711a.decode(data, off));
           rtp.iface.rtpSamples(this);
           break;
         case 9:
@@ -363,7 +369,7 @@ public class RTPChannel {
             JFLog.log("RTP:Bad g722 length");
             break;
           }
-          addSamples(coder_g722.decode(data, off));
+          addSamples(seqnum, coder_g722.decode(data, off));
           rtp.iface.rtpSamples(this);
           break;
         case 18:
@@ -372,7 +378,7 @@ public class RTPChannel {
             JFLog.log("RTP:Bad g729a length");
             break;
           }
-          addSamples(coder_g729a.decode(data, off));
+          addSamples(seqnum, coder_g729a.decode(data, off));
           rtp.iface.rtpSamples(this);
           break;
         case 26:
@@ -400,11 +406,11 @@ public class RTPChannel {
         }
         if (dtmfChar == ' ') {
           switch (coder.getSampleRate()) {
-            case 8000: addSamples(silence8); break;
-            case 16000: addSamples(silence16); break;
+            case 8000: addSamples(seqnum, silence8); break;
+            case 16000: addSamples(seqnum, silence16); break;
           }
         } else {
-          addSamples(dtmf.getSamples(dtmfChar));
+          addSamples(seqnum, dtmf.getSamples(dtmfChar));
           if (!dtmfSent) {
             rtp.iface.rtpDigit(this, dtmfChar);
             dtmfSent = true;
@@ -454,8 +460,8 @@ public class RTPChannel {
     return buffer.get(data, 0, data.length);
   }
 
-  private void addSamples(short data[]) {
-    buffer.add(data, 0, data.length);
+  private void addSamples(int seqnum, short data[]) {
+    buffer.add(seqnum, data, 0, data.length);
   }
 
   public String toString() {
