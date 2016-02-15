@@ -1,7 +1,7 @@
 package javaforce.media;
 
 
-public class AudioBufferImpl implements IAudioBuffer {
+public class AudioBufferImpl implements AudioBuffer {
     private final CircularBuffer samplesBuffer;
 
     public AudioBufferImpl(int freq, int chs, int seconds) {
@@ -9,12 +9,12 @@ public class AudioBufferImpl implements IAudioBuffer {
     }
 
     @Override
-    public synchronized void add(int seqnum, short[] in, int pos, int len) {
-        samplesBuffer.add(in, pos, len);
+    public synchronized void add(int seqNum, short[] samples) {
+        samplesBuffer.add(samples, 0, samples.length);
     }
 
     @Override
-    public synchronized boolean get(short[] out, int pos, int len) {
-        return samplesBuffer.get(out, pos, len);
+    public synchronized boolean get(short[] out) {
+        return samplesBuffer.get(out, 0, out.length);
     }
 }

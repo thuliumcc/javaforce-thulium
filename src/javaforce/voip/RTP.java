@@ -4,7 +4,7 @@ import java.net.*;
 import java.util.*;
 
 import javaforce.*;
-import javaforce.media.IAudioBuffer;
+import javaforce.media.AudioBufferFactory;
 
 /**
  * Handles sending/receiving RTP packets.
@@ -308,20 +308,20 @@ public class RTP implements STUN.Listener {
   /**
    * Create a new RTP channel with a random ssrc id.
    */
-  public RTPChannel createChannel(SDP.Stream stream, IAudioBuffer audioBuffer) {
-    return createChannel(-1, stream, audioBuffer);
+  public RTPChannel createChannel(SDP.Stream stream, AudioBufferFactory audioBufferFactory) {
+    return createChannel(-1, stream, audioBufferFactory);
   }
 
   /**
    * Create a new RTP channel with a specified ssrc id.
    */
-  public RTPChannel createChannel(int ssrc, SDP.Stream stream, IAudioBuffer audioBuffer) {
+  public RTPChannel createChannel(int ssrc, SDP.Stream stream, AudioBufferFactory audioBufferFactory) {
     JFLog.log("RTP.createChannel()" + stream.getIP() + ":" + stream.port);
     RTPChannel channel = null;
     switch (stream.profile) {
       case AVP:
       case AVPF:
-        channel = new RTPChannel(this, ssrc, stream, audioBuffer);
+        channel = new RTPChannel(this, ssrc, stream, audioBufferFactory);
         break;
       case SAVP:
       case SAVPF:

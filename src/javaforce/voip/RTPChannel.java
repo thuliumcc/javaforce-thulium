@@ -23,7 +23,8 @@ public class RTPChannel {
   private int h263_2000_id = -1;
   private char dtmfChar;
   private boolean dtmfSent = false;
-  private IAudioBuffer buffer;
+  private AudioBuffer buffer;
+  private AudioBufferFactory audioBufferFactory;
   private DTMF dtmf;
   private static short silence8[] = new short[160];
   private static short silence16[] = new short[320];
@@ -37,15 +38,15 @@ public class RTPChannel {
   public Coder coder_g711u, coder_g711a, coder_g722, coder_g729a;
   public Coder coder;  //selected audio encoder
 
-  protected RTPChannel(RTP rtp, int ssrc, SDP.Stream stream, IAudioBuffer audioBuffer) {
+  protected RTPChannel(RTP rtp, int ssrc, SDP.Stream stream, AudioBufferFactory audioBufferFactory) {
     this.rtp = rtp;
     this.ssrc_src = ssrc;
     this.stream = stream;
-    this.buffer = audioBuffer;
+    this.audioBufferFactory = audioBufferFactory;
   }
 
   protected RTPChannel(RTP rtp, int ssrc, SDP.Stream stream) {
-    this(rtp, ssrc, stream, new AudioBufferImpl(8000, 1, 2));
+    this(rtp, ssrc, stream, new DefaultAudioBufferFactory());
   }
 
   public int getVP8id() {
@@ -263,6 +264,7 @@ public class RTPChannel {
         } else {
           JFLog.log("RTP.start() : Warning : no compatible audio codec selected");
         }
+        buffer = audioBufferFactory.create(coder.getSampleRate());
         dtmf = new DTMF(coder.getSampleRate());
       } else {
         if (stream.hasCodec(RTP.CODEC_H263)) {
@@ -323,6 +325,7 @@ public class RTPChannel {
       } else if (new_stream.hasCodec(RTP.CODEC_G729a)) {
         coder = coder_g729a;
       }
+      buffer = audioBufferFactory.create(coder.getSampleRate());
       dtmf = new DTMF(coder.getSampleRate());
     }
     if (rtp.useTURN) {
@@ -457,11 +460,11 @@ public class RTPChannel {
     if (!stream.canRecv()) {
       return moh.getSamples(data);
     }
-    return buffer.get(data, 0, data.length);
+    return buffer.get(data);
   }
 
   private void addSamples(int seqnum, short data[]) {
-    buffer.add(seqnum, data, 0, data.length);
+    buffer.add(seqnum, data);
   }
 
   public String toString() {
