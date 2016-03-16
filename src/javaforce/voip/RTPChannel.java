@@ -1,10 +1,17 @@
 package javaforce.voip;
 
-import java.util.*;
-import java.net.*;
+import javaforce.BE;
+import javaforce.JFLog;
+import javaforce.media.AudioBuffer;
+import javaforce.media.AudioBufferFactory;
+import javaforce.media.DefaultAudioBufferFactory;
 
-import javaforce.*;
-import javaforce.media.*;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.util.List;
+import java.util.Random;
+
+import static java.util.Arrays.asList;
 
 public class RTPChannel {
 
@@ -312,19 +319,11 @@ public class RTPChannel {
   /**
    * Changes the SDP.Stream for this RTP session. Could occur in a SIP reINVITE.
    */
-  public boolean change(SDP.Stream new_stream) {
+  public boolean change(SDP.Stream new_stream, Codec codec) {
     lastPacket = System.currentTimeMillis();
     stream = new_stream;
     if (stream.type == SDP.Type.audio) {
-      if (new_stream.hasCodec(RTP.CODEC_G711u)) {
-        coder = coder_g711u;
-      } else if (new_stream.hasCodec(RTP.CODEC_G711a)) {
-        coder = coder_g711a;
-      } else if (new_stream.hasCodec(RTP.CODEC_G722)) {
-        coder = coder_g722;
-      } else if (new_stream.hasCodec(RTP.CODEC_G729a)) {
-        coder = coder_g729a;
-      }
+      coder = getAudioCoder(codec);
       buffer = audioBufferFactory.create(coder.getSampleRate());
       dtmf = new DTMF(coder.getSampleRate());
     }
@@ -336,6 +335,39 @@ public class RTPChannel {
       }
     }
     return true;
+  }
+
+  private Codec getCodecForStream(SDP.Stream new_stream, List<Codec> enabledCodecs) {
+    for (Codec enabledCodec : enabledCodecs) {
+      if (new_stream.hasCodec(enabledCodec)) {
+        return enabledCodec;
+      }
+    }
+    return null;
+  }
+
+  private Coder getAudioCoder(Codec codec) {
+    if (RTP.CODEC_G711u.equals(codec)) {
+      return  coder_g711u;
+
+    } else if (RTP.CODEC_G711a.equals(codec)) {
+      return coder_g711a;
+
+    } else if (RTP.CODEC_G722.equals(codec)) {
+      return coder_g722;
+
+    } else if (RTP.CODEC_G729a.equals(codec)) {
+      return coder_g729a;
+    }
+    throw new IllegalArgumentException("unknown codec " + codec);
+  }
+
+  /**
+   * Changes the SDP.Stream for this RTP session. Could occur in a SIP reINVITE.
+   */
+  public boolean change(SDP.Stream new_stream) {
+    Codec codec = getCodecForStream(new_stream, asList(RTP.CODEC_G711u, RTP.CODEC_G711a, RTP.CODEC_G722, RTP.CODEC_G729a));
+    return change(new_stream, codec);
   }
 
   protected void processRTP(byte data[], int off, int len) {
