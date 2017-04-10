@@ -868,6 +868,11 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
       if (gettag(cd.dst.to) == null) {
         cd.dst.to = replacetag(cd.dst.to, generatetag());
       }
+
+      if (cd.dst.to[1] != null && !user.equals(cd.dst.to[1])) {
+        throw new SipFailureException(404, "Not Found");
+      }
+
       //get o1/o2
       cd.dst.o1 = geto(msg, 1) + 1;
       cd.dst.o2 = geto(msg, 2) + 1;
