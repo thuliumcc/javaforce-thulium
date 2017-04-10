@@ -795,8 +795,8 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
             //update cd.src.to tag value
             cd.src.to = cd.dst.to;
 
-            if (type == 200) issue(cd, "ACK", false, true);
             iface.onSuccess(this, callid, cd.dst.sdp, type == 200);
+            if (type == 200) issue(cd, "ACK", false, true);
           } else if (cmd.equals("BYE")) {
             if (type == 183) break;  //not used in BYE command
             //call leg ended
@@ -834,26 +834,26 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
           }
           break;
         case 403:
-          issue(cd, "ACK", false, true);
           if (cmd.equals("REGISTER")) {
             //bad password
             iface.onRegister(this, false);
           } else {
             iface.onCancel(this, callid, type);
           }
+          issue(cd, "ACK", false, true);
           break;
         case 404:  //no one there
         case 486:  //busy
           if (cd.dst.to != null) cd.src.to = cd.dst.to;
-          issue(cd, "ACK", false, true);
           iface.onCancel(this, callid, type);
+          issue(cd, "ACK", false, true);
           setCallDetails(callid, null);
           break;
         default:
           //treat all other codes as a cancel
           if (cd.dst.to != null) cd.src.to = cd.dst.to;
-          issue(cd, "ACK", false, true);
           iface.onCancel(this, callid, type);
+          issue(cd, "ACK", false, true);
 //          setCallDetails(callid, null);  //might not be done
           break;
       }
