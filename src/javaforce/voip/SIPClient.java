@@ -764,175 +764,172 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
         req = getRequest(msg);
         JFLog.log("callid:" + callid + "\r\nrequest=" + req);
       }
-
-      try {
-          switch (type) {
-            case -1:
-              if (req.equals("INVITE")) {
-                //generate toTag
-                if (gettag(cd.dst.to) == null) {
-                  cd.dst.to = replacetag(cd.dst.to, generatetag());
-                }
-                //get o1/o2
-                cd.dst.o1 = geto(msg, 1) + 1;
-                cd.dst.o2 = geto(msg, 2) + 1;
-                cd.dst.sdp = getSDP(msg);
-                switch (iface.onInvite(this, callid, cd.dst.from[0], cd.dst.from[1], cd.dst.sdp)) {
-                  case 180:  //this is the normal return
-                    reply(cd, cmd, 180, "RINGING", false, false);
-                    break;
-                  case 200:  //this was usually a reINVITE to change sdp details
-                    buildsdp(cd, cd.src);
-                    reply(cd, cmd, 200, "OK", true, false);
-                    break;
-                  case 486:
-                    reply(cd, cmd, 486, "BUSY HERE", false, false);
-                    break;
-                  case -1:
-                    //do nothing
-                    break;
-                }
-                break;
-              }
-              if (req.equals("CANCEL")) {
-                iface.onCancel(this, callid, 0);
-                reply(cd, cmd, 200, "OK", false, false);
-                reply(cd, "INVITE", 487, "CANCELLED", false, false);
-                //then should receive ACK
-    //            setCallDetails(callid, null);  //need to wait for ACK
-                break;
-              }
-              if (req.equals("BYE")) {
-                reply(cd, cmd, 200, "OK", false, false);
-                iface.onBye(this, callid);
-    //            setCallDetails(callid, null);  //need to wait for ACK
-                break;
-              }
-              if (req.equals("OPTIONS")) {
-                reply(cd, cmd, 200, "OK", false, false);
-                break;
-              }
-              if (req.equals("NOTIFY")) {
-                reply(cd, cmd, 200, "OK", false, false);
-                for (int a = 0; a < msg.length; a++) {
-                  //look for double \r\n (which appears as an empty line) that marks end of SIP header
-                  if (msg[a].length() == 0) {
-                    //send the rest of packet as content of NOTIFY event
-                    String content = "";
-                    for (int b = a + 1; b < msg.length; b++) {
-                      content += msg[b];
-                      content += "\r\n";
-                    }
-                    String event = getHeader("Event:", msg);
-                    if (event == null) event = getHeader("o:", msg);
-                    iface.onNotify(this, callid, event, content);
-                    break;
-                  }
-                }
-                break;
-              }
-              if (req.equals("ACK")) {
-                SDP sdp = getSDP(msg);
-                if (cd.dst.sdp == null) {
-                  cd.dst.sdp = sdp;
-                }
-                iface.onAck(this, callid, sdp);
-                if (cmd.equals("BYE")) {
-                  setCallDetails(callid, null);
-                }
-                break;
-              }
-              break;
-            case 100:
-              iface.onTrying(this, callid);
-              break;
-            case 180:
-              iface.onRinging(this, callid);
-              break;
-            case 183:
-            case 200:
-              if (cmd.equals("REGISTER")) {
-                if (type == 183) break;  //not used in REGISTER command
-                if (cd.src.expires > 0) {
-                  registered = true;
-                  iface.onRegister(this, true);
-                } else {
-                  registered = false;
-                  //iface.onRegister() ???
-                }
-              } else if (cmd.equals("INVITE")) {
-                cd.dst.sdp = getSDP(msg);
-
-                //update cd.src.to tag value
-                cd.src.to = cd.dst.to;
-
-                if (type == 200) issue(cd, "ACK", false, true);
-                iface.onSuccess(this, callid, cd.dst.sdp, type == 200);
-              } else if (cmd.equals("BYE")) {
-                if (type == 183) break;  //not used in BYE command
-                //call leg ended
-                setCallDetails(callid, null);
-              }
-              break;
-            case 202:
-              if (cmd.equals("REFER")) {
-                iface.onRefer(this, callid);
-              }
-              break;
-            case 401:
-            case 407:
-              if (cd.authsent) {
-                JFLog.log("Server Error : Double " + type);
-              } else {
-                issue(cd, "ACK", false, true);
-                cd.authstr = getHeader("WWW-Authenticate:", msg);
-                if (cd.authstr == null) {
-                  cd.authstr = getHeader("Proxy-Authenticate:", msg);
-                }
-                if (cd.authstr == null) {
-                  JFLog.log("err:401/407 without Authenticate tag");
-                  break;
-                }
-                epass = getAuthResponse(cd.authstr, auth, pass, remotehost, cmd, (type == 401 ? "Authorization:" : "Proxy-Authorization:"));
-                if (epass == null) {
-                  JFLog.log("err:gen auth failed");
-                  break;
-                }
-                cd.src.cseq++;
-                cd.src.epass = epass;
-                issue(cd, cmd, cmd.equals("INVITE"), true);
-                cd.authsent = true;
-              }
-              break;
-            case 403:
-              issue(cd, "ACK", false, true);
-              if (cmd.equals("REGISTER")) {
-                //bad password
-                iface.onRegister(this, false);
-              } else {
-                iface.onCancel(this, callid, type);
-              }
-              break;
-            case 404:  //no one there
-            case 486:  //busy
-              if (cd.dst.to != null) cd.src.to = cd.dst.to;
-              issue(cd, "ACK", false, true);
-              iface.onCancel(this, callid, type);
-              setCallDetails(callid, null);
-              break;
-            default:
-              //treat all other codes as a cancel
-              if (cd.dst.to != null) cd.src.to = cd.dst.to;
-              issue(cd, "ACK", false, true);
-              iface.onCancel(this, callid, type);
-    //          setCallDetails(callid, null);  //might not be done
-              break;
+      switch (type) {
+        case -1:
+          try {
+            handleRequest(msg, req, callid, cd, cmd);
+          } catch (SipFailureException e) {
+            reply(cd, cmd, e.getCode(), e.getReason(), false, false);
           }
-      } catch (CallNotFoundException e) {
-          reply(cd, cmd, 481, "CALL NOT FOUND", false, false);
+          break;
+        case 100:
+          iface.onTrying(this, callid);
+          break;
+        case 180:
+          iface.onRinging(this, callid);
+          break;
+        case 183:
+        case 200:
+          if (cmd.equals("REGISTER")) {
+            if (type == 183) break;  //not used in REGISTER command
+            if (cd.src.expires > 0) {
+              registered = true;
+              iface.onRegister(this, true);
+            } else {
+              registered = false;
+              //iface.onRegister() ???
+            }
+          } else if (cmd.equals("INVITE")) {
+            cd.dst.sdp = getSDP(msg);
+
+            //update cd.src.to tag value
+            cd.src.to = cd.dst.to;
+
+            if (type == 200) issue(cd, "ACK", false, true);
+            iface.onSuccess(this, callid, cd.dst.sdp, type == 200);
+          } else if (cmd.equals("BYE")) {
+            if (type == 183) break;  //not used in BYE command
+            //call leg ended
+            setCallDetails(callid, null);
+          }
+          break;
+        case 202:
+          if (cmd.equals("REFER")) {
+            iface.onRefer(this, callid);
+          }
+          break;
+        case 401:
+        case 407:
+          if (cd.authsent) {
+            JFLog.log("Server Error : Double " + type);
+          } else {
+            issue(cd, "ACK", false, true);
+            cd.authstr = getHeader("WWW-Authenticate:", msg);
+            if (cd.authstr == null) {
+              cd.authstr = getHeader("Proxy-Authenticate:", msg);
+            }
+            if (cd.authstr == null) {
+              JFLog.log("err:401/407 without Authenticate tag");
+              break;
+            }
+            epass = getAuthResponse(cd.authstr, auth, pass, remotehost, cmd, (type == 401 ? "Authorization:" : "Proxy-Authorization:"));
+            if (epass == null) {
+              JFLog.log("err:gen auth failed");
+              break;
+            }
+            cd.src.cseq++;
+            cd.src.epass = epass;
+            issue(cd, cmd, cmd.equals("INVITE"), true);
+            cd.authsent = true;
+          }
+          break;
+        case 403:
+          issue(cd, "ACK", false, true);
+          if (cmd.equals("REGISTER")) {
+            //bad password
+            iface.onRegister(this, false);
+          } else {
+            iface.onCancel(this, callid, type);
+          }
+          break;
+        case 404:  //no one there
+        case 486:  //busy
+          if (cd.dst.to != null) cd.src.to = cd.dst.to;
+          issue(cd, "ACK", false, true);
+          iface.onCancel(this, callid, type);
+          setCallDetails(callid, null);
+          break;
+        default:
+          //treat all other codes as a cancel
+          if (cd.dst.to != null) cd.src.to = cd.dst.to;
+          issue(cd, "ACK", false, true);
+          iface.onCancel(this, callid, type);
+//          setCallDetails(callid, null);  //might not be done
+          break;
       }
     } catch (Exception e) {
       JFLog.log(e);
+    }
+  }
+
+  private void handleRequest(String[] msg, String req, String callid, CallDetails cd, String cmd) {
+    if (req.equals("INVITE")) {
+      //generate toTag
+      if (gettag(cd.dst.to) == null) {
+        cd.dst.to = replacetag(cd.dst.to, generatetag());
+      }
+      //get o1/o2
+      cd.dst.o1 = geto(msg, 1) + 1;
+      cd.dst.o2 = geto(msg, 2) + 1;
+      cd.dst.sdp = getSDP(msg);
+      switch (iface.onInvite(this, callid, cd.dst.from[0], cd.dst.from[1], cd.dst.sdp)) {
+        case 180:  //this is the normal return
+          reply(cd, cmd, 180, "RINGING", false, false);
+          break;
+        case 200:  //this was usually a reINVITE to change sdp details
+          buildsdp(cd, cd.src);
+          reply(cd, cmd, 200, "OK", true, false);
+          break;
+        case 486:
+          reply(cd, cmd, 486, "BUSY HERE", false, false);
+          break;
+        case -1:
+          //do nothing
+          break;
+      }
+    }
+    if (req.equals("CANCEL")) {
+      iface.onCancel(this, callid, 0);
+      reply(cd, cmd, 200, "OK", false, false);
+      reply(cd, "INVITE", 487, "CANCELLED", false, false);
+      //then should receive ACK
+      //            setCallDetails(callid, null);  //need to wait for ACK
+    }
+    if (req.equals("BYE")) {
+      iface.onBye(this, callid);
+      reply(cd, cmd, 200, "OK", false, false);
+      //            setCallDetails(callid, null);  //need to wait for ACK
+    }
+    if (req.equals("OPTIONS")) {
+      reply(cd, cmd, 200, "OK", false, false);
+    }
+    if (req.equals("NOTIFY")) {
+      reply(cd, cmd, 200, "OK", false, false);
+      for (int a = 0; a < msg.length; a++) {
+        //look for double \r\n (which appears as an empty line) that marks end of SIP header
+        if (msg[a].length() == 0) {
+          //send the rest of packet as content of NOTIFY event
+          String content = "";
+          for (int b = a + 1; b < msg.length; b++) {
+            content += msg[b];
+            content += "\r\n";
+          }
+          String event = getHeader("Event:", msg);
+          if (event == null) event = getHeader("o:", msg);
+          iface.onNotify(this, callid, event, content);
+          break;
+        }
+      }
+    }
+    if (req.equals("ACK")) {
+      SDP sdp = getSDP(msg);
+      if (cd.dst.sdp == null) {
+        cd.dst.sdp = sdp;
+      }
+      iface.onAck(this, callid, sdp);
+      if (cmd.equals("BYE")) {
+        setCallDetails(callid, null);
+      }
     }
   }
 
