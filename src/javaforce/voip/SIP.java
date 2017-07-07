@@ -179,7 +179,7 @@ public abstract class SIP {
     if (x == null) {
       return "\"null\"<sip:null@null>";
     }
-    StringBuffer buf = new StringBuffer();
+    StringBuilder buf = new StringBuilder();
     buf.append('\"');
     buf.append(x[0]);
     buf.append('\"');

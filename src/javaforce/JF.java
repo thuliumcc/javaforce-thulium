@@ -152,7 +152,8 @@ public class JF {
   /** Checks if system is Mac only. */
   public static boolean isMac() {
     if (!isUnix()) return false;
-    return new File("/mach_kernel").exists();
+    String osName = System.getProperty("os.name");
+    return osName.startsWith("Mac") || osName.startsWith("Darwin");
   }
 
   /** Checks if system is jfLinux only. */
