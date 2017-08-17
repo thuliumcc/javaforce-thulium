@@ -181,6 +181,7 @@ public class WinSound {
           }
         }
       }
+      JFLog.log("Using WinSound.Output deviceid " + deviceid);
 
       PointerByReference handle_ref = new PointerByReference();
 
@@ -313,6 +314,8 @@ public class WinSound {
 
       PointerByReference handle_ref = new PointerByReference();
 
+      JFLog.log("Using WinSound.Input deviceid " + deviceid);
+
       int ret = winmm.waveInOpen(handle_ref, new Pointer(deviceid), wfex, null, null, 0);
       if (ret != 0) {
         JFLog.log("waveInOpen() Failed:error=" + kernel.GetLastError());
@@ -375,7 +378,11 @@ public class WinSound {
         bufs[pos].read();
         if ((bufs[pos].dwFlags & WHDR_DONE) != 0) {
           bufs[pos].lpData.read(0, buf, 0, buf.length);
-          winmm.waveInAddBuffer(handle, bufs[pos], bufs[pos].size());
+          int ret = winmm.waveInAddBuffer(handle, bufs[pos], bufs[pos].size());
+          if (ret != 0) {
+            JFLog.log("Error: WinSound.Input.read waveInAddBuffer returned " + ret);
+          }
+
           pos++;
           if (pos == NUM_BUFFERS) pos = 0;
           return true;
@@ -383,6 +390,9 @@ public class WinSound {
         pos++;
         if (pos == NUM_BUFFERS) pos = 0;
       }
+
+      JFLog.log("Error: WinSound.Input.read no available buffer");
+
       return false;
     }
 

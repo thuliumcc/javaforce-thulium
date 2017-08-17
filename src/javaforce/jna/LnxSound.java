@@ -118,6 +118,9 @@ public class LnxSound {
       if (device == null || device.equals("<default>")) device = "plughw:0,0";
       this.chs = chs;
       PointerByReference handle_ref = new PointerByReference();
+
+      JFLog.log("Using LnxSound.Output " + device);
+
       if (asound.snd_pcm_open(handle_ref, device, SND_PCM_STREAM_PLAYBACK, 0) < 0) {
         return false;
       }
@@ -219,6 +222,8 @@ public class LnxSound {
       if (device == null || device.equals("<default>")) device = "plughw:0,0";
       this.chs = chs;
       PointerByReference handle_ref = new PointerByReference();
+
+      JFLog.log("Using LnxSound.Input " + device);
       if (asound.snd_pcm_open(handle_ref, device, SND_PCM_STREAM_CAPTURE, 0) < 0) {
         return false;
       }

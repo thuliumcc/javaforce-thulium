@@ -71,6 +71,8 @@ public class Sound {
           break;
         }
       }
+      JFLog.log("Using JavaOutput idx " + idx);
+
       try {
         if (idx == -1) {
           sdl = AudioSystem.getSourceDataLine(af);
@@ -180,6 +182,7 @@ public class Sound {
           break;
         }
       }
+      JFLog.log("Using JavaInput idx " + idx);
       try {
         if (idx == -1) {
           tdl = AudioSystem.getTargetDataLine(af);
