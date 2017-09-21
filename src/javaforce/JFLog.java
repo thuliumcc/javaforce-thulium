@@ -18,20 +18,20 @@ public class JFLog {
         return true;
     }
 
-    public static boolean log(String msg) {
-        return log(0, msg);
+    public static boolean trace(String msg) {
+        return log(msg, Level.TRACE);
     }
 
-    private static boolean log(int id, String msg) {
-        logger.log(JFLog.class.getName(), Level.DEBUG, msg, null);
+    public static boolean log(String msg) {
+        return log(msg, Level.DEBUG);
+    }
+
+    private static boolean log(String msg, Level level) {
+        logger.log(JFLog.class.getName(), level, msg, null);
         return true;
     }
 
     public static boolean log(Throwable t) {
-        return log(0, t);
-    }
-
-    private static boolean log(int id, Throwable t) {
         logger.warn(t.getMessage(), t);
         return true;
     }
