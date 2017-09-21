@@ -22,7 +22,7 @@ public class JFLog {
     }
 
     private static boolean log(int id, String msg) {
-        logger.debug(msg);
+        log.log(JFLog.class.getName(), Level.DEBUG, msg, null);
         return true;
     }
 
