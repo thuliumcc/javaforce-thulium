@@ -2,6 +2,8 @@ package javaforce.voip;
 
 import java.net.*;
 import java.util.*;
+import java.util.stream.Collectors;
+
 import javaforce.*;
 
 /**
@@ -676,6 +678,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
    */
   public void packet(String msg[], String remoteip, int remoteport) {
     try {
+      JFLog.trace("\r\n<-----<\r\nReceived from: " + remoteip.toString() + ":" + remoteport + "\r\n" + Arrays.stream(msg).collect(Collectors.joining("\r\n")) + "\r\n------");
       if (remoteip.equals("127.0.0.1")) {
         remoteip = localhost;
       }
