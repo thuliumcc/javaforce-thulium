@@ -678,7 +678,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
    */
   public void packet(String msg[], String remoteip, int remoteport) {
     try {
-      JFLog.trace(String.format("%nReceived from: %s:%d%%n<-----<%s%n------", remoteip, remoteport, Arrays.stream(msg).collect(Collectors.joining("\r\n"))));
+      JFLog.trace(String.format("%nReceived from: %s:%d%n<-----<%n%s%n------", remoteip, remoteport, Arrays.stream(msg).collect(Collectors.joining("\r\n"))));
       if (remoteip.equals("127.0.0.1")) {
         remoteip = localhost;
       }

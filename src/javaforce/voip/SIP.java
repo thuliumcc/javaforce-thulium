@@ -93,7 +93,7 @@ public abstract class SIP {
      * Sends a packet out on the UDP port.
      */
     protected boolean send(InetAddress remote, int remoteport, String datastr) {
-        JFLog.trace(String.format("%nSent to: %s:%d%%n>----->%s%n------", remote.toString(), remoteport, datastr));
+        JFLog.trace(String.format("%nSent to: %s:%d%n>----->%n%s%n------", remote.toString(), remoteport, datastr));
         byte data[] = datastr.getBytes();
         return transport.send(data, 0, data.length, remote, remoteport);
     }
