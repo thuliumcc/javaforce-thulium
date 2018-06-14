@@ -974,4 +974,12 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
     CallDetails cd = getCallDetails(callid);
     return cd.headers;
   }
+
+  public CallDetails getInviteCallDetails() {
+    return inviteCallDetails;
+  }
+
+  public String getInviteCmd() {
+    return inviteCmd;
+  }
 }
