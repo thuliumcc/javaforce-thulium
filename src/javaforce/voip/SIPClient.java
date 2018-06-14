@@ -34,6 +34,9 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
   public Object userobj;  //user definable
   public int expires;  //expires
 
+  private CallDetails inviteCallDetails;
+  private String inviteCmd;
+
   /**
    * Returns the registered user name.
    */
@@ -448,7 +451,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
   /**
    * Sends a reply to a SIP server.
    */
-  private boolean reply(CallDetails cd, String cmd, int code, String msg, boolean sdp, boolean src) {
+  public boolean reply(CallDetails cd, String cmd, int code, String msg, boolean sdp, boolean src) {
     JFLog.log("callid:" + cd.callid + "\r\nissue reply : " + code + " to : " + remotehost);
     CallDetails.SideDetails cdsd = (src ? cd.src : cd.dst);
     StringBuilder req = new StringBuilder();
@@ -880,6 +883,10 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
       cd.dst.o1 = geto(msg, 1) + 1;
       cd.dst.o2 = geto(msg, 2) + 1;
       cd.dst.sdp = getSDP(msg);
+
+      this.inviteCallDetails = cd;
+      this.inviteCmd = cmd;
+
       switch (iface.onInvite(this, callid, cd.dst.from[0], cd.dst.from[1], cd.dst.sdp)) {
         case 180:  //this is the normal return
           reply(cd, cmd, 180, "RINGING", false, false);
@@ -895,6 +902,9 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
           //do nothing
           break;
       }
+
+      this.inviteCallDetails = null;
+      this.inviteCmd = null;
     }
     if (req.equals("CANCEL")) {
       iface.onCancel(this, callid, 0);
