@@ -34,9 +34,6 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
   public Object userobj;  //user definable
   public int expires;  //expires
 
-  private CallDetails inviteCallDetails;
-  private String inviteCmd;
-
   /**
    * Returns the registered user name.
    */
@@ -697,6 +694,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
         return;
       }
       CallDetails cd = getCallDetails(callid);
+      String[] previousTo = cd.dst.to;
       cd.dst.host = remoteip;
       cd.dst.port = remoteport;
       cd.dst.cseq = getcseq(msg);
@@ -773,7 +771,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
       switch (type) {
         case -1:
           try {
-            handleRequest(msg, req, callid, cd, cmd);
+            handleRequest(msg, req, callid, cd, cmd, previousTo);
           } catch (SipFailureException e) {
             reply(cd, cmd, e.getCode(), e.getReason(), false, false);
           }
@@ -868,11 +866,12 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
     }
   }
 
-  private void handleRequest(String[] msg, String req, String callid, CallDetails cd, String cmd) {
+  private void handleRequest(String[] msg, String req, String callid, CallDetails cd, String cmd, String[] previousTo) {
     if (req.equals("INVITE")) {
       //generate toTag
       if (gettag(cd.dst.to) == null) {
-        cd.dst.to = replacetag(cd.dst.to, generatetag());
+        String previousTag = gettag(previousTo);
+        cd.dst.to = replacetag(cd.dst.to, previousTag == null ? generatetag() : previousTag);
       }
 
       if (cd.dst.to[1] != null && !user.equals(cd.dst.to[1])) {
@@ -883,9 +882,6 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
       cd.dst.o1 = geto(msg, 1) + 1;
       cd.dst.o2 = geto(msg, 2) + 1;
       cd.dst.sdp = getSDP(msg);
-
-      this.inviteCallDetails = cd;
-      this.inviteCmd = cmd;
 
       switch (iface.onInvite(this, callid, cd.dst.from[0], cd.dst.from[1], cd.dst.sdp)) {
         case 180:  //this is the normal return
@@ -902,9 +898,6 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
           //do nothing
           break;
       }
-
-      this.inviteCallDetails = null;
-      this.inviteCmd = null;
     }
     if (req.equals("CANCEL")) {
       iface.onCancel(this, callid, 0);
@@ -973,13 +966,5 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
   public String[] getHeaders(String callid) {
     CallDetails cd = getCallDetails(callid);
     return cd.headers;
-  }
-
-  public CallDetails getInviteCallDetails() {
-    return inviteCallDetails;
-  }
-
-  public String getInviteCmd() {
-    return inviteCmd;
   }
 }
