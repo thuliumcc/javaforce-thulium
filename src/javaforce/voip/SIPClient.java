@@ -870,7 +870,7 @@ public class SIPClient extends SIP implements SIPInterface, STUN.Listener {
     if (req.equals("INVITE")) {
       //generate toTag
       if (gettag(cd.dst.to) == null) {
-        String previousTag = gettag(previousTo);
+        String previousTag = previousTo == null ? null : gettag(previousTo);
         cd.dst.to = replacetag(cd.dst.to, previousTag == null ? generatetag() : previousTag);
       }
 
